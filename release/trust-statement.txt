@@ -1,0 +1,9 @@
+Ember release trust statement
+
+The Ember Contributors establish this independent release trust root.
+Root-SHA256: cc3522f6bbfa1ca057cd5beddfefb740a0b6ef86d81d4c30307f613bc21bd918
+Release-SHA256: d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb
+
+This root certifies the release key for Ember v0.1.0 checksum signatures.
+Release verification requires this statement, its root signature, the certified
+release key, and the signed checksums from the same release set.

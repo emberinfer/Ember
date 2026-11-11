@@ -1,0 +1,270 @@
+syntax = "proto3";
+package ember;
+option go_package = "ember/proto;proto";
+
+message ChainGenesis {
+  string chain_id = 1;
+  bytes model_manifest_root = 2;
+  bytes tokenizer_hash = 3;
+  string quant = 4;
+  string dtype = 5;
+  string execution_profile_ver = 6;
+  string tolerance_table_ref = 7;
+  int64 price_input = 8;
+  int64 price_output = 9;
+  AuditParams audit_params = 10;
+  // Intentionally unset; reserved for governance profiles.
+  string ledger_route = 11;
+  string credit_scope = 12;
+  NumericAuditPolicy numeric_audit_policy = 13;
+  int64 price_context = 14;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ToleranceBand {
+  string producer_engine = 1;
+  string producer_device = 2;
+  string reference_engine = 3;
+  string reference_device = 4;
+  double tolerance = 5;
+  string mode = 6; // enforce for calibrated same-runtime pairs, observe otherwise
+}
+message NumericAuditPolicy {
+  string metric = 1;
+  repeated ToleranceBand bands = 2;
+  repeated string layers = 3;
+  uint32 top_k = 4;
+  bytes calibration_ref = 5;
+}
+message AuditParams {
+  uint32 new_node_percent = 1;
+  uint32 mature_node_percent = 2;
+  uint32 floor_percent = 3;
+  uint32 inline_percent = 4;
+  uint32 canary_percent = 5;
+  uint32 slash_multiplier = 6;
+  uint32 min_stake_multiplier = 7;
+  uint32 exposure_divisor = 8;
+  int64 dispute_seconds = 9;
+  double numeric_tolerance = 10;
+}
+message Artifact { string name = 1; bytes sha256 = 2; int64 size = 3; string source = 4; }
+message ModelManifest {
+  string chain_id = 1;
+  repeated Artifact artifacts = 2;
+  bytes graph_hash = 3;
+  bytes config_hash = 4;
+  string license = 5;
+  repeated ShardSpec shards = 6;
+  uint32 total_layers = 7;
+  bool dynamic_ranges = 8;
+  uint32 min_stage_layers = 9;
+  repeated uint32 allowed_layer_cuts = 10;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ShardSpec {
+  string unit_kind = 8; // embedding, layers, lm_head; empty preserves legacy layouts
+  uint32 index = 1;
+  uint32 start_layer = 2;
+  uint32 end_layer = 3;
+  bool has_embedding = 4;
+  bool has_lm_head = 5;
+  repeated string artifacts = 6;
+  bytes parameters_hash = 7;
+}
+message EngineCapabilities {
+  string spi_version = 1;
+  string engine_name = 2;
+  string engine_version = 3;
+  string numerical_format = 4;
+  string device_class = 5;
+  repeated string evidence_levels = 6;
+  string score_kind = 7;
+  uint32 max_top_k = 8;
+  bool forced_prefix_replay = 9;
+  bool native_incremental = 10;
+  repeated string roles = 11;
+}
+message ResourceProfile {
+  string node_id = 1;
+  string chain_id = 2;
+  string gpu = 3;
+  uint64 memory_bytes = 4;
+  string engine_ver = 5;
+  bytes benchmark_result_ref = 6;
+  int64 expires_unix = 7;
+  bytes manifest_root = 8;
+  string execution_profile_ver = 9;
+  // Signed runtime facts. "cuda" is strict; "auto" may fall back to CPU.
+  string requested_device = 10;
+  string actual_device = 11;
+  string device_reason = 12;
+  string torch_version = 13;
+  string transformers_version = 14;
+  string cuda_version = 15;
+  string accelerator_name = 16;
+  uint64 available_memory_bytes = 17;
+  uint32 shard_index = 18;
+  uint32 shard_start_layer = 19;
+  uint32 shard_end_layer = 20;
+  uint32 shard_total_layers = 21;
+  bool shard_has_embedding = 22;
+  bool shard_has_lm_head = 23;
+  bytes shard_parameters_hash = 24;
+  EngineCapabilities engine_capabilities = 25;
+  string shard_endpoint = 26;
+  string shard_unit_kind = 28;
+  bool shard_dynamic_range = 29;
+  bytes shard_tls_fingerprint = 27;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ExecutionCommitment {
+  string request_id = 1;
+  string chain_id = 2;
+  bytes input_commitment = 3;
+  string profile_ver = 4;
+  bytes sampling_params_hash = 5;
+  int64 seed = 6;
+  bytes client_nonce = 7;
+  uint32 input_tokens = 8;
+  uint32 max_output_tokens = 9;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ChunkRoot {
+  string request_id = 1;
+  uint32 seq = 2;
+  uint32 upto_step = 3;
+  bytes merkle_root = 4;
+  bytes prev_root = 5;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ExecutionReceipt {
+  string request_id = 1;
+  bytes commitment_ref = 2;
+  repeated ChunkRoot chunk_roots = 3;
+  bytes output_commitment = 4;
+  uint32 input_tokens = 5;
+  uint32 output_tokens = 6;
+  int64 elapsed_ms = 7;
+  string node_id = 8;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message AuditChallenge {
+  bytes receipt_ref = 1;
+  repeated uint32 positions = 2;
+  repeated uint32 layers = 3;
+  int64 deadline_unix = 4;
+  bytes vrf_proof = 5;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message AuditVerdict {
+  bytes challenge_ref = 1;
+  string auditor_id = 2;
+  repeated double distances = 3;
+  string verdict = 4;
+  bytes evidence_ref = 5;
+  bytes audit_policy_ref = 6;
+  repeated string fault_node_ids = 7;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message LedgerTx {
+  string from = 1;
+  string to = 2;
+  int64 amount = 3;
+  bytes receipt_ref = 4;
+  string type = 5;
+  string tx_id = 6;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+message TunnelFrame {
+  string node_id = 1;
+  string request_id = 2;
+  string attempt_id = 3;
+  string kind = 4;
+  bytes payload = 5;
+  uint64 nonce = 6;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+service NodeTunnel { rpc Connect(stream TunnelFrame) returns (stream TunnelFrame); }
+
+message ShardForwardRequest {
+  string request_id = 1;
+  uint32 step = 2;
+  repeated int64 input_ids = 3;
+  bytes hidden_bf16 = 4;
+  repeated uint32 hidden_shape = 5;
+  uint64 nonce = 6;
+  uint32 executed_start_layer = 7;
+  uint32 executed_end_layer = 8;
+  bool dynamic_range = 9;
+
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ShardForwardResponse {
+  bytes hidden_bf16 = 1;
+  repeated uint32 hidden_shape = 2;
+  int64 token_id = 3;
+  repeated int64 topk_ids = 4;
+  repeated float topk_logits = 5;
+  map<string, bytes> activations = 6;
+  uint32 shard_index = 7;
+  bytes shard_parameters_hash = 8;
+  ShardStepReceipt receipt = 9;
+  uint64 server_elapsed_us = 10;
+}
+service ShardPipeline { rpc Forward(ShardForwardRequest) returns (ShardForwardResponse); }
+
+// One signed invocation of a shard. Request hash covers attempt ID, step and
+// input; response hash excludes this receipt and covers output + layer evidence.
+message ShardStepReceipt {
+  string node_id = 1;
+  string chain_id = 2;
+  bytes manifest_root = 3;
+  string execution_profile_ver = 4;
+  string request_id = 5;
+  uint32 step = 6;
+  uint32 shard_index = 7;
+  uint32 start_layer = 8;
+  uint32 end_layer = 9;
+  bytes request_hash = 10;
+  bytes response_hash = 11;
+  bytes parameters_hash = 12;
+  string unit_kind = 13;
+  bytes input_activation_hash = 14;
+  bytes output_activation_hash = 15;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+// Identity-less pipeline aggregate. Every work claim is independently signed
+// by the stage that produced it; the assembly client has no signer or account.
+message PipelineExecutionReceipt {
+  string request_id = 1;
+  repeated ShardStepReceipt stage_receipts = 2;
+  bytes output_commitment = 3;
+  uint32 input_tokens = 4;
+  uint32 output_tokens = 5;
+  int64 elapsed_ms = 6;
+  repeated StageLatencyWitness latency_witnesses = 7;
+}
+
+// Independent auditor/client observation, bound to an executor-signed receipt.
+// Monotonic observer timestamps; executor self-reported elapsed time is unused.
+message StageLatencyWitness {
+  bytes stage_receipt_ref = 1;
+  uint64 started_mono_ns = 2;
+  uint64 completed_mono_ns = 3;
+  bytes signer = 30;
+  bytes signature = 31;
+}

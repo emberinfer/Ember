@@ -1,0 +1,10 @@
+# Measured CPU SPI/reference environment; see docs/ENGINE_ADAPTERS.md.
+# Install requirements-cpu-<arch>.txt first; runtime family is explicit.
+transformers==4.45.2
+tokenizers==0.20.3
+grpcio==1.85.1
+grpcio-tools==1.85.1
+protobuf==7.36.2
+numpy==2.5.4
+safetensors==0.8.0
+cryptography==50.0.2

@@ -1,0 +1,516 @@
+{
+  "directed_pairings": [
+    {
+      "counts": {
+        "development_correct": 128,
+        "development_count": 128,
+        "fabricated_correct": 128,
+        "fabricated_count": 128,
+        "fresh_correct": 128,
+        "fresh_count": 128,
+        "quant4_correct": 128,
+        "quant4_count": 128,
+        "smaller_correct": 128,
+        "smaller_count": 128,
+        "truncated_correct": 128,
+        "truncated_count": 128,
+        "wrong-prompt_correct": 128,
+        "wrong-prompt_count": 128
+      },
+      "failures": [],
+      "producer_class": "gb10",
+      "producer_runtime": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "ranges": {
+        "development": {
+          "max": 2.7755575615628914e-16,
+          "min": 0.0
+        },
+        "fabricated": {
+          "max": 4.3729115890811405,
+          "min": 3.82566728760374
+        },
+        "fresh": {
+          "max": 2.7755575615628914e-16,
+          "min": 0.0
+        },
+        "quant4": {
+          "max": 2.1136795080729422,
+          "min": 1.0012553107528217
+        },
+        "smaller": {
+          "max": 3.8770428654135056,
+          "min": 2.6383502085251442
+        },
+        "truncated": {
+          "max": 2.959495306452162,
+          "min": 2.322363604162799
+        },
+        "wrong-prompt": {
+          "max": 2.334954003781157,
+          "min": 1.6265984906121065
+        }
+      },
+      "reference_class": "gb10",
+      "reference_runtime": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "tolerance": 0.001
+    },
+    {
+      "counts": {
+        "development_correct": 128,
+        "development_count": 128,
+        "fabricated_correct": 32,
+        "fabricated_count": 32,
+        "fresh_correct": 128,
+        "fresh_count": 128,
+        "quant4_correct": 32,
+        "quant4_count": 32,
+        "smaller_correct": 32,
+        "smaller_count": 32,
+        "truncated_correct": 32,
+        "truncated_count": 32,
+        "wrong-prompt_correct": 32,
+        "wrong-prompt_count": 32
+      },
+      "failures": [],
+      "producer_class": "thor",
+      "producer_runtime": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "ranges": {
+        "development": {
+          "max": 0.12079670186770466,
+          "min": 0.028939417138059143
+        },
+        "fabricated": {
+          "max": 4.290959992478276,
+          "min": 3.8503082561960973
+        },
+        "fresh": {
+          "max": 0.16420344004559506,
+          "min": 0.027283936282928873
+        },
+        "quant4": {
+          "max": 2.0387337239092638,
+          "min": 1.0257471052479092
+        },
+        "smaller": {
+          "max": 3.8225521694462024,
+          "min": 2.7392262192929158
+        },
+        "truncated": {
+          "max": 2.7231959398155943,
+          "min": 2.322139048908707
+        },
+        "wrong-prompt": {
+          "max": 2.3233756394572396,
+          "min": 1.8032792268826758
+        }
+      },
+      "reference_class": "gb10",
+      "reference_runtime": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "tolerance": 0.5
+    },
+    {
+      "counts": {
+        "development_correct": 128,
+        "development_count": 128,
+        "fabricated_correct": 32,
+        "fabricated_count": 32,
+        "fresh_correct": 128,
+        "fresh_count": 128,
+        "quant4_correct": 32,
+        "quant4_count": 32,
+        "smaller_correct": 32,
+        "smaller_count": 32,
+        "truncated_correct": 32,
+        "truncated_count": 32,
+        "wrong-prompt_correct": 32,
+        "wrong-prompt_count": 32
+      },
+      "failures": [],
+      "producer_class": "orin",
+      "producer_runtime": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "ranges": {
+        "development": {
+          "max": 0.16221615859099178,
+          "min": 0.02860066875339613
+        },
+        "fabricated": {
+          "max": 4.350186166855673,
+          "min": 3.8736957623791564
+        },
+        "fresh": {
+          "max": 0.15750637353404984,
+          "min": 0.02715994762657289
+        },
+        "quant4": {
+          "max": 2.008928612166776,
+          "min": 1.01608246305509
+        },
+        "smaller": {
+          "max": 3.8076821748222955,
+          "min": 2.7270483030427024
+        },
+        "truncated": {
+          "max": 2.733643310717137,
+          "min": 2.322363604162799
+        },
+        "wrong-prompt": {
+          "max": 2.323600713140297,
+          "min": 1.7900568261023284
+        }
+      },
+      "reference_class": "gb10",
+      "reference_runtime": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "tolerance": 0.5
+    },
+    {
+      "counts": {
+        "development_correct": 128,
+        "development_count": 128,
+        "fabricated_correct": 128,
+        "fabricated_count": 128,
+        "fresh_correct": 128,
+        "fresh_count": 128,
+        "quant4_correct": 128,
+        "quant4_count": 128,
+        "smaller_correct": 128,
+        "smaller_count": 128,
+        "truncated_correct": 128,
+        "truncated_count": 128,
+        "wrong-prompt_correct": 128,
+        "wrong-prompt_count": 128
+      },
+      "failures": [],
+      "producer_class": "gb10",
+      "producer_runtime": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "ranges": {
+        "development": {
+          "max": 0.12079670186770466,
+          "min": 0.028939417138059143
+        },
+        "fabricated": {
+          "max": 4.389155727211162,
+          "min": 3.7260024489465047
+        },
+        "fresh": {
+          "max": 0.16420344004559506,
+          "min": 0.027283936282928873
+        },
+        "quant4": {
+          "max": 2.1136795080729422,
+          "min": 0.9746950038519361
+        },
+        "smaller": {
+          "max": 3.8771610329640036,
+          "min": 2.628677916442789
+        },
+        "truncated": {
+          "max": 2.973015713523897,
+          "min": 2.322363604162799
+        },
+        "wrong-prompt": {
+          "max": 2.3291837477695054,
+          "min": 1.6313092064050043
+        }
+      },
+      "reference_class": "thor",
+      "reference_runtime": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "tolerance": 0.5
+    },
+    {
+      "counts": {
+        "development_correct": 128,
+        "development_count": 128,
+        "fabricated_correct": 32,
+        "fabricated_count": 32,
+        "fresh_correct": 128,
+        "fresh_count": 128,
+        "quant4_correct": 32,
+        "quant4_count": 32,
+        "smaller_correct": 32,
+        "smaller_count": 32,
+        "truncated_correct": 32,
+        "truncated_count": 32,
+        "wrong-prompt_correct": 32,
+        "wrong-prompt_count": 32
+      },
+      "failures": [],
+      "producer_class": "thor",
+      "producer_runtime": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "ranges": {
+        "development": {
+          "max": 2.7755575615628914e-16,
+          "min": 0.0
+        },
+        "fabricated": {
+          "max": 4.342392812397779,
+          "min": 3.866830377909518
+        },
+        "fresh": {
+          "max": 2.7755575615628914e-16,
+          "min": 0.0
+        },
+        "quant4": {
+          "max": 2.0245873040261873,
+          "min": 1.0023414352550877
+        },
+        "smaller": {
+          "max": 3.8375366925029417,
+          "min": 2.732266080335276
+        },
+        "truncated": {
+          "max": 2.7352856592948758,
+          "min": 2.322363651204856
+        },
+        "wrong-prompt": {
+          "max": 2.323713055185003,
+          "min": 1.802239247601735
+        }
+      },
+      "reference_class": "thor",
+      "reference_runtime": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "tolerance": 0.001
+    },
+    {
+      "counts": {
+        "development_correct": 128,
+        "development_count": 128,
+        "fabricated_correct": 32,
+        "fabricated_count": 32,
+        "fresh_correct": 128,
+        "fresh_count": 128,
+        "quant4_correct": 32,
+        "quant4_count": 32,
+        "smaller_correct": 32,
+        "smaller_count": 32,
+        "truncated_correct": 32,
+        "truncated_count": 32,
+        "wrong-prompt_correct": 32,
+        "wrong-prompt_count": 32
+      },
+      "failures": [],
+      "producer_class": "orin",
+      "producer_runtime": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "ranges": {
+        "development": {
+          "max": 0.135235325266559,
+          "min": 0.02882038114094697
+        },
+        "fabricated": {
+          "max": 4.297273364651532,
+          "min": 3.7579931936622835
+        },
+        "fresh": {
+          "max": 0.11741192991431995,
+          "min": 0.028163098675227517
+        },
+        "quant4": {
+          "max": 2.0029084966657886,
+          "min": 0.9926903683524319
+        },
+        "smaller": {
+          "max": 3.809873713217774,
+          "min": 2.7200891604372175
+        },
+        "truncated": {
+          "max": 2.7457127867703575,
+          "min": 2.322251332414163
+        },
+        "wrong-prompt": {
+          "max": 2.323600713140297,
+          "min": 1.789244983204435
+        }
+      },
+      "reference_class": "thor",
+      "reference_runtime": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "tolerance": 0.5
+    },
+    {
+      "counts": {
+        "development_correct": 128,
+        "development_count": 128,
+        "fabricated_correct": 128,
+        "fabricated_count": 128,
+        "fresh_correct": 128,
+        "fresh_count": 128,
+        "quant4_correct": 128,
+        "quant4_count": 128,
+        "smaller_correct": 128,
+        "smaller_count": 128,
+        "truncated_correct": 128,
+        "truncated_count": 128,
+        "wrong-prompt_correct": 128,
+        "wrong-prompt_count": 128
+      },
+      "failures": [],
+      "producer_class": "gb10",
+      "producer_runtime": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "ranges": {
+        "development": {
+          "max": 0.16221615859099178,
+          "min": 0.02860066875339613
+        },
+        "fabricated": {
+          "max": 4.360880327328374,
+          "min": 3.708546157360692
+        },
+        "fresh": {
+          "max": 0.15750637353404984,
+          "min": 0.02715994762657289
+        },
+        "quant4": {
+          "max": 2.110178794184288,
+          "min": 0.9665757103243299
+        },
+        "smaller": {
+          "max": 3.877109335103819,
+          "min": 2.618308960054284
+        },
+        "truncated": {
+          "max": 2.960195934961425,
+          "min": 2.322363604162799
+        },
+        "wrong-prompt": {
+          "max": 2.3348306785174704,
+          "min": 1.6321574886436339
+        }
+      },
+      "reference_class": "orin",
+      "reference_runtime": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "tolerance": 0.5
+    },
+    {
+      "counts": {
+        "development_correct": 128,
+        "development_count": 128,
+        "fabricated_correct": 32,
+        "fabricated_count": 32,
+        "fresh_correct": 128,
+        "fresh_count": 128,
+        "quant4_correct": 32,
+        "quant4_count": 32,
+        "smaller_correct": 32,
+        "smaller_count": 32,
+        "truncated_correct": 32,
+        "truncated_count": 32,
+        "wrong-prompt_correct": 32,
+        "wrong-prompt_count": 32
+      },
+      "failures": [],
+      "producer_class": "thor",
+      "producer_runtime": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "ranges": {
+        "development": {
+          "max": 0.135235325266559,
+          "min": 0.02882038114094697
+        },
+        "fabricated": {
+          "max": 4.318113095809157,
+          "min": 3.7650271458039914
+        },
+        "fresh": {
+          "max": 0.11741192991431995,
+          "min": 0.028163098675227517
+        },
+        "quant4": {
+          "max": 2.0050335694680865,
+          "min": 0.9765651455930168
+        },
+        "smaller": {
+          "max": 3.830058787446768,
+          "min": 2.737893943097077
+        },
+        "truncated": {
+          "max": 2.7250943186646945,
+          "min": 2.322475934714007
+        },
+        "wrong-prompt": {
+          "max": 2.323150872280771,
+          "min": 1.8029186027667665
+        }
+      },
+      "reference_class": "orin",
+      "reference_runtime": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "tolerance": 0.5
+    },
+    {
+      "counts": {
+        "development_correct": 128,
+        "development_count": 128,
+        "fabricated_correct": 32,
+        "fabricated_count": 32,
+        "fresh_correct": 128,
+        "fresh_count": 128,
+        "quant4_correct": 32,
+        "quant4_count": 32,
+        "smaller_correct": 32,
+        "smaller_count": 32,
+        "truncated_correct": 32,
+        "truncated_count": 32,
+        "wrong-prompt_correct": 32,
+        "wrong-prompt_count": 32
+      },
+      "failures": [],
+      "producer_class": "orin",
+      "producer_runtime": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "ranges": {
+        "development": {
+          "max": 2.7755575615628914e-16,
+          "min": 0.0
+        },
+        "fabricated": {
+          "max": 4.350178201448778,
+          "min": 3.8691362693412334
+        },
+        "fresh": {
+          "max": 2.7755575615628914e-16,
+          "min": 0.0
+        },
+        "quant4": {
+          "max": 1.9776822374442644,
+          "min": 0.9667268541742507
+        },
+        "smaller": {
+          "max": 3.8084395711153918,
+          "min": 2.7257052028909405
+        },
+        "truncated": {
+          "max": 2.7355418126654536,
+          "min": 2.3224759111855886
+        },
+        "wrong-prompt": {
+          "max": 2.323600713140297,
+          "min": 1.789696201986419
+        }
+      },
+      "reference_class": "orin",
+      "reference_runtime": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "tolerance": 0.001
+    }
+  ],
+  "generated_tokens": 3,
+  "layers": [
+    "0",
+    "14",
+    "27"
+  ],
+  "limits": [
+    "Short deterministic prompts only; no population false-positive or evasion bound.",
+    "Smaller substitute activations padded to the declared width; real 4-bit weight grid with BF16 kernels.",
+    "Distinct accelerator classes; class diversity does not establish independent custody.",
+    "No controlled latency benchmark or performance isolation guarantee is claimed."
+  ],
+  "metric": "rank-probability-v1",
+  "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "physical_classes": [
+    "gb10",
+    "thor",
+    "orin"
+  ],
+  "schema": "ember-smollm2-calibration-v1",
+  "smaller_substitute": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "thresholds_frozen_before_capture": {
+    "cross_class": 0.5,
+    "same_class": 0.001
+  },
+  "unique_cheats": 960
+}

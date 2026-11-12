@@ -1,0 +1,21 @@
+groups:
+  - name: ember
+    rules:
+      - alert: EmberGatewayNotReady
+        expr: up{job="ember-gateway"} == 0 or ember_tunnel_online_nodes < 1
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: "Ember gateway has no ready node"}
+      - alert: EmberNodeDisconnected
+        expr: ember_node_ready == 0
+        for: 2m
+        labels: {severity: warning}
+        annotations: {summary: "Ember node is disconnected from its seed"}
+      - alert: EmberNodeFailures
+        expr: increase(ember_node_requests_total{result="failure"}[10m]) > 3
+        labels: {severity: warning}
+        annotations: {summary: "Ember node request failures increased"}
+      - alert: EmberValidatorStalled
+        expr: increase(consensus_height[2m]) == 0
+        labels: {severity: critical}
+        annotations: {summary: "Ember validator height is not advancing"}

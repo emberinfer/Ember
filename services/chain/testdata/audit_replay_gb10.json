@@ -1,0 +1,259 @@
+{
+  "schema": "audit-replay-benchmark-v1",
+  "profile": "qwen2.5-1.5b-gb10",
+  "runtime": {
+    "requested_device": "cuda",
+    "actual_device": "cuda",
+    "device_reason": "CUDA selected",
+    "torch_version": "2.14.0+cu130",
+    "transformers_version": "5.20.2",
+    "cuda_version": "13.0",
+    "accelerator_name": "NVIDIA GB10",
+    "available_memory_bytes": 79577747456,
+    "memory_budget_bytes": {
+      "minimum_available": 17179869184,
+      "maximum_cuda": 8589934592,
+      "maximum_rss": 8589934592,
+      "reserve": 0
+    }
+  },
+  "model": "Qwen2.5-1.5B-Instruct",
+  "model_config_sha256": "98d2ff8cc47488d08a2b0b3acf4eb99ef210779b42bd48605f6b8e36acdbf670",
+  "subunits_per_second": 1000,
+  "conversion_notice": "Accounting assumption; no monetary exchange-rate claim.",
+  "rows": [
+    {
+      "repeat": 0,
+      "n_in": 9,
+      "n_out": 0,
+      "elapsed_ns": 1478230
+    },
+    {
+      "repeat": 0,
+      "n_in": 9,
+      "n_out": 1,
+      "elapsed_ns": 742170093
+    },
+    {
+      "repeat": 0,
+      "n_in": 9,
+      "n_out": 8,
+      "elapsed_ns": 344078255
+    },
+    {
+      "repeat": 0,
+      "n_in": 9,
+      "n_out": 32,
+      "elapsed_ns": 1335764141
+    },
+    {
+      "repeat": 0,
+      "n_in": 33,
+      "n_out": 0,
+      "elapsed_ns": 2154825
+    },
+    {
+      "repeat": 0,
+      "n_in": 33,
+      "n_out": 1,
+      "elapsed_ns": 51423049
+    },
+    {
+      "repeat": 0,
+      "n_in": 33,
+      "n_out": 8,
+      "elapsed_ns": 299290464
+    },
+    {
+      "repeat": 0,
+      "n_in": 33,
+      "n_out": 32,
+      "elapsed_ns": 1315351141
+    },
+    {
+      "repeat": 0,
+      "n_in": 129,
+      "n_out": 0,
+      "elapsed_ns": 346577
+    },
+    {
+      "repeat": 0,
+      "n_in": 129,
+      "n_out": 1,
+      "elapsed_ns": 33643092
+    },
+    {
+      "repeat": 0,
+      "n_in": 129,
+      "n_out": 8,
+      "elapsed_ns": 313487353
+    },
+    {
+      "repeat": 0,
+      "n_in": 129,
+      "n_out": 32,
+      "elapsed_ns": 1301911029
+    },
+    {
+      "repeat": 1,
+      "n_in": 9,
+      "n_out": 0,
+      "elapsed_ns": 2253081
+    },
+    {
+      "repeat": 1,
+      "n_in": 9,
+      "n_out": 1,
+      "elapsed_ns": 57613297
+    },
+    {
+      "repeat": 1,
+      "n_in": 9,
+      "n_out": 8,
+      "elapsed_ns": 259033927
+    },
+    {
+      "repeat": 1,
+      "n_in": 9,
+      "n_out": 32,
+      "elapsed_ns": 1249270396
+    },
+    {
+      "repeat": 1,
+      "n_in": 33,
+      "n_out": 0,
+      "elapsed_ns": 684659
+    },
+    {
+      "repeat": 1,
+      "n_in": 33,
+      "n_out": 1,
+      "elapsed_ns": 56271164
+    },
+    {
+      "repeat": 1,
+      "n_in": 33,
+      "n_out": 8,
+      "elapsed_ns": 290299954
+    },
+    {
+      "repeat": 1,
+      "n_in": 33,
+      "n_out": 32,
+      "elapsed_ns": 1301962768
+    },
+    {
+      "repeat": 1,
+      "n_in": 129,
+      "n_out": 0,
+      "elapsed_ns": 1924152
+    },
+    {
+      "repeat": 1,
+      "n_in": 129,
+      "n_out": 1,
+      "elapsed_ns": 49849155
+    },
+    {
+      "repeat": 1,
+      "n_in": 129,
+      "n_out": 8,
+      "elapsed_ns": 290560676
+    },
+    {
+      "repeat": 1,
+      "n_in": 129,
+      "n_out": 32,
+      "elapsed_ns": 1084002639
+    },
+    {
+      "repeat": 2,
+      "n_in": 9,
+      "n_out": 0,
+      "elapsed_ns": 1550150
+    },
+    {
+      "repeat": 2,
+      "n_in": 9,
+      "n_out": 1,
+      "elapsed_ns": 36009486
+    },
+    {
+      "repeat": 2,
+      "n_in": 9,
+      "n_out": 8,
+      "elapsed_ns": 270546726
+    },
+    {
+      "repeat": 2,
+      "n_in": 9,
+      "n_out": 32,
+      "elapsed_ns": 1281457178
+    },
+    {
+      "repeat": 2,
+      "n_in": 33,
+      "n_out": 0,
+      "elapsed_ns": 276497
+    },
+    {
+      "repeat": 2,
+      "n_in": 33,
+      "n_out": 1,
+      "elapsed_ns": 26632489
+    },
+    {
+      "repeat": 2,
+      "n_in": 33,
+      "n_out": 8,
+      "elapsed_ns": 398202941
+    },
+    {
+      "repeat": 2,
+      "n_in": 33,
+      "n_out": 32,
+      "elapsed_ns": 1209720790
+    },
+    {
+      "repeat": 2,
+      "n_in": 129,
+      "n_out": 0,
+      "elapsed_ns": 1889191
+    },
+    {
+      "repeat": 2,
+      "n_in": 129,
+      "n_out": 1,
+      "elapsed_ns": 53187105
+    },
+    {
+      "repeat": 2,
+      "n_in": 129,
+      "n_out": 8,
+      "elapsed_ns": 331789994
+    },
+    {
+      "repeat": 2,
+      "n_in": 129,
+      "n_out": 32,
+      "elapsed_ns": 1347457370
+    }
+  ],
+  "derivation": "Original benchmark-only OLS residual envelope yielded 704/0/38526 (retained in calibration_start_audit_comp). Saved 40-row generated-prefix load tail envelope, rho=1000: C=ceil(elapsed_ns*1000/1e9); T=ceil(C*10000000/12000); r_out=max(38526,max ceil((T-704000)/prefix))=43000. Binding row n_in=8,prefix=32,C=2496 gives T=2080000 and rate=43000; rate=42999 pays 2495. Fixed/input terms unchanged. All 40 load and 36 benchmark rows covered; not independent validation. See ops/derive-audit-envelope.py and docs/AUDIT_COMPENSATION.md.",
+  "audit_comp": {
+    "formula_ver": 2,
+    "o_fixed": 704,
+    "r_in_per_ktok": 0,
+    "r_out_per_ktok": 43000,
+    "margin_bps": 12000,
+    "audit_share_bps": 1500
+  },
+  "calibration_start_audit_comp": {
+    "formula_ver": 2,
+    "o_fixed": 704,
+    "r_in_per_ktok": 0,
+    "r_out_per_ktok": 38526,
+    "margin_bps": 12000,
+    "audit_share_bps": 1500
+  }
+}

@@ -1,0 +1,13 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Ember
+Source: unpublished
+
+Files: *
+Copyright: 2026 The Ember Contributors
+License: Apache-2.0
+
+Files: proto/ember.pb.go proto/ember_grpc.pb.go proto/ember_pb2.py proto/ember_pb2_grpc.py
+Copyright: 2026 The Ember Contributors
+License: Apache-2.0
+Comment: Generated protocol bindings and immutable test evidence are covered by
+ the repository license without modifying generated or retained bytes.

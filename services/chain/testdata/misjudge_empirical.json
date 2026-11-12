@@ -1,0 +1,94 @@
+{
+  "schema": "misjudge-empirical-injection-v1",
+  "notice": "Measured GPU-to-CPU per-request distances plus GB10-to-Thor development/fresh maximum statistics. Empirical cross-hardware-class injection, not a physical Thor run or a population estimate. Soft .4/hard .5 remain calibration-pending placeholders.",
+  "sources": [
+    {
+      "path": "archived-gpu-cpu-calibration",
+      "sha256": "b8399476a0ef07dde318b3be6b2b837a9a99c3918e51f811786d5ee01bb0cb45"
+    },
+    {
+      "path": "chain-genesis/ember-qwen2.5-1.5b-gpu-v3/calibration.json",
+      "sha256": "f1e8898dd7c07289e40f1a62fac1246ffc9e3c9e30d51a235102a491781fedb8"
+    }
+  ],
+  "measured_rows": [
+    {
+      "group": "GPU -> CPU",
+      "job": "20729edaaa3b147833016b050d0b6936-d2b49b9df9f509dff7aa093b61d59201.json",
+      "job_sha256": "f0ed75a77e0a66f4ade98f143c2f79d4c72b8b415a97692df50bbb562b366993",
+      "prompt": "user: Reply briefly: test 4",
+      "tamper": false,
+      "distance": 0.2172461029431063,
+      "reason": "numerical comparison",
+      "logit_max": 0.03198676911643805,
+      "activation_max": 0.2172461029431063,
+      "censored_union_entries": 22,
+      "union_entries": 139
+    },
+    {
+      "group": "GPU -> CPU",
+      "job": "7a451dc74a70bb0c0030590c46357b59-b6a28abdd977376422b808506cb3f024.json",
+      "job_sha256": "7a3957523863d2d4ddfdbe611ff3fa975ee98e424d4ef29809827bc522233014",
+      "prompt": "user: Reply briefly: test 1",
+      "tamper": false,
+      "distance": 0.28623160956858645,
+      "reason": "numerical comparison",
+      "logit_max": 0.04406790522832991,
+      "activation_max": 0.28623160956858645,
+      "censored_union_entries": 34,
+      "union_entries": 145
+    },
+    {
+      "group": "GPU -> CPU",
+      "job": "7ffe49396a978ec9ff7a1158a0aed39b-f160a1278d48237f6cc340d37834ea0d.json",
+      "job_sha256": "56a6472dcc6b8dc109716e8ffc6e7e77349e54faf082b66b1a5a9a097683c60c",
+      "prompt": "user: Reply briefly: test 2",
+      "tamper": false,
+      "distance": 0.2838755148045997,
+      "reason": "numerical comparison",
+      "logit_max": 0.027268161216539303,
+      "activation_max": 0.2838755148045997,
+      "censored_union_entries": 22,
+      "union_entries": 139
+    },
+    {
+      "group": "GPU -> CPU",
+      "job": "b0209c3da693d51092dcfda4663307e5-dcad49d3e7ed6eebe631f4eb1a0c9ff6.json",
+      "job_sha256": "76c5844e62f7196af326a4f2b5ddad4eebeaaa9dd22d649e93fc6b978e86d527",
+      "prompt": "user: Reply briefly: test 5",
+      "tamper": false,
+      "distance": 0.21719441113135163,
+      "reason": "numerical comparison",
+      "logit_max": 0.031659331490741294,
+      "activation_max": 0.21719441113135163,
+      "censored_union_entries": 20,
+      "union_entries": 138
+    },
+    {
+      "group": "GPU -> CPU",
+      "job": "c4d0881ed23656f5ba1e3422cded5a9f-4836b8bb856b00d1e1705e38bbe9c98b.json",
+      "job_sha256": "ee18bb9dff991a08643398cc24f224916d65ad81cf6b1318311bed369dc568d0",
+      "prompt": "user: Reply briefly: test 3",
+      "tamper": false,
+      "distance": 0.21722991248630294,
+      "reason": "numerical comparison",
+      "logit_max": 0.0422783457294065,
+      "activation_max": 0.21722991248630294,
+      "censored_union_entries": 22,
+      "union_entries": 139
+    }
+  ],
+  "thor_group_maxima": [
+    0.29146947974047105,
+    0.44078095735695183
+  ],
+  "scores": [
+    0.2172461029431063,
+    0.28623160956858645,
+    0.2838755148045997,
+    0.21719441113135163,
+    0.21722991248630294,
+    0.29146947974047105,
+    0.44078095735695183
+  ]
+}

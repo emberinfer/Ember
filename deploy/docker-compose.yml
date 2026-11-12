@@ -1,0 +1,20 @@
+services:
+  emberd:
+    image: golang:1.23
+    working_dir: /repo
+    volumes:
+      - ..:/repo
+    command: ["go", "run", "./cmd/emberd", "all", "--db", "/repo/deploy/ember.db", "--http", "0.0.0.0:19090", "--grpc", "0.0.0.0:19091"]
+    ports:
+      - "19090:19090"
+      - "19091:19091"
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ember
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ember
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:

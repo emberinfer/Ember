@@ -1,0 +1,84 @@
+{
+  "metric": "rank-probability-v1",
+  "top_k": 16,
+  "layers": [
+    "0",
+    "14",
+    "27"
+  ],
+  "calibration_ref": "Tu4SDe0AKjOBlf08BUKI4Xw8A69dqg5LeK0N3bxdZ7U=",
+  "bands": [
+    {
+      "producer_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "producer_device": "cuda",
+      "reference_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "reference_device": "cuda",
+      "tolerance": 0.001,
+      "mode": "enforce"
+    },
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "producer_device": "cuda",
+      "reference_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "reference_device": "cuda",
+      "tolerance": 0.5,
+      "mode": "enforce"
+    },
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "producer_device": "cuda",
+      "reference_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "reference_device": "cuda",
+      "tolerance": 0.5,
+      "mode": "enforce"
+    },
+    {
+      "producer_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "producer_device": "cuda",
+      "reference_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "reference_device": "cuda",
+      "tolerance": 0.5,
+      "mode": "enforce"
+    },
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "producer_device": "cuda",
+      "reference_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "reference_device": "cuda",
+      "tolerance": 0.001,
+      "mode": "enforce"
+    },
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "producer_device": "cuda",
+      "reference_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "reference_device": "cuda",
+      "tolerance": 0.5,
+      "mode": "enforce"
+    },
+    {
+      "producer_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+      "producer_device": "cuda",
+      "reference_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "reference_device": "cuda",
+      "tolerance": 0.5,
+      "mode": "enforce"
+    },
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+      "producer_device": "cuda",
+      "reference_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "reference_device": "cuda",
+      "tolerance": 0.5,
+      "mode": "enforce"
+    },
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "producer_device": "cuda",
+      "reference_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+      "reference_device": "cuda",
+      "tolerance": 0.001,
+      "mode": "enforce"
+    }
+  ]
+}

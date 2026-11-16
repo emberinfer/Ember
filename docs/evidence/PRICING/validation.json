@@ -1,0 +1,65 @@
+{
+  "docs_lint": {
+    "errors": 0,
+    "exit_code": 0,
+    "files_checked": 38
+  },
+  "go_build": {
+    "command": "go build ./...",
+    "exit_code": 0
+  },
+  "go_test": {
+    "all_test_results_including_subtests": {
+      "pass": 150,
+      "skip": 1
+    },
+    "command": "go test -json ./...",
+    "exit_code": 0,
+    "packages_with_tests": 13,
+    "packages_without_tests": 2,
+    "skipped": [
+      {
+        "package": "ember/services/chain",
+        "reason": "Optional measured-load reconstruction requires TASK21_AUDIT_LOAD; saved two-epoch load observations are not in this worktree.",
+        "test": "TestAuditCompMeasuredTwoEpochLoad"
+      }
+    ],
+    "top_level_results": {
+      "pass": 124,
+      "skip": 1
+    }
+  },
+  "python": {
+    "exit_code": 0,
+    "packages": [
+      {
+        "package": "node",
+        "passed": 75
+      },
+      {
+        "package": "core-py",
+        "passed": 2
+      },
+      {
+        "package": "release",
+        "passed": 4
+      },
+      {
+        "package": "chain-genesis",
+        "passed": 9
+      }
+    ],
+    "total_passed": 90
+  },
+  "secret_scan": {
+    "exit_code": 0,
+    "filter_tests_passed": 4,
+    "high_confidence_candidates": 0,
+    "synthetic_fixture_allowlist": "Exact full-blob SHA-256 plus exact matched line, for the pre-existing redaction corpus only."
+  },
+  "spi": {
+    "cases": 2,
+    "exit_code": 0,
+    "result": "PASS"
+  }
+}

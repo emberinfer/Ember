@@ -1,0 +1,128 @@
+[
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b/genesis.json",
+    "source_commit": "5138e97c8dd027123753c2a1fab143f887c66b98",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b/genesis.json",
+    "sha256": "a97e64d7319e28d4073aecdec89c3799874c6520211fdbe353170a63c583ef86"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b/genesis.pb",
+    "source_commit": "5138e97c8dd027123753c2a1fab143f887c66b98",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b/genesis.pb",
+    "sha256": "f729b5202e4baeb6cabe886f8c488a5468301b2451b6e6db630fdd9ba9a536f0"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b/manifest.pb",
+    "source_commit": "5138e97c8dd027123753c2a1fab143f887c66b98",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b/manifest.pb",
+    "sha256": "1ea4c43aa25186e078076252d0a775f1d1ac7ff13e523f0ff2a8b3f1f72b41c2"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-union-v1/genesis.json",
+    "source_commit": "37407da6126e0060a47219d834d6ae48db26fedd",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-union-v1/genesis.json",
+    "sha256": "721926c85ee94c15e36c6b48906aaaced156059e03453934d244675b68dc8323"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-union-v1/genesis.pb",
+    "source_commit": "37407da6126e0060a47219d834d6ae48db26fedd",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-union-v1/genesis.pb",
+    "sha256": "0048bd4d5ebf5fc3b66f259300812f81f7f1fd698f7747658f85bb444b91f930"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-union-v1/manifest.pb",
+    "source_commit": "37407da6126e0060a47219d834d6ae48db26fedd",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-union-v1/manifest.pb",
+    "sha256": "28739d2db0499f63ab5df2aca28af2d850bd2fb3e436afdc4e99ac4fd13f3b02"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-s19-x86-v1/genesis.json",
+    "source_commit": "01e47263ee60cd5b475d2b8cc505843631b37991",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-s19-x86-v1/genesis.json",
+    "sha256": "8dcb9a4f1e6b90143178309282e1dfd28d4908ee091f2bcc9d81f14d7a589e06"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-s19-x86-v1/genesis.pb",
+    "source_commit": "01e47263ee60cd5b475d2b8cc505843631b37991",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-s19-x86-v1/genesis.pb",
+    "sha256": "0700cd801ee78af45ebb02948cbb7f0298d3e80235740184fc92b0b4ce399f03"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-s19-x86-v1/manifest.pb",
+    "source_commit": "01e47263ee60cd5b475d2b8cc505843631b37991",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-s19-x86-v1/manifest.pb",
+    "sha256": "c35d3e7d67165dbdb907fa1a9ec94eb7ea2465f85c579a9803afa94f377f0ed3"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-s21-prep-v1/genesis.json",
+    "source_commit": "dd9149b15291e306357a568ecef31e56e0df3936",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-s21-prep-v1/genesis.json",
+    "sha256": "4d0f71e67a8f93172499f090f9b75c3e618bda7ed8288abafebd3092ffe89154"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-s21-prep-v1/genesis.pb",
+    "source_commit": "dd9149b15291e306357a568ecef31e56e0df3936",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-s21-prep-v1/genesis.pb",
+    "sha256": "68b55b661ef937c4989d7a2b16f4377c0fdd0b3cec5aebea6e3ec26b1250dd0b"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-s21-prep-v1/manifest.pb",
+    "source_commit": "dd9149b15291e306357a568ecef31e56e0df3936",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-s21-prep-v1/manifest.pb",
+    "sha256": "92d147288c84488cf37a92b5f46408aee3c570079b9f2caa76190353ef9727d1"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-s22-cpu-v1/genesis.json",
+    "source_commit": "4ea231b9923fb62b119b256cb965ab114c005b4f",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-s22-cpu-v1/genesis.json",
+    "sha256": "d9cebc998416ad0c97add11136210d65b3cd192d8d91f48b27bd1816217abc2c"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-s22-cpu-v1/genesis.pb",
+    "source_commit": "4ea231b9923fb62b119b256cb965ab114c005b4f",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-s22-cpu-v1/genesis.pb",
+    "sha256": "eb1ec84d9c9fa382f59b559b4bac418fa014d10ea4597bb5ec00afb6f712bf23"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-s22-cpu-v1/manifest.pb",
+    "source_commit": "4ea231b9923fb62b119b256cb965ab114c005b4f",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-s22-cpu-v1/manifest.pb",
+    "sha256": "4ec83c765b49ecd178eb1a2f7a6c9db5cf9d13285bb58ee0bc671643edc05061"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-gpu-v3/calibration.json",
+    "source_commit": "24e3c003c31a4e666bec0560c86181ea88165807",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-gpu-v3/calibration.json",
+    "sha256": "f1e8898dd7c07289e40f1a62fac1246ffc9e3c9e30d51a235102a491781fedb8"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-gpu-v3/genesis.json",
+    "source_commit": "24e3c003c31a4e666bec0560c86181ea88165807",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-gpu-v3/genesis.json",
+    "sha256": "371386d1149d6ff5f89cf7d15a10773db285b0abffa654f5418cdd2bbec0f4c4"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-gpu-v3/genesis.pb",
+    "source_commit": "24e3c003c31a4e666bec0560c86181ea88165807",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-gpu-v3/genesis.pb",
+    "sha256": "2c1b7c702cfabf7c0e6cc11a9fa9555f2d5e4a69d3ed5c2a837ca2ed9509d771"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-gpu-v3/manifest.pb",
+    "source_commit": "24e3c003c31a4e666bec0560c86181ea88165807",
+    "source_path": "chain-genesis/ember-qwen2.5-1.5b-gpu-v3/manifest.pb",
+    "sha256": "b34be6bf6336555f656a2240045edc1b2b43dfd79a8b8e3bee3a3c621e7f62b3"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-publisher-cpu-v1/genesis.pb",
+    "source_commit": "26416aa1b13b5793e8697d3044e567066a8b4732",
+    "source_path": "site/profiles/ember-qwen2.5-1.5b-publisher-cpu-v1/genesis.pb",
+    "sha256": "cac6dd41404969cafb40e6570b1d9def63678901a915da9160465310f0e6311b"
+  },
+  {
+    "path": "chain-genesis/ember-qwen2.5-1.5b-publisher-cpu-v1/manifest.pb",
+    "source_commit": "26416aa1b13b5793e8697d3044e567066a8b4732",
+    "source_path": "site/profiles/ember-qwen2.5-1.5b-publisher-cpu-v1/manifest.pb",
+    "sha256": "f0c3d6d8bf86d2524cee239a0c3444c45238e9132588a1cea1bf38e4b976599a"
+  }
+]

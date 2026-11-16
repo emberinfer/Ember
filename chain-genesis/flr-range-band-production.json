@@ -1,0 +1,1 @@
+{"base":[{"base":0.007022981365317742,"producer_device":"cpu","reference_device":"cpu"}],"depth_coef":0.2523203605145915,"hard_multiplier":1.2,"head_base":[{"base":0.001,"producer_device":"cpu","reference_device":"cpu"}],"metric":"relative-l2-v1"}

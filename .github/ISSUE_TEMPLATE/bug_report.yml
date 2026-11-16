@@ -1,0 +1,44 @@
+name: Bug report
+description: Report something that is not working
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. We read every issue filed here
+        and ship updates based on them.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What went wrong?
+      description: Describe what happened, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the steps that lead to the problem, if you know them.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Version or page
+      description: Software version (for example v0.2.0), a commit hash, or the page URL where it happened.
+      placeholder: "v0.2.0"
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Anything else that might help — error messages, logs, screenshots.
+      render: text
+    validations:
+      required: false

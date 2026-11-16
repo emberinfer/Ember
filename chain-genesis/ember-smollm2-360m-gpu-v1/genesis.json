@@ -1,0 +1,159 @@
+{
+  "experimental": true,
+  "scope": "SmolLM2-360M BF16 on physical GB10, Thor and Orin; short three-token requests",
+  "genesis": {
+    "chain_id": "ember-smollm2-360m-gpu-v1",
+    "model_manifest_root": "uKPxcZqIUFsP+jqKbcaTbwbrWuyvHywKPLoZEZAgGkw=",
+    "tokenizer_hash": "nKms3bZSWhlOyKx6h/JPu6cjKpoV/6GvDBIk/NiI5Hw=",
+    "quant": "none",
+    "dtype": "bfloat16",
+    "execution_profile_ver": "transformers-smollm2-gpu-v1",
+    "tolerance_table_ref": "sha256:7ac72d8720d158317e26d234be997f98abdbda14a97ae473d452f8f4e888383a",
+    "price_input": "1",
+    "price_output": "1",
+    "audit_params": {
+      "new_node_percent": 30,
+      "mature_node_percent": 5,
+      "floor_percent": 2,
+      "inline_percent": 3,
+      "canary_percent": 1,
+      "slash_multiplier": 20,
+      "min_stake_multiplier": 50,
+      "exposure_divisor": 5,
+      "dispute_seconds": "60",
+      "numeric_tolerance": 0.001
+    },
+    "numeric_audit_policy": {
+      "metric": "rank-probability-v1",
+      "bands": [
+        {
+          "producer_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+          "producer_device": "cuda",
+          "reference_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+          "reference_device": "cuda",
+          "tolerance": 0.001,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+          "producer_device": "cuda",
+          "reference_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+          "reference_device": "cuda",
+          "tolerance": 0.5,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+          "producer_device": "cuda",
+          "reference_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+          "reference_device": "cuda",
+          "tolerance": 0.5,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+          "producer_device": "cuda",
+          "reference_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+          "reference_device": "cuda",
+          "tolerance": 0.5,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+          "producer_device": "cuda",
+          "reference_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+          "reference_device": "cuda",
+          "tolerance": 0.001,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+          "producer_device": "cuda",
+          "reference_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+          "reference_device": "cuda",
+          "tolerance": 0.5,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/5.20.2|torch=2.14.0+cu130|cuda=13.0|gpu=gb10",
+          "producer_device": "cuda",
+          "reference_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+          "reference_device": "cuda",
+          "tolerance": 0.5,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.11.0|cuda=13.0|gpu=thor",
+          "producer_device": "cuda",
+          "reference_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+          "reference_device": "cuda",
+          "tolerance": 0.5,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+          "producer_device": "cuda",
+          "reference_engine": "transformers/4.45.2|torch=2.5.0a0+872d972e41.nv24.08|cuda=12.6|gpu=orin",
+          "reference_device": "cuda",
+          "tolerance": 0.001,
+          "mode": "enforce"
+        }
+      ],
+      "layers": [
+        "0",
+        "14",
+        "27"
+      ],
+      "top_k": 16,
+      "calibration_ref": "Tu4SDe0AKjOBlf08BUKI4Xw8A69dqg5LeK0N3bxdZ7U="
+    },
+    "signer": "5sKkU4t3Ur3vnl8oXWHXVrkoDCMMVVaU1tPlPYtoNrs=",
+    "signature": "8ClHRDzl7y8HPdTNa/dALYyME1JMJnfFR+5aKwx1EcKRJtM4jwJn1BCkMdZzQK983EWXWQH7D8C/ld34GBIVAA=="
+  },
+  "manifest": {
+    "chain_id": "ember-smollm2-360m-gpu-v1",
+    "artifacts": [
+      {
+        "name": "config.json",
+        "sha256": "Ik9yNU8Q1hejWcyCrRWjyW6Ga5sv+tuBmX7uqeiOIu4=",
+        "size": "846",
+        "source": "git:config.json"
+      },
+      {
+        "name": "generation_config.json",
+        "sha256": "h7kW7aqrZrOJm50N0HUnJ9/2ZmaG2gUE2JrgpuBVoBM=",
+        "size": "132",
+        "source": "git:generation_config.json"
+      },
+      {
+        "name": "model.safetensors",
+        "sha256": "5r/+dDXX3cEP07mp79Qp2vusscsXAV+1ViZk51Mr+G4=",
+        "size": "723674912",
+        "source": "git:model.safetensors"
+      },
+      {
+        "name": "special_tokens_map.json",
+        "sha256": "K3N5866BNSkoGlxgK8WhHB1OCpkQeqpZf+k2wegTylI=",
+        "size": "655",
+        "source": "git:special_tokens_map.json"
+      },
+      {
+        "name": "tokenizer.json",
+        "sha256": "nKms3bZSWhlOyKx6h/JPu6cjKpoV/6GvDBIk/NiI5Hw=",
+        "size": "2104556",
+        "source": "git:tokenizer.json"
+      },
+      {
+        "name": "tokenizer_config.json",
+        "sha256": "Tsd9RPYu/rONfgRKHbMY9qk5Q4QlMS36MzuDgtutmN8=",
+        "size": "3764",
+        "source": "git:tokenizer_config.json"
+      }
+    ],
+    "graph_hash": "kCXukFo/pLNYHVWV0ciAc60N12yttEirn8gqkQZgU/Q=",
+    "config_hash": "Ik9yNU8Q1hejWcyCrRWjyW6Ga5sv+tuBmX7uqeiOIu4=",
+    "license": "Apache-2.0",
+    "signer": "5sKkU4t3Ur3vnl8oXWHXVrkoDCMMVVaU1tPlPYtoNrs=",
+    "signature": "opRHW5IiD0nehSP1qHEq7NdVnoj9wC25JXyTdI9rmACYhkDwKEAa+Ej5aFE8njKeYBAweUkhK3qYZSO0cKXfBQ=="
+  }
+}

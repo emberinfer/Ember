@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember — Open Decentralized Inference Network</title>
+<meta name="description" content="Ember is experimental, open-source software for an open inference network with signed evidence and sampled numerical audits.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  :root{
+    --bg:#0d0f12; --panel:#15181d; --panel2:#1a1e24; --line:#262b33;
+    --text:#e8eaed; --dim:#9aa3ad; --faint:#6b7480;
+    --ember:#ff7a33; --ember2:#ffb25e; --green:#3fb96f; --amber:#e0a63f;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scrollbar-gutter:stable}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;font-size:16px}
+  a{color:var(--ember2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  .hwrap{max-width:1180px;margin:0 auto;padding:0 24px;width:100%}
+  header{position:sticky;top:0;background:rgba(13,15,18,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:10}
+  .nav{display:flex;align-items:center;gap:28px;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;color:var(--text)}
+  .brand:hover{text-decoration:none}
+  .nav .links{margin-left:auto;display:flex;gap:22px;font-size:14px}
+  .nav .links a{color:var(--dim);flex:none;white-space:nowrap}
+  .nav .links a:hover{color:var(--text);text-decoration:none}
+  .nav .links a.on{color:var(--ember2)}
+  @media(max-width:680px){.nav{gap:16px}.nav .links{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.nav .links::-webkit-scrollbar{display:none}}
+  .hero{padding:54px 0 10px;text-align:center}
+  .hero h1{font-size:48px;line-height:1.13;letter-spacing:-.02em;font-weight:800}
+  .hero h1 .grad{background:linear-gradient(92deg,var(--ember),var(--ember2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lede{margin:22px auto 0;font-size:19px;color:var(--dim);max-width:720px}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .badge{font-size:13px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;color:var(--dim);display:inline-flex;align-items:center;gap:7px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block;flex:none}
+  .dot.green{background:var(--green)}
+  .cmdbar{margin:34px auto 0;max-width:760px;display:flex;align-items:center;gap:10px;background:#0a0c0e;border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 18px;text-align:left}
+  .cmdbar code{flex:1;min-width:0;background:none;padding:0;font-size:13.5px;line-height:1.5;color:#cfd6de;word-break:break-word}
+  .cmdbar .btn{flex:none;border:none;cursor:pointer;font:inherit}
+  .cmdhint{min-height:22px;margin-top:10px;font-size:13.5px;color:var(--green)}
+  .cta{margin-top:16px;display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+  .btn{display:inline-block;padding:11px 22px;border-radius:8px;font-weight:600;font-size:15px}
+  .btn.primary{background:var(--ember);color:#14100c}
+  .btn.primary:hover{background:var(--ember2);text-decoration:none}
+  .btn.ghost{border:1px solid var(--line);color:var(--text)}
+  .btn.ghost:hover{border-color:var(--faint);text-decoration:none}
+  .liveband{margin:38px auto 0;max-width:820px;display:flex;align-items:center;justify-content:center;gap:10px 22px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:10px 22px;font-size:14px;color:var(--dim)}
+  .liveband .lv{display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+  .liveband b{color:var(--text)}
+  .liveband .src{color:var(--faint);font-size:12.5px}
+  .term{margin:30px auto 0;max-width:820px;background:#0a0c0e;border:1px solid var(--line);border-radius:14px;overflow:hidden;text-align:left;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+  .termbar{display:flex;align-items:center;gap:8px;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 14px}
+  .tdot{width:11px;height:11px;border-radius:50%;background:var(--panel2);border:1px solid var(--line)}
+  .termex{margin-left:auto;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ember2);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+  .termbody{padding:18px 20px;font-family:var(--mono);font-size:13px;line-height:1.9;overflow-x:auto}
+  .termbody p{white-space:nowrap}
+  .termbody .cmd{color:#cfd6de}
+  .termbody .dim{color:var(--faint)}
+  .termbody .seg{color:var(--dim)}
+  .termbody .seg b{color:var(--text);font-weight:600}
+  .ok{color:var(--green);font-weight:700}
+  section{padding:58px 0;border-top:1px solid var(--line);margin-top:58px}
+  h2{font-size:27px;letter-spacing:-.01em;margin-bottom:8px;text-align:center}
+  .sub{color:var(--dim);margin:0 auto 30px;max-width:720px;text-align:center}
+  .cardgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .fact{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .fact .ic{color:var(--ember);margin-bottom:14px}
+  .fact h3{font-size:16.5px;line-height:1.4;margin-bottom:6px}
+  .fact p{color:var(--dim);font-size:15px}
+  .whygrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .why{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .why h3{font-size:16.5px;line-height:1.4;margin-bottom:6px}
+  .why p{color:var(--dim);font-size:15px}
+  .rolegrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .rolecard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:14px}
+  .rolehead{font-size:16.5px;font-weight:700}
+  .roleprompt{display:block;background:#0a0c0e;border:1px solid var(--line);border-radius:8px;color:#cfd6de;padding:12px 14px;font-family:var(--mono);font-size:13px;line-height:1.55;word-break:break-word}
+  .rolerow{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:auto}
+  .rolerow .btn{border:none;cursor:pointer;font:inherit}
+  .hint{color:var(--faint);font-size:13px}
+  .copied{color:var(--green);font-size:13px}
+  .center-note{text-align:center;margin-top:18px}
+  .agentbox{max-width:960px;margin:26px auto 0}
+  .roletabs{display:none;gap:8px;justify-content:center;flex-wrap:wrap;margin:22px 0 20px}
+  .js .roletabs{display:flex}
+  .roletab{font:inherit;font-size:14.5px;font-weight:600;color:var(--dim);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:8px 20px;cursor:pointer}
+  .roletab:hover{color:var(--text);border-color:var(--faint)}
+  .roletab.on{background:var(--ember);border-color:var(--ember);color:#14100c}
+  .rolepanel{margin-top:26px}
+  .js .rolepanel{display:none}
+  .js .rolepanel.on{display:block}
+  .rolepanel .rolehead{margin-bottom:12px}
+  .roleabout{margin:0 0 16px;color:var(--dim);font-size:15px;line-height:1.6}
+  .rolepanel .cmdbar{margin-top:0;max-width:100%}
+  .rolepanel .term{margin-top:14px;max-width:100%}
+  .agentbox .cta{margin-top:24px}
+  .agentbox h2+.sub{margin-bottom:18px}
+  .agentmain{display:block}
+  .agentpanels{min-width:0}
+  @media(min-width:721px) and (max-height:860px){
+    .agentbox{margin-top:18px}
+    .agentbox h2+.sub{margin-bottom:12px}
+  }
+  .docgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .doccard{display:block;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;color:var(--dim);font-size:15px}
+  .doccard:hover{border-color:var(--faint);text-decoration:none}
+  .doccard .ic{color:var(--ember);margin-bottom:12px}
+  .doccard b{display:block;color:var(--text);font-size:16.5px;margin-bottom:4px}
+  .keysband{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 22px}
+  .keysband .krow{padding:13px 0;border-bottom:1px solid var(--line);color:var(--dim);font-size:15px}
+  .keysband .krow:last-child{border-bottom:none}
+  .keysband .krow b{color:var(--text)}
+  footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--faint);font-size:13.5px;margin-top:58px}
+  footer .row{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:10px}
+  .fbwrap{display:none}
+  .js .fbwrap{display:block;position:fixed;right:20px;bottom:20px;z-index:60}
+  .fbbtn{display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#14100c;border:none;cursor:pointer;font:inherit;font-weight:600;font-size:14.5px;padding:11px 18px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+  .fbbtn:hover{background:var(--ember2)}
+  .fbcard{position:absolute;right:0;bottom:calc(100% + 12px);width:320px;max-width:calc(100vw - 32px);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  .fbcard[hidden]{display:none}
+  .fbtitle{font-weight:700;font-size:16.5px;margin-bottom:6px}
+  .fbtext{color:var(--dim);font-size:14.5px;margin-bottom:16px}
+  .fbrow{display:flex;flex-direction:column;gap:10px}
+  .fbrow .btn{display:block;text-align:center}
+  footer{padding-bottom:120px}
+  @media(max-width:620px){.js .fbwrap{right:14px;bottom:14px}.fbbtn{padding:10px 15px;font-size:14px}}
+  code{font-family:var(--mono);font-size:.92em;background:var(--panel2);padding:1px 6px;border-radius:5px;color:var(--ember2)}
+  .keysband code{word-break:break-all}
+  @media(max-width:900px){.cardgrid{grid-template-columns:1fr 1fr}.docgrid{grid-template-columns:1fr 1fr}}
+  @media(max-width:720px){.rolegrid{grid-template-columns:1fr}.agentmain{flex-direction:column;gap:0}.agentpanels{width:100%}}
+  @media(max-width:620px){
+    .cardgrid{grid-template-columns:1fr}.docgrid{grid-template-columns:1fr}.whygrid{grid-template-columns:1fr}
+    .hero{padding:64px 0 22px}.hero h1{font-size:34px}
+    .cmdbar{flex-direction:column;align-items:stretch;padding:14px}
+    .cmdbar .btn{text-align:center}
+    .liveband{border-radius:14px}
+    section{padding:44px 0;margin-top:44px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap nav">
+    <a class="brand" href="/">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2c1 3.5-2.2 5.4-3.6 7C7.2 10.4 6.5 12 6.5 14a5.5 5.5 0 0 0 11 0c0-1.2-.4-2.3-1-3.3-.4 1-1.1 1.8-2 2.3.3-2.3-.6-4.7-2.5-6.5C11.4 5 12.6 3.6 12 2z" fill="#ff7a33"/><path d="M12 22a3.4 3.4 0 0 1-3.4-3.4c0-1.5.9-2.6 1.8-3.6.5-.6 1.1-1.2 1.6-2 .5.8 1.1 1.4 1.6 2 .9 1 1.8 2.1 1.8 3.6A3.4 3.4 0 0 1 12 22z" fill="#ffb25e"/></svg>
+      Ember
+    </a>
+    <nav class="links">
+      <a href="/" class="on">Home</a>
+      <a href="/chat">Chat</a>
+      <a href="/models">Models</a>
+      <a href="/about">About</a>
+      <a href="/faq">FAQ</a>
+      <a href="https://github.com/emberinfer/Ember">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="badges">
+      <span class="badge">v0.2.0</span>
+      <span class="badge"><span class="dot green"></span> Public testnet — live</span>
+    </div>
+    <h1>Turn idle compute into<br><span class="grad">shared inference capacity.</span></h1>
+    <p class="lede">Ember is an open inference network run by independent hardware operators; sampled audits verify the work, and inference is charged in Spark once it settles — the network's unit of account.</p>
+  </div>
+
+  <div class="liveband" id="liveband" style="display:none">
+    <span id="livenums" style="display:none"></span>
+  </div>
+
+  <div class="agentbox" id="for-agents">
+    <h2>Hand Ember to your agent</h2>
+    <p class="sub">Pick a role, copy the line, paste it to your agent. All steps are on the linked page.</p>
+    <div class="agentmain">
+    <div class="roletabs" role="tablist" aria-label="Agent roles">
+      <button type="button" class="roletab on" data-tab="consumer" role="tab" aria-selected="true">Use</button>
+      <button type="button" class="roletab" data-tab="node" role="tab" aria-selected="false">Inference node</button>
+      <button type="button" class="roletab" data-tab="validator" role="tab" aria-selected="false">Validator</button>
+    </div>
+    <div class="agentpanels">
+    <div class="rolepanel on" data-panel="consumer">
+      <div class="rolehead">Use the service</div>
+      <p class="roleabout">Send requests to models running on other people’s machines and pay in Spark. Answers are spot-checked by other nodes drawn by lot before operators are paid.</p>
+      <div class="cmdbar">
+        <code>Use Ember from https://emberinfer.org/start/use — claim test Spark and run an inference for me.</code>
+        <button type="button" class="btn primary copybtn" data-role="consumer">Copy</button>
+      </div>
+      <p class="cmdhint"><span class="copied" data-copied style="display:none">Copied — paste it to your agent.</span></p>
+      <div class="term">
+        <div class="termbar"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span><span class="termex">Example</span></div>
+        <div class="termbody">
+          <p class="cmd">$ Use Ember from https://emberinfer.org/start/use — claim test Spark and run an inference for me.</p>
+          <p class="dim">trace · 8c30cb35f2e9… · settled</p>
+          <p class="seg"><span class="ok">✓</span> <b>Submit</b> · model <b>ember-qwen3.6-35b-a3b-fp8-v1</b> · paid by website account for credit of <b>82c12a0d…ea9</b></p>
+          <p class="seg"><span class="ok">✓</span> <b>Freeze</b> · <b>80</b> sub frozen · block 54535</p>
+          <p class="seg"><span class="ok">✓</span> <b>Assign</b> · executor <b>5b6d4b9b…5f8</b></p>
+          <p class="seg"><span class="ok">✓</span> <b>Generate</b> · 64 output tokens · first token 14159 ms · total 23725 ms (backend-measured)</p>
+          <p class="seg"><span class="ok">✓</span> <b>Audit</b> · auditor <b>b97d8320…132</b> · verdict <b>accept</b> · round 1</p>
+          <p class="seg"><span class="ok">✓</span> <b>Settle</b> · charged <b>80</b> sub · block 54540</p>
+        </div>
+      </div>
+    </div>
+    <div class="rolepanel" data-panel="node">
+      <div class="rolehead">Run an inference node</div>
+      <p class="roleabout">Runs a model on its own machine and answers requests. Nodes stake Spark and receive 80% of each settled fee. A node registers once per model profile, and that one registration covers both serving inference and verifying other nodes’ work. After a serving node commits its result, the job may be sampled for verification. Sampling is 30% for a new node, 5% for an established node, and 2% for a top-tier node, and large jobs are always sampled. A node drawn by lot re-runs the request and checks the result. Verifying nodes receive 15% for the verifications they complete and share the audit pool built from unsampled jobs. A sampled job that fails verification does not settle.</p>
+      <div class="cmdbar">
+        <code>Run an Ember inference node from https://emberinfer.org/start/executor, install the reference deployment `ember-qwen2.5-1.5b-gpu-v1` exactly as that guide describes, set EMBER_AUDIT_ROLE=true in the config before the first join so the node can also be drawn to verify other nodes’ work, and then report back my node address, registration status, and all transaction ids.</code>
+        <button type="button" class="btn primary copybtn" data-role="node">Copy</button>
+      </div>
+      <p class="cmdhint"><span class="copied" data-copied style="display:none">Copied — paste it to your agent.</span></p>
+      <div class="term">
+        <div class="termbar"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span><span class="termex">Example</span></div>
+        <div class="termbody">
+          <p class="cmd">$ Run an Ember inference node from https://emberinfer.org/start/executor, install the reference deployment `ember-qwen2.5-1.5b-gpu-v1` exactly as that guide describes, set EMBER_AUDIT_ROLE=true in the config before the first join so the node can also be drawn to verify other nodes’ work, and then report back my node address, registration status, and all transaction ids.</p>
+          <p class="dim">trace · 8c30cb35f2e9… · settled</p>
+          <p class="seg"><span class="ok">✓</span> <b>Registered</b> · executor <b>5b6d4b9b…5f8</b> · profile <b>ember-qwen3.6-35b-a3b-fp8-v1</b> · stake <b>150,000</b> sub</p>
+          <p class="seg"><span class="ok">✓</span> <b>Assigned</b> · request <b>8c30cb35…</b> · <b>80</b> sub frozen · block 54535</p>
+          <p class="seg"><span class="ok">✓</span> <b>Generate</b> · 16 input · 64 output tokens</p>
+          <p class="seg"><span class="ok">✓</span> <b>Audited</b> · auditor <b>b97d8320…132</b> · verdict <b>accept</b> · round 1</p>
+          <p class="seg"><span class="ok">✓</span> <b>Settle</b> · received <b>80</b> sub · block 54540</p>
+        </div>
+      </div>
+    </div>
+    <div class="rolepanel" data-panel="validator">
+      <div class="rolehead">Validator — prepare</div>
+      <p class="roleabout">Runs the chain itself: orders transactions, produces blocks, and keeps the ledger tamper-proof. Validators enforce the rules — they do not run models or judge answers.</p>
+      <div class="cmdbar">
+        <code>Prepare to become an Ember validator from https://emberinfer.org/start/validator — run an executor node for the reference profile `ember-qwen2.5-1.5b-gpu-v1` from https://emberinfer.org/start/executor, then follow the Validator Guide it links for the validator-specific setup, and report back the current admission state plus my node's address, registration status, and transaction ids.</code>
+        <button type="button" class="btn primary copybtn" data-role="validator">Copy</button>
+      </div>
+      <p class="cmdhint"><span class="copied" data-copied style="display:none">Copied — paste it to your agent.</span></p>
+      <div class="term">
+        <div class="termbar"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span><span class="termex">Example</span></div>
+        <div class="termbody">
+          <p class="cmd">$ Prepare to become an Ember validator from https://emberinfer.org/start/validator — run an executor node for the reference profile `ember-qwen2.5-1.5b-gpu-v1` from https://emberinfer.org/start/executor, then follow the Validator Guide it links for the validator-specific setup, and report back the current admission state plus my node's address, registration status, and transaction ids.</p>
+          <p class="dim">status · example snapshot · 4 validators · voting power 10 each · set changes run through the on-chain process · the current set is public on the ledger</p>
+          <p class="seg"><span class="ok">✓</span> <b>Live</b> · ember-testnet-1 · state version 7 · the set-change process has already been used on this testnet</p>
+          <p class="seg"><span class="ok">✓</span> <b>Advancing</b> · height 56069 → 56074 · example snapshot at block 56074</p>
+          <p class="seg"><span class="ok">✓</span> <b>Consistent</b> · one canonical AppHash at the snapshot height · block 56074</p>
+          <p class="seg"><span class="ok">✓</span> <b>Queryable</b> · validator membership and voting power can be checked on the ledger</p>
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="/chat">Try the chat</a>
+      <a class="btn ghost" href="#for-agents">Hand it to your agent</a>
+    </div>
+    <p class="sub center-note">Testnet only. Your agent generates its own key and acts under it.</p>
+    <p class="sub center-note" style="margin-top:0">Prefer to do it yourself? Each linked page is a complete step-by-step — no agent required.</p>
+    <noscript><p class="sub center-note" style="margin-top:0">No JavaScript? Open a role page directly: <a href="/start/use">emberinfer.org/start/use</a> · <a href="/start/executor">/start/executor</a> · <a href="/start/validator">/start/validator</a></p></noscript>
+  </div>
+
+  <section id="why">
+    <h2>How it works: a compute bank for verified inference</h2>
+    <p class="sub">Ember pools independent hardware into a decentralized inference network.</p>
+    <div class="whygrid">
+      <div class="why">
+        <h3>Contribute compute</h3>
+        <p>Bring your hardware — GPU, edge board, or anything in between. Stake the minimum, register, and serve requests. When your work settles on-chain, you receive Spark — jobs are sampled for audit by track record, and sampled work must pass to settle. No approval, no custody.</p>
+      </div>
+      <div class="why">
+        <h3>Spark on the ledger</h3>
+        <p>Spark is the unit of account — a ledger entry for settled inference work. Contribute cycles, receive Spark; spend it to call any model on the network. One balance works across all profiles. The CometBFT ledger records accounts, stake, and settlement. No interest, no custody.</p>
+      </div>
+      <div class="why">
+        <h3>Spend on inference</h3>
+        <p>Hold Spark, call models. Send requests to a gateway; it reserves Spark, routes to a node, and returns results. Fees split 80% to the node that ran the job, 15% to the node that verified it, 5% rebated to you. When supply is tight, multipliers up to 2× redistribute fees — no new tokens. Model and price are fixed per profile.</p>
+      </div>
+      <div class="why">
+        <h3>Open and distributed</h3>
+        <p>Anyone can run an inference node. Inference nodes come and go; the ledger continues. Gateways are stateless — if one fails, route through another. Sampled jobs are replayed by other inference nodes to verify them before settlement. The on-chain process for validator set changes is active and in use.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="docs">
+    <h2>Use it &amp; docs</h2>
+    <div class="docgrid">
+      <a class="doccard" href="/chat">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H12l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z"/></svg></div>
+        <b>Chat</b> — try inference in the browser; every answer has an on-chain trace.
+      </a>
+      <a class="doccard" href="/llms.txt">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h8L19 8v12.5H6z"/><path d="M13.5 3.5V8H19M9 12.5h6M9 16h6"/></svg></div>
+        <b>llms.txt</b> — the complete agent reference.
+      </a>
+      <a class="doccard" href="/network.json">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="5.5" r="2.6"/><circle cx="19" cy="18.5" r="2.6"/><path d="M7.3 10.8 16.6 6.7M7.3 13.2l9.3 4.1"/></svg></div>
+        <b>network.json</b> — live network parameters.
+      </a>
+      <a class="doccard" href="/openapi.yaml">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4.5C6.8 6 6.8 8 6.8 12s0 6 2.2 7.5M15 4.5c2.2 1.5 2.2 3.5 2.2 7.5s0 6-2.2 7.5"/></svg></div>
+        <b>OpenAPI</b> — the live API specification.
+      </a>
+    
+      <a class="doccard" href="/about">         <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11.2V16M12 7.6v.3"/></svg></div>         <b>About Ember</b> — why Ember exists, how it works, and where it is going.       </a>
+      <a class="doccard" href="/faq">
+        <div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4A2.6 2.6 0 1 1 12 12.3v1.2"/><path d="M12 16.6v.3"/></svg></div>
+        <b>FAQ</b> — common questions, answered plainly.
+      </a> </div>
+  </section>
+
+  <section id="network">
+    <h2>Release &amp; keys</h2>
+    <div class="keysband">
+      <div class="krow"><b>Software v0.2.0.</b> Verify downloads against these keys before installing (<a href="https://github.com/emberinfer/Ember/blob/master/docs/SIGNING.md">SIGNING.md</a>).</div>
+      <div class="krow"><b>Release signing key:</b> <code>d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb</code> (SHA-256 of DER SubjectPublicKeyInfo)</div>
+      <div class="krow"><b>Root key:</b> <code>cc3522f6bbfa1ca057cd5beddfefb740a0b6ef86d81d4c30307f613bc21bd918</code> — endorses the release key.</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="row">
+      <a href="https://github.com/emberinfer/Ember">GitHub</a>
+      <a href="https://github.com/emberinfer/Ember/blob/master/LICENSE">Apache-2.0 License</a>
+      <a href="mailto:contact@emberinfer.org">contact@emberinfer.org</a>
+    </div>
+    <p>Joining and building on Ember is permissionless — no approval needed. Feature requests, research collaboration, partnerships: <a href="mailto:contact@emberinfer.org">contact@emberinfer.org</a>.</p>
+    <p>Ember is experimental open-source software, provided as-is under Apache-2.0. <a href="https://github.com/emberinfer/Ember/blob/master/docs/DISCLAIMER.md">Full disclaimer.</a></p>
+  </footer>
+</div>
+<div class="fbwrap">
+  <div class="fbcard" id="fb-card" role="dialog" aria-labelledby="fb-title" hidden>
+    <p class="fbtitle" id="fb-title">Questions &amp; requests</p>
+    <p class="fbtext">Found a problem, or want a feature? File an issue on GitHub — we read every issue and ship updates based on them.</p>
+    <div class="fbrow">
+      <a class="btn primary" href="https://github.com/emberinfer/Ember/issues/new?template=feature_request.yml&amp;title=%5BFeature%5D%3A%20" target="_blank" rel="noopener">Feature request</a>
+      <a class="btn ghost" href="https://github.com/emberinfer/Ember/issues/new?template=bug_report.yml&amp;title=%5BBug%5D%3A%20" target="_blank" rel="noopener">Report a problem</a>
+    </div>
+  </div>
+  <button type="button" class="fbbtn" id="fb-btn" aria-expanded="false" aria-controls="fb-card" aria-label="Questions and feature requests">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H12l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 13.5z"/><path d="M9.7 9.2A2.4 2.4 0 1 1 12 11.5v.9"/><path d="M12 15.2v.3"/></svg>
+    <span>Feedback</span>
+  </button>
+</div>
+<script>
+(function () {
+  var PROMPTS = {
+    consumer: "Use Ember from https://emberinfer.org/start/use — claim test Spark and run an inference for me.",
+    node: "Run an Ember inference node from https://emberinfer.org/start/executor, install the reference deployment `ember-qwen2.5-1.5b-gpu-v1` exactly as that guide describes, set EMBER_AUDIT_ROLE=true in the config before the first join so the node can also be drawn to verify other nodes’ work, and then report back my node address, registration status, and all transaction ids.",
+    validator: "Prepare to become an Ember validator from https://emberinfer.org/start/validator — run an executor node for the reference profile `ember-qwen2.5-1.5b-gpu-v1` from https://emberinfer.org/start/executor, then follow the Validator Guide it links for the validator-specific setup, and report back the current admission state plus my node's address, registration status, and transaction ids."
+  };
+  function copyText(text, hint) {
+    var done = function () {
+      if (!hint) return;
+      hint.style.display = 'inline';
+      setTimeout(function () { hint.style.display = 'none'; }, 3000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+    } else { fallback(); }
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done();
+    }
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.copybtn'), function (btn) {
+    btn.addEventListener('click', function () {
+      var panel = btn.closest('.rolepanel');
+      var hint = panel ? panel.querySelector('[data-copied]') : null;
+      copyText(PROMPTS[btn.getAttribute('data-role')] || '', hint);
+    });
+  });
+  // Role tabs: click to switch; auto-rotate every 5s until a manual pick,
+  // paused while the pointer is over the box; off for reduced-motion.
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.roletab'));
+  var panels = {};
+  Array.prototype.forEach.call(document.querySelectorAll('.rolepanel'), function (p) {
+    panels[p.getAttribute('data-panel')] = p;
+  });
+  var order = tabs.map(function (t) { return t.getAttribute('data-tab'); });
+  var current = 0, manual = false, hovering = false, timer = null;
+  function showRole(role) {
+    tabs.forEach(function (t) {
+      var on = t.getAttribute('data-tab') === role;
+      t.classList.toggle('on', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    Object.keys(panels).forEach(function (k) { panels[k].classList.toggle('on', k === role); });
+    var i = order.indexOf(role);
+    if (i >= 0) current = i;
+  }
+  if (tabs.length > 1) {
+    tabs.forEach(function (t) {
+      t.addEventListener('click', function () {
+        manual = true;
+        if (timer) { clearInterval(timer); timer = null; }
+        showRole(t.getAttribute('data-tab'));
+      });
+    });
+    var agentBox = document.getElementById('for-agents');
+    if (agentBox) {
+      agentBox.addEventListener('mouseenter', function () { hovering = true; });
+      agentBox.addEventListener('mouseleave', function () { hovering = false; });
+    }
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceMotion) {
+      timer = setInterval(function () {
+        if (!manual && !hovering) showRole(order[(current + 1) % order.length]);
+      }, 5000);
+    }
+  }
+  // Live band: same status source and labels as the chat network overview.
+  var nums = document.getElementById('livenums');
+  if (nums && window.fetch) {
+    fetch('https://relay.emberinfer.org/api/status').then(function (r) { return r.json(); }).then(function (s) {
+      var c = s.counts || {}, nodes = s.nodes || {};
+      var val = c.validators !== undefined ? c.validators
+        : (s.validators ? (s.validators.count !== undefined ? s.validators.count
+          : (Array.isArray(s.validators) ? s.validators.length : undefined)) : undefined);
+      var items = [
+        ['Height', s.height],
+        ['Inference nodes', c.nodes_distinct !== undefined ? c.nodes_distinct : nodes.distinct],
+        ['Validators', val]
+      ];
+      var shown = 0;
+      items.forEach(function (kv) {
+        if (kv[1] === undefined || kv[1] === null) return;
+        var span = document.createElement('span');
+        span.className = 'lv'; span.append(kv[0] + ': ');
+        var b = document.createElement('b'); b.textContent = kv[1]; span.append(b);
+        nums.append(span); shown++;
+      });
+      if (shown && s.height !== undefined && s.fetched_at) {
+        var src = document.createElement('span');
+        src.className = 'src';
+        src.textContent = 'live from chain state · height ' + s.height + ' · ' + new Date(s.fetched_at).toLocaleTimeString();
+        nums.append(src);
+      }
+      if (shown) { nums.style.display = 'contents'; document.getElementById('liveband').style.display = 'flex'; }
+    }).catch(function () { /* no live numbers: band stays hidden, nothing to show */ });
+  }
+})();
+</script>
+<script>
+(function () {
+  var btn = document.getElementById('fb-btn');
+  var card = document.getElementById('fb-card');
+  if (!btn || !card) return;
+  function setOpen(open) {
+    card.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  btn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    setOpen(card.hidden);
+  });
+  card.addEventListener('click', function (e) { e.stopPropagation(); });
+  document.addEventListener('click', function () { if (!card.hidden) setOpen(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !card.hidden) { setOpen(false); btn.focus(); }
+  });
+})();
+</script>
+</body>
+</html>

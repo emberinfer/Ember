@@ -1,0 +1,512 @@
+
+ís
+ember.protoember"ù
+ChainGenesis
+chain_id (	RchainId.
+model_manifest_root (RmodelManifestRoot%
+tokenizer_hash (RtokenizerHash
+quant (	Rquant
+dtype (	Rdtype2
+execution_profile_ver (	RexecutionProfileVer.
+tolerance_table_ref (	RtoleranceTableRef
+price_input (R
+priceInput!
+price_output	 (RpriceOutput5
+audit_params
+ (2.ember.AuditParamsRauditParams!
+ledger_route (	RledgerRoute!
+credit_scope (	RcreditScopeK
+numeric_audit_policy (2.ember.NumericAuditPolicyRnumericAuditPolicy#
+price_context (RpriceContext
+signer (Rsigner
+	signature (R	signature"Œ
+ToleranceBand'
+producer_engine (	RproducerEngine'
+producer_device (	RproducerDevice)
+reference_engine (	RreferenceEngine)
+reference_device (	RreferenceDevice
+	tolerance (R	tolerance
+mode (	Rmode!
+segment_kind (	RsegmentKind"å
+NumericAuditPolicy
+metric (	Rmetric*
+bands (2.ember.ToleranceBandRbands
+layers (	Rlayers
+top_k (RtopK'
+calibration_ref (RcalibrationRef5
+
+range_band (2.ember.RangeBandParamsR	rangeBand"y
+RangeDeviceBase'
+producer_device (	RproducerDevice)
+reference_device (	RreferenceDevice
+base (Rbase"Ò
+RangeBandParams
+metric (	Rmetric*
+base (2.ember.RangeDeviceBaseRbase
+
+depth_coef (R	depthCoef'
+hard_multiplier (RhardMultiplier3
+	head_base (2.ember.RangeDeviceBaseRheadBase"¸
+AuditParams(
+new_node_percent (RnewNodePercent.
+mature_node_percent (RmatureNodePercent#
+floor_percent (RfloorPercent%
+inline_percent (RinlinePercent%
+canary_percent (RcanaryPercent)
+slash_multiplier (RslashMultiplier0
+min_stake_multiplier (RminStakeMultiplier)
+exposure_divisor (RexposureDivisor'
+dispute_seconds	 (RdisputeSeconds+
+numeric_tolerance
+ (RnumericTolerance"b
+Artifact
+name (	Rname
+sha256 (Rsha256
+size (Rsize
+source (	Rsource"µ
+ContentPolicy
+id (	Rid
+version (	Rversion0
+denied_prompt_sha256 (RdeniedPromptSha256%
+refusal_tokens (RrefusalTokens!
+refusal_text (	RrefusalText"Ë
+LayoutScheme&
+atoms (2.ember.ShardSpecRatoms!
+total_layers (RtotalLayers(
+min_stage_layers (RminStageLayers,
+allowed_layer_cuts (RallowedLayerCuts
+layer_flops (R
+layerFlops'
+embedding_flops (RembeddingFlops
+
+head_flops (R	headFlops/
+
+moe_layout (2.ember.MoeLayoutR	moeLayout"K
+SourceLocator
+
+repository (	R
+repository
+revision (	Rrevision"–
+ModelManifest.
+sources (2.ember.SourceLocatorRsources-
+schemes (2.ember.LayoutSchemeRschemes)
+canonical_config (RcanonicalConfig
+chain_id (	RchainId-
+	artifacts (2.ember.ArtifactR	artifacts
+
+graph_hash (R	graphHash
+config_hash (R
+configHash
+license (	Rlicense(
+shards (2.ember.ShardSpecRshards!
+total_layers (RtotalLayers%
+dynamic_ranges (RdynamicRanges(
+min_stage_layers	 (RminStageLayers,
+allowed_layer_cuts
+ (RallowedLayerCuts;
+content_policy (2.ember.ContentPolicyRcontentPolicy
+layer_flops (R
+layerFlops'
+embedding_flops (RembeddingFlops
+
+head_flops (R	headFlops/
+
+moe_layout (2.ember.MoeLayoutR	moeLayout
+signer (Rsigner
+	signature (R	signature"à
+	MoeLayout
+
+num_layers (R	numLayers
+hidden_size (R
+hiddenSize*
+experts_per_layer (RexpertsPerLayer
+top_k (RtopK,
+expert_param_count (RexpertParamCount.
+expert_weights_root (RexpertWeightsRoot2
+attention_param_count (RattentionParamCount2
+embedding_param_count (RembeddingParamCount(
+head_param_count	 (RheadParamCount
+
+vocab_size
+ (R	vocabSize
+num_q_heads (R	numQHeads 
+num_kv_heads (R
+numKvHeads
+head_dim (RheadDim#
+segment_dtype (	RsegmentDtype$
+engine_impl_id (	RengineImplId(
+routing_cap_beta (RroutingCapBeta!
+scarcity_max (RscarcityMax-
+strict_composition (RstrictComposition-
+segment_settlement (	RsegmentSettlement.
+expert_param_counts (RexpertParamCounts.
+max_frame_positions (RmaxFramePositions,
+router_params_hash (RrouterParamsHash.
+misjudge_slash_mode (	RmisjudgeSlashMode2
+routing_universal_ppm (RroutingUniversalPpm"«
+	ShardSpec
+	unit_kind (	RunitKind!
+expert_index	 (RexpertIndex
+index (Rindex
+start_layer (R
+startLayer
+	end_layer (RendLayer#
+has_embedding (RhasEmbedding
+has_lm_head (R	hasLmHead
+	artifacts (	R	artifacts'
+parameters_hash (RparametersHash"¦
+EngineCapabilities
+spi_version (	R
+spiVersion
+engine_name (	R
+engineName%
+engine_version (	RengineVersion)
+numerical_format (	RnumericalFormat!
+device_class (	RdeviceClass'
+evidence_levels (	RevidenceLevels
+
+score_kind (	R	scoreKind
+	max_top_k (RmaxTopK0
+forced_prefix_replay	 (RforcedPrefixReplay-
+native_incremental
+ (RnativeIncremental
+roles (	Rroles"É
+ContributionSignal 
+unavailable (Runavailable!
+weight_bytes (RweightBytes
+kv_bytes (RkvBytes
+
+peak_bytes (R	peakBytes!
+budget_bytes (RbudgetBytes%
+context_tokens (RcontextTokens%
+max_concurrent (RmaxConcurrent+
+global_concurrent (RglobalConcurrent
+reason	 (	Rreason"¼
+ResourceProfile
+scheme_hash' (R
+schemeHash=
+contribution  (2.ember.ContributionSignalRcontribution
+node_id (	RnodeId
+chain_id (	RchainId
+gpu (	Rgpu!
+memory_bytes (RmemoryBytes
+
+engine_ver (	R	engineVer0
+benchmark_result_ref (RbenchmarkResultRef!
+expires_unix (RexpiresUnix#
+manifest_root (RmanifestRoot2
+execution_profile_ver	 (	RexecutionProfileVer)
+requested_device
+ (	RrequestedDevice#
+actual_device (	RactualDevice#
+device_reason (	RdeviceReason#
+torch_version (	RtorchVersion1
+transformers_version (	RtransformersVersion!
+cuda_version (	RcudaVersion)
+accelerator_name (	RacceleratorName4
+available_memory_bytes (RavailableMemoryBytes
+shard_index (R
+shardIndex*
+shard_start_layer (RshardStartLayer&
+shard_end_layer (RshardEndLayer,
+shard_total_layers (RshardTotalLayers.
+shard_has_embedding (RshardHasEmbedding)
+shard_has_lm_head (RshardHasLmHead2
+shard_parameters_hash (RshardParametersHashJ
+engine_capabilities (2.ember.EngineCapabilitiesRengineCapabilities%
+shard_endpoint (	RshardEndpoint&
+shard_unit_kind (	RshardUnitKind.
+shard_dynamic_range (RshardDynamicRange2
+shard_tls_fingerprint (RshardTlsFingerprint"
+moe_unit_kind! (	RmoeUnitKind7
+	moe_units& (2.ember.MoeUnitRegistrationRmoeUnits
+signer (Rsigner
+	signature (R	signature"¦
+MoeUnitRegistration
+layer (Rlayer
+expert (Rexpert
+params_hash (R
+paramsHash!
+merkle_proof (RmerkleProof
+
+leaf_index (R	leafIndex"ç
+ExecutionCommitment6
+sampling_params_version (RsamplingParamsVersion)
+thinking_enabled (RthinkingEnabled'
+thinking_budget (RthinkingBudget#
+answer_budget (RanswerBudget
+
+request_id (	R	requestId
+chain_id (	RchainId)
+input_commitment (RinputCommitment
+profile_ver (	R
+profileVer0
+sampling_params_hash (RsamplingParamsHash
+seed (Rseed!
+client_nonce (RclientNonce!
+input_tokens (RinputTokens*
+max_output_tokens	 (RmaxOutputTokens+
+tokenizer_version
+ (	RtokenizerVersion
+signer (Rsigner
+	signature (R	signature"Í
+	ChunkRoot
+
+request_id (	R	requestId
+seq (Rseq
+	upto_step (RuptoStep
+merkle_root (R
+merkleRoot
+	prev_root (RprevRoot
+signer (Rsigner
+	signature (R	signature"¯
+ExecutionReceipt)
+reasoning_tokens (RreasoningTokens%
+content_tokens (RcontentTokens
+
+request_id (	R	requestId%
+commitment_ref (RcommitmentRef1
+chunk_roots (2.ember.ChunkRootR
+chunkRoots+
+output_commitment (RoutputCommitment!
+input_tokens (RinputTokens#
+output_tokens (RoutputTokens
+
+elapsed_ms (R	elapsedMs
+node_id (	RnodeIdD
+evidence_manifest	 (2.ember.EvidenceManifestRevidenceManifest'
+output_category
+ (	RoutputCategory
+signer (Rsigner
+	signature (R	signature"•
+AuditChallenge
+receipt_ref (R
+receiptRef
+	positions (R	positions
+layers (Rlayers#
+deadline_unix (RdeadlineUnix
+	vrf_proof (RvrfProof4
+segment_refs (2.ember.SegmentRefRsegmentRefs
+signer (Rsigner
+	signature (R	signature"
+
+SegmentRef
+kind (	Rkind
+layer (Rlayer
+expert (Rexpert
+frame (Rframe
+	end_layer (RendLayer"ì
+OffenseGrade
+class (	Rclass
+score (Rscore
+band (	Rband!
+length_class (	RlengthClass
+fault (	Rfault+
+tokenizer_version (	RtokenizerVersion6
+recomputed_input_tokens (RrecomputedInputTokens"É
+AuditVerdict#
+challenge_ref (RchallengeRef
+
+auditor_id (	R	auditorId
+	distances (R	distances
+verdict (	Rverdict!
+evidence_ref (RevidenceRef(
+audit_policy_ref (RauditPolicyRef$
+fault_node_ids (	RfaultNodeIds-
+offense (2.ember.OffenseGradeRoffense 
+n_out_billed	 (R
+nOutBilledC
+segment_distances
+ (2.ember.SegmentDistanceRsegmentDistances
+signer (Rsigner
+	signature (R	signature"m
+SegmentDistance#
+ref (2.ember.SegmentRefRref
+distance (Rdistance
+band_key (	RbandKey"Æ
+LedgerTx
+from (	Rfrom
+to (	Rto
+amount (Ramount
+receipt_ref (R
+receiptRef
+type (	Rtype
+tx_id (	RtxId
+signer (Rsigner
+	signature (R	signature"Þ
+TunnelFrame
+node_id (	RnodeId
+
+request_id (	R	requestId
+
+attempt_id (	R	attemptId
+kind (	Rkind
+payload (Rpayload
+nonce (Rnonce
+signer (Rsigner
+	signature (R	signature"š
+EvidenceManifest
+merkle_root (R
+merkleRoot
+chunk_count (R
+chunkCount!
+total_tokens (RtotalTokens!
+chunk_hashes (RchunkHashes"^
+EvidenceChunk#
+manifest_root (RmanifestRoot
+index (Rindex
+data (Rdata"Ô
+ShardForwardRequest
+
+request_id (	R	requestId
+step (Rstep
+	input_ids (RinputIds
+hidden_bf16 (R
+hiddenBf16!
+hidden_shape (RhiddenShape
+nonce (Rnonce0
+executed_start_layer (RexecutedStartLayer,
+executed_end_layer (RexecutedEndLayer#
+dynamic_range	 (RdynamicRange"
+moe_call_kind
+ (	RmoeCallKind
+	moe_layer (RmoeLayer
+
+moe_expert (R	moeExpert
+	moe_frame (RmoeFrame5
+moe_routing_record_hash (RmoeRoutingRecordHash$
+moe_input_hash (RmoeInputHash
+signer (Rsigner
+	signature (R	signature"ô
+ShardForwardResponse
+hidden_bf16 (R
+hiddenBf16!
+hidden_shape (RhiddenShape
+token_id (RtokenId
+topk_ids (RtopkIds
+topk_logits (R
+topkLogitsN
+activations (2,.ember.ShardForwardResponse.ActivationsEntryRactivations
+shard_index (R
+shardIndex2
+shard_parameters_hash (RshardParametersHash1
+receipt	 (2.ember.ShardStepReceiptRreceipt*
+server_elapsed_us
+ (RserverElapsedUs=
+routing_records (2.ember.RoutingRecordRroutingRecords>
+segment_receipt (2.ember.SegmentReceiptRsegmentReceipt>
+expert_receipts (2.ember.SegmentReceiptRexpertReceipts>
+frame_receipts (2.ember.NodeFrameReceiptRframeReceipts>
+ActivationsEntry
+key (	Rkey
+value (Rvalue:8"€
+ShardStepReceipt
+scheme_hash (R
+schemeHash
+node_id (	RnodeId
+chain_id (	RchainId#
+manifest_root (RmanifestRoot2
+execution_profile_ver (	RexecutionProfileVer
+
+request_id (	R	requestId
+step (Rstep
+shard_index (R
+shardIndex
+start_layer (R
+startLayer
+	end_layer	 (RendLayer!
+request_hash
+ (RrequestHash#
+response_hash (RresponseHash'
+parameters_hash (RparametersHash
+	unit_kind (	RunitKind2
+input_activation_hash (RinputActivationHash4
+output_activation_hash (RoutputActivationHash
+signer (Rsigner
+	signature (R	signature"’
+RoutingRecord
+frame (Rframe
+layer (Rlayer
+	positions (R	positions
+experts (Rexperts
+
+input_hash (R	inputHash"¸
+SegmentReceipt
+node_id (	RnodeId
+chain_id (	RchainId#
+manifest_root (RmanifestRoot2
+execution_profile_ver (	RexecutionProfileVer
+
+request_id (	R	requestId
+kind (	Rkind
+layer (Rlayer
+expert (Rexpert
+frame	 (Rframe
+start_layer
+ (R
+startLayer
+	end_layer (RendLayer
+
+input_hash (R	inputHash
+output_hash (R
+outputHash.
+routing_record_hash (RroutingRecordHash
+params_hash (R
+paramsHash
+
+token_rows (R	tokenRows
+signer (Rsigner
+	signature (R	signature"à
+NodeFrameReceipt
+node_id (	RnodeId
+
+request_id (	R	requestId
+frame (Rframe#
+segments_root (RsegmentsRoot#
+segment_count (RsegmentCount
+signer (Rsigner
+	signature (R	signature"Ó
+MoeExecutionData=
+routing_records (2.ember.RoutingRecordRroutingRecords@
+segment_receipts (2.ember.SegmentReceiptRsegmentReceipts>
+frame_receipts (2.ember.NodeFrameReceiptRframeReceipts"
+PipelineExecutionReceipt
+
+request_id (	R	requestId>
+stage_receipts (2.ember.ShardStepReceiptRstageReceipts+
+output_commitment (RoutputCommitment!
+input_tokens (RinputTokens#
+output_tokens (RoutputTokens
+
+elapsed_ms (R	elapsedMsG
+latency_witnesses (2.ember.StageLatencyWitnessRlatencyWitnesses)
+moe (2.ember.MoeExecutionDataRmoe"Ë
+StageLatencyWitness*
+stage_receipt_ref (RstageReceiptRef&
+started_mono_ns (RstartedMonoNs*
+completed_mono_ns (RcompletedMonoNs
+signer (Rsigner
+	signature (R	signature"é
+	AuditComp
+auditor (	Rauditor
+formula_ver (R
+formulaVer
+n_in (RnIn 
+n_out_billed (R
+nOutBilled#
+comp_subunits (RcompSubunits*
+seg_rows_replayed (RsegRowsReplayed
+	seg_count (RsegCount"·
+SettlementReceipt
+version (Rversion
+
+request_id (	R	requestId/
+
+audit_comp (2.ember.AuditCompR	auditComp8
+audit_shortfall_subunits (RauditShortfallSubunits2~
+
+NodeTunnel5
+Connect.ember.TunnelFrame.ember.TunnelFrame(09
+FetchEvidence.ember.TunnelFrame.ember.EvidenceChunk2S
+ShardPipelineB
+Forward.ember.ShardForwardRequest.ember.ShardForwardResponseBZember/proto;protobproto3

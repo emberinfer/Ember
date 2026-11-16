@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest a feature or an improvement for Ember
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest something. We read every
+        issue filed here and ship updates based on them.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What would you like to see?
+      description: Describe the feature or improvement in a few sentences.
+      placeholder: "Example: Let node operators cap GPU memory from the node config."
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why would it help?
+      description: What problem does it solve, and who would it help?
+    validations:
+      required: false

@@ -1,0 +1,578 @@
+syntax = "proto3";
+package ember;
+option go_package = "ember/proto;proto";
+
+message ChainGenesis {
+  string chain_id = 1;
+  bytes model_manifest_root = 2;
+  bytes tokenizer_hash = 3;
+  string quant = 4;
+  string dtype = 5;
+  string execution_profile_ver = 6;
+  string tolerance_table_ref = 7;
+  int64 price_input = 8;
+  int64 price_output = 9;
+  AuditParams audit_params = 10;
+  // Governance decisions are deliberately unset until the team decides.
+  string ledger_route = 11;
+  string credit_scope = 12;
+  NumericAuditPolicy numeric_audit_policy = 13;
+  int64 price_context = 14;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ToleranceBand {
+  string producer_engine = 1;
+  string producer_device = 2;
+  string reference_engine = 3;
+  string reference_device = 4;
+  double tolerance = 5;
+  string mode = 6; // enforce for calibrated same-runtime pairs, observe otherwise
+  // MoE segment bands: "" keeps the legacy whole-model meaning; "attention"
+  // or "expert" scopes the band to one MoE segment kind. Design rule: expert
+  // segments are compared only between equal segment kinds, so a cross-kind
+  // band key can never widen an expert segment's tolerance.
+  string segment_kind = 7;
+}
+message NumericAuditPolicy {
+  string metric = 1;
+  repeated ToleranceBand bands = 2;
+  repeated string layers = 3;
+  uint32 top_k = 4;
+  bytes calibration_ref = 5;
+  RangeBandParams range_band = 6;
+}
+// Signed calibration data for pipeline-range-v2. No implicit device fallback.
+message RangeDeviceBase {
+  string producer_device = 1;
+  string reference_device = 2;
+  double base = 3;
+}
+message RangeBandParams {
+  string metric = 1; // relative-l2-v1
+  repeated RangeDeviceBase base = 2;
+  double depth_coef = 3;
+  double hard_multiplier = 4;
+  repeated RangeDeviceBase head_base = 5;
+}
+message AuditParams {
+  uint32 new_node_percent = 1;
+  uint32 mature_node_percent = 2;
+  uint32 floor_percent = 3;
+  uint32 inline_percent = 4;
+  uint32 canary_percent = 5;
+  uint32 slash_multiplier = 6;
+  uint32 min_stake_multiplier = 7;
+  uint32 exposure_divisor = 8;
+  int64 dispute_seconds = 9;
+  double numeric_tolerance = 10;
+}
+message Artifact { string name = 1; bytes sha256 = 2; int64 size = 3; string source = 4; }
+// Deterministic profile-wide policy. Unknown identifiers/versions fail closed.
+message ContentPolicy {
+  string id = 1;
+  string version = 2;
+  repeated bytes denied_prompt_sha256 = 3;
+  repeated uint32 refusal_tokens = 4;
+  string refusal_text = 5;
+}
+message LayoutScheme {
+ repeated ShardSpec atoms = 1;
+ uint32 total_layers = 2;
+ uint32 min_stage_layers = 3;
+ repeated uint32 allowed_layer_cuts = 4;
+ repeated uint64 layer_flops = 5;
+ uint64 embedding_flops = 6;
+ uint64 head_flops = 7;
+ MoeLayout moe_layout = 8;
+}
+message SourceLocator {
+ string repository = 1; // HTTPS HF, mirror or ModelScope repository URL
+ string revision = 2; // full lowercase Git commit, never a floating ref
+}
+message ModelManifest {
+ repeated SourceLocator sources = 16;
+  repeated LayoutScheme schemes = 17;
+  bytes canonical_config = 18; // canonical Go JSON encoding of config_bytes
+  bytes config_bytes = 19; // exact config.json bytes, verified against config_hash
+
+  string chain_id = 1;
+  repeated Artifact artifacts = 2;
+  bytes graph_hash = 3;
+  bytes config_hash = 4;
+  string license = 5;
+  repeated ShardSpec shards = 6;
+  uint32 total_layers = 7;
+  bool dynamic_ranges = 8;
+  uint32 min_stage_layers = 9;
+  repeated uint32 allowed_layer_cuts = 10;
+  ContentPolicy content_policy = 11;
+  // Atomic order is embedding [0,0), layers [i,i+1), head [L,L).
+  repeated uint64 layer_flops = 12; // Per-token compute in consistent units.
+  uint64 embedding_flops = 13; // Lookup; zero is charged at a one-unit floor.
+  uint64 head_flops = 14; // Final normalization and output projection.
+  // MoE expert-sharded layout; unset for dense and dense-pipeline profiles.
+  MoeLayout moe_layout = 15;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+// Static MoE sharding table for one model. Backbone attention stages are
+// contiguous layer ranges (the manifest shards list, unit_kind "attention");
+// experts are (layer, expert) units bound by the expert weights Merkle root.
+// FLOPs constants live here so work is derivable from the signed manifest
+// alone: per-token expert work is 2 * expert_param_count, attention work is
+// the closed form in the design report over these constants.
+message MoeLayout {
+  uint32 num_layers = 1;
+  uint32 hidden_size = 2;
+  uint32 experts_per_layer = 3;
+  uint32 top_k = 4;
+  uint64 expert_param_count = 5;   // uniform experts; see expert_param_counts
+  bytes expert_weights_root = 6;   // Merkle root over (layer, expert, params_hash) leaves
+  uint64 attention_param_count = 7;  // per-layer q+k+v+o (+router gate) params
+  uint64 embedding_param_count = 8;
+  uint64 head_param_count = 9;     // lm_head params (2 * hidden * vocab FLOPs/token)
+  uint32 vocab_size = 10;
+  uint32 num_q_heads = 11;
+  uint32 num_kv_heads = 12;
+  uint32 head_dim = 13;
+  string segment_dtype = 14;       // "bf16" | "fp8-e4m3-block128"
+  string engine_impl_id = 15;      // e.g. "olmoe-moe-v1"
+  double routing_cap_beta = 16;    // per-(layer, expert) routing cap factor
+  uint32 scarcity_max = 17;        // M_max scarcity multiplier cap
+  bool strict_composition = 18;    // fp32 strict-composition audit profile
+  string segment_settlement = 19;  // "granular" (default) | "atomic"
+  repeated uint64 expert_param_counts = 20; // non-uniform override, index layer*E+expert
+  uint32 max_frame_positions = 21; // frame = at most this many positions (512)
+  bytes router_params_hash = 22;   // router/gate weights commitment (attention stage)
+  string misjudge_slash_mode = 23; // "on" | "off": profile-level misjudge governance for
+                                   // numerical segment offenses. Unset = governance
+                                   // default: "on" for granular settlement (Plan B's
+                                   // honest-segment fund is built from slash proceeds),
+                                   // inherit the global misjudge mode for atomic.
+  repeated uint32 routing_universal_ppm = 24; // publisher-pinned routing-share
+                                   // envelope, index layer*E+expert, in parts per
+                                   // million of processed positions: an upper bound
+                                   // on the share of positions the model's router
+                                   // sends to that expert, calibrated pre-publication
+                                   // (MOE-0 methodology) against the pinned weights.
+                                   // The per-expert routing cap is
+                                   // C_e = max(ceil(beta*k*T/E), ceil(ppm_e*T/1e6)):
+                                   // experts whose genuine heat exceeds the uniform
+                                   // beta bound are exempted up to their pinned
+                                   // envelope, all others keep the tight beta cap.
+                                   // Empty = no envelope pinned (pure beta cap).
+                                   // The table is falsifiable against the pinned
+                                   // router weights and committed routing records;
+                                   // it never substitutes for realized counts, which
+                                   // are what the cap check compares against.
+}
+message ShardSpec {
+  string unit_kind = 8; // embedding, layers, lm_head; MoE adds attention, expert
+  uint32 expert_index = 9; // expert units only: which expert of the layer range
+  uint32 index = 1;
+  uint32 start_layer = 2;
+  uint32 end_layer = 3;
+  bool has_embedding = 4;
+  bool has_lm_head = 5;
+  repeated string artifacts = 6;
+  bytes parameters_hash = 7;
+}
+message EngineCapabilities {
+  string spi_version = 1;
+  string engine_name = 2;
+  string engine_version = 3;
+  string numerical_format = 4;
+  string device_class = 5;
+  repeated string evidence_levels = 6;
+  string score_kind = 7;
+  uint32 max_top_k = 8;
+  bool forced_prefix_replay = 9;
+  bool native_incremental = 10;
+  repeated string roles = 11;
+}
+// Measurements are obtained from the loaded engine, never model-size estimates.
+message ContributionSignal {
+  bool unavailable = 1;
+  uint64 weight_bytes = 2;
+  uint64 kv_bytes = 3;
+  uint64 peak_bytes = 4;
+  uint64 budget_bytes = 5;
+  uint32 context_tokens = 6;
+  uint32 max_concurrent = 7; // zero means unlimited
+  uint32 global_concurrent = 8; // zero means unlimited
+  string reason = 9;
+}
+message GPUBudget {
+ uint32 memory_permille = 1;
+ uint32 compute_permille = 2;
+ uint64 accelerator_memory_bytes = 3;
+}
+message ResourceProfile {
+ GPUBudget gpu_budget = 40;
+ bytes scheme_hash = 39;
+  ContributionSignal contribution = 32;
+  string node_id = 1;
+  string chain_id = 2;
+  string gpu = 3;
+  uint64 memory_bytes = 4;
+  string engine_ver = 5;
+  bytes benchmark_result_ref = 6;
+  int64 expires_unix = 7;
+  bytes manifest_root = 8;
+  string execution_profile_ver = 9;
+  // Signed runtime facts. "cuda" is strict; "auto" may fall back to CPU.
+  string requested_device = 10;
+  string actual_device = 11;
+  string device_reason = 12;
+  string torch_version = 13;
+  string transformers_version = 14;
+  string cuda_version = 15;
+  string accelerator_name = 16;
+  uint64 available_memory_bytes = 17;
+  uint32 shard_index = 18;
+  uint32 shard_start_layer = 19;
+  uint32 shard_end_layer = 20;
+  uint32 shard_total_layers = 21;
+  bool shard_has_embedding = 22;
+  bool shard_has_lm_head = 23;
+  bytes shard_parameters_hash = 24;
+  EngineCapabilities engine_capabilities = 25;
+  string shard_endpoint = 26;
+  string shard_unit_kind = 28;
+  bool shard_dynamic_range = 29;
+  bytes shard_tls_fingerprint = 27;
+  // MoE unit registration. Unit kind "attention" reuses the shard span
+  // fields; "expert" lists every (layer, expert) unit this identity holds,
+  // each with its Merkle proof against MoeLayout.expert_weights_root.
+  string moe_unit_kind = 33; // "attention" | "expert"
+  repeated MoeUnitRegistration moe_units = 38;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+// One held MoE expert unit: (layer, expert) plus the weights commitment and
+// its inclusion proof in the manifest's expert weights Merkle tree.
+message MoeUnitRegistration {
+  uint32 layer = 1;
+  uint32 expert = 2;
+  bytes params_hash = 3;
+  repeated bytes merkle_proof = 4;
+  uint32 leaf_index = 5;
+}
+message ExecutionCommitment {
+ uint32 sampling_params_version = 11;
+ bool thinking_enabled = 12;
+ uint32 thinking_budget = 13;
+ uint32 answer_budget = 14;
+  string request_id = 1;
+  string chain_id = 2;
+  bytes input_commitment = 3;
+  string profile_ver = 4;
+  bytes sampling_params_hash = 5;
+  int64 seed = 6;
+  bytes client_nonce = 7;
+  uint32 input_tokens = 8;
+  uint32 max_output_tokens = 9;
+  string tokenizer_version = 10;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ChunkRoot {
+  string request_id = 1;
+  uint32 seq = 2;
+  uint32 upto_step = 3;
+  bytes merkle_root = 4;
+  bytes prev_root = 5;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ExecutionReceipt {
+ uint32 reasoning_tokens = 11;
+ uint32 content_tokens = 12;
+  string request_id = 1;
+  bytes commitment_ref = 2;
+  repeated ChunkRoot chunk_roots = 3;
+  bytes output_commitment = 4;
+  uint32 input_tokens = 5;
+  uint32 output_tokens = 6;
+  int64 elapsed_ms = 7;
+  string node_id = 8;
+  EvidenceManifest evidence_manifest = 9;
+  string output_category = 10; // empty: model output; policy-refusal: manifest-defined refusal
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message AuditChallenge {
+  bytes receipt_ref = 1;
+  repeated uint32 positions = 2;
+  repeated uint32 layers = 3;
+  int64 deadline_unix = 4;
+  bytes vrf_proof = 5;
+  // MoE segment audit: the drawn segments (commit-then-draw over the frozen
+  // challenge plan). Empty for whole-model and dense-pipeline challenges.
+  repeated SegmentRef segment_refs = 6;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+// One drawn MoE segment: an attention stage span at one frame, or one
+// (layer, expert) branch at one frame.
+message SegmentRef {
+  string kind = 1; // "attention" | "expert"
+  uint32 layer = 2; // expert: the layer; attention: first layer of the span
+  uint32 expert = 3;
+  uint32 frame = 4;
+  uint32 end_layer = 5; // attention only: span end (exclusive)
+}
+message OffenseGrade {
+  string class = 1; // objective or numerical
+  double score = 2;
+  string band = 3;
+  string length_class = 4;
+  string fault = 5; // objective deterministic fault kind
+  string tokenizer_version = 6;
+  uint32 recomputed_input_tokens = 7;
+}
+message AuditVerdict {
+  bytes challenge_ref = 1;
+  string auditor_id = 2;
+  repeated double distances = 3;
+  string verdict = 4;
+  bytes evidence_ref = 5;
+  bytes audit_policy_ref = 6;
+  repeated string fault_node_ids = 7;
+  OffenseGrade offense = 8;
+  uint32 n_out_billed = 9; // replay prefix cited by this signed verdict
+  // MoE segment audit: per-segment distances behind the verdict, so the
+  // settlement layer can attribute fault to the exact segment.
+  repeated SegmentDistance segment_distances = 10;
+  optional int64 first_divergence = 11; // absent when no positional divergence was found
+  string tolerance = 12; // canonical identifier of the applied tolerance
+  bytes recompute_ref = 13; // SHA256 recompute-record binding
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+message SegmentDistance {
+  SegmentRef ref = 1;
+  double distance = 2; // relative L2 against the auditor's segment replay
+  string band_key = 3; // tolerance band applied, e.g. "expert/cuda->cpu"
+}
+message LedgerTx {
+  string from = 1;
+  string to = 2;
+  int64 amount = 3;
+  bytes receipt_ref = 4;
+  string type = 5;
+  string tx_id = 6;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+message TunnelFrame {
+  string node_id = 1;
+  string request_id = 2;
+  string attempt_id = 3;
+  string kind = 4;
+  bytes payload = 5;
+  uint64 nonce = 6;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+// FetchEvidence uses a signed TunnelFrame (kind fetch_evidence, request_id = hold ID,
+// payload = serialized EvidenceChunk with manifest_root and index only).
+message EvidenceManifest {
+  bytes merkle_root = 1;
+  uint32 chunk_count = 2;
+  uint32 total_tokens = 3;
+  repeated bytes chunk_hashes = 4;
+}
+message EvidenceChunk {
+  bytes manifest_root = 1;
+  uint32 index = 2;
+  bytes data = 3;
+}
+service NodeTunnel {
+  rpc Connect(stream TunnelFrame) returns (stream TunnelFrame);
+  rpc FetchEvidence(TunnelFrame) returns (EvidenceChunk);
+}
+
+message ShardForwardRequest {
+  string request_id = 1;
+  uint32 step = 2;
+  repeated int64 input_ids = 3;
+  bytes hidden_bf16 = 4;
+  repeated uint32 hidden_shape = 5;
+  uint64 nonce = 6;
+  uint32 executed_start_layer = 7;
+  uint32 executed_end_layer = 8;
+  bool dynamic_range = 9;
+  // MoE calls reuse this RPC. moe_call_kind "" keeps the legacy stage call.
+  // "attention": one frame of a backbone stage (input_ids for the embedding
+  // stage prefill, hidden_bf16 rows otherwise); the KV cache is server-side,
+  // keyed by request_id. "expert": hidden_bf16 carries exactly the token
+  // rows the routing record assigns to (moe_layer, moe_expert) at moe_frame.
+  string moe_call_kind = 10;
+  uint32 moe_layer = 11;
+  uint32 moe_expert = 12;
+  uint32 moe_frame = 13;
+  // Expert calls: the routing record hash and the A_att boundary hash the
+  // expert's segment receipt must bind.
+  bytes moe_routing_record_hash = 18;
+  bytes moe_input_hash = 19;
+
+  bytes signer = 30;
+  bytes signature = 31;
+}
+message ShardForwardResponse {
+  bytes hidden_bf16 = 1;
+  repeated uint32 hidden_shape = 2;
+  int64 token_id = 3;
+  repeated int64 topk_ids = 4;
+  repeated float topk_logits = 5;
+  map<string, bytes> activations = 6;
+  uint32 shard_index = 7;
+  bytes shard_parameters_hash = 8;
+  ShardStepReceipt receipt = 9;
+  uint64 server_elapsed_us = 10;
+  // MoE attention calls return the routing records they produced (one per
+  // layer of the span, for this frame); every MoE call returns its signed
+  // segment receipt.
+  repeated RoutingRecord routing_records = 11;
+  SegmentReceipt segment_receipt = 12;
+  // MoE attention calls also forward the expert segment receipts they
+  // collected from expert nodes during the fan-out for this frame.
+  repeated SegmentReceipt expert_receipts = 13;
+  // MoE calls: per-node frame receipts sealing this frame's segment set
+  // (the caller's own, plus expert nodes' collected via the seal call).
+  repeated NodeFrameReceipt frame_receipts = 14;
+}
+service ShardPipeline { rpc Forward(ShardForwardRequest) returns (ShardForwardResponse); }
+
+// One signed invocation of a shard. Request hash covers attempt ID, step and
+// input; response hash excludes this receipt and covers output + layer evidence.
+message ShardStepReceipt {
+ bytes scheme_hash = 16;
+  string node_id = 1;
+  string chain_id = 2;
+  bytes manifest_root = 3;
+  string execution_profile_ver = 4;
+  string request_id = 5;
+  uint32 step = 6;
+  uint32 shard_index = 7;
+  uint32 start_layer = 8;
+  uint32 end_layer = 9;
+  bytes request_hash = 10;
+  bytes response_hash = 11;
+  bytes parameters_hash = 12;
+  string unit_kind = 13;
+  bytes input_activation_hash = 14;
+  bytes output_activation_hash = 15;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+// The committed routing decision for one (frame, layer): for each position
+// of the frame, in frame order, the top_k experts the router selected.
+// Signed indirectly: the producing attention stage's segment receipt binds
+// the hash of its frame's record set, and every expert segment receipt binds
+// the hash of the single record it consumed. FLOPs, caps and audit draws are
+// all deterministic functions of these records plus manifest constants.
+message RoutingRecord {
+  uint32 frame = 1;
+  uint32 layer = 2;
+  uint32 positions = 3; // rows in this frame (<= MoeLayout.max_frame_positions)
+  repeated uint32 experts = 4; // position-major: positions * top_k expert ids
+  bytes input_hash = 5; // A_att hash: the expert-stage input boundary at this layer
+}
+
+// One signed MoE segment invocation. Attention receipts cover a stage span
+// for one frame and bind the frame's routing-record set hash; expert
+// receipts cover one (layer, expert) at one frame and bind the consumed
+// record's hash plus the exact input/output activation rows by hash.
+message SegmentReceipt {
+  string node_id = 1;
+  string chain_id = 2;
+  bytes manifest_root = 3;
+  string execution_profile_ver = 4;
+  string request_id = 5;
+  string kind = 6; // "attention" | "expert"
+  uint32 layer = 7; // expert: the layer; attention: first layer of the span
+  uint32 expert = 8;
+  uint32 frame = 9;
+  uint32 start_layer = 10; // attention span (== layer for experts)
+  uint32 end_layer = 11;   // attention span end, exclusive (layer+1 for experts)
+  bytes input_hash = 12;
+  bytes output_hash = 13;
+  bytes routing_record_hash = 14;
+  bytes params_hash = 15;
+  uint32 token_rows = 16; // expert: rows processed; attention: positions in frame
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+// Per node and frame: a Merkle root over that node's segment receipt hashes
+// for the frame, so a frame's whole segment set is bound by one signature.
+message NodeFrameReceipt {
+  string node_id = 1;
+  string request_id = 2;
+  uint32 frame = 3;
+  bytes segments_root = 4;
+  uint32 segment_count = 5;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+// MoE execution evidence carried by a pipeline aggregate receipt. Coverage
+// is algebraic: backbone stage receipts tile the layer axis per frame, and
+// every (frame, layer) has exactly one routing record whose expert branches
+// are exactly covered by expert segment receipts.
+message MoeExecutionData {
+  repeated RoutingRecord routing_records = 1;
+  repeated SegmentReceipt segment_receipts = 2;
+  repeated NodeFrameReceipt frame_receipts = 3;
+}
+
+// Identity-less pipeline aggregate. Every work claim is independently signed
+// by the stage that produced it; the assembly client has no signer or account.
+message PipelineExecutionReceipt {
+  string request_id = 1;
+  repeated ShardStepReceipt stage_receipts = 2;
+  bytes output_commitment = 3;
+  uint32 input_tokens = 4;
+  uint32 output_tokens = 5;
+  int64 elapsed_ms = 6;
+  repeated StageLatencyWitness latency_witnesses = 7;
+  // MoE profiles only: routing records + segment receipts for the request.
+  MoeExecutionData moe = 8;
+}
+
+// Independent auditor/client observation, bound to an executor-signed receipt.
+// Monotonic observer timestamps; executor self-reported elapsed time is unused.
+message StageLatencyWitness {
+  bytes stage_receipt_ref = 1;
+  uint64 started_mono_ns = 2;
+  uint64 completed_mono_ns = 3;
+  bytes signer = 30;
+  bytes signature = 31;
+}
+
+// Versioned audit payment statement, verified against request-frozen policy.
+message AuditComp {
+  string auditor = 1;
+  uint32 formula_ver = 2;
+  uint32 n_in = 3;
+  uint32 n_out_billed = 4;
+  int64 comp_subunits = 5;
+  // Formula v3 (MoE segment audit): segment work actually replayed.
+  uint32 seg_rows_replayed = 6; // token rows across all drawn segments
+  uint32 seg_count = 7;         // segments drawn
+}
+message SettlementReceipt {
+  uint32 version = 1;
+  string request_id = 2;
+  AuditComp audit_comp = 3;
+  int64 audit_shortfall_subunits = 4;
+}

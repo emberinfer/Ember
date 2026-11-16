@@ -1,0 +1,102 @@
+{
+  "experimental": true,
+  "scope": "S22 CPU release profile; ARM band retained from prior calibration; x86 +cpu band measured with six short Colab-to-cloud replays and one committed-logit tamper; limited corpus, not production validation",
+  "genesis": {
+    "chain_id": "ember-qwen2.5-1.5b-s22-cpu-v1",
+    "model_manifest_root": "tpT0+qdutKqrMMRSQk8sGHFzQsQD9hzgUGf92aRqh4M=",
+    "tokenizer_hash": "wDghF+oynN8JcEETL21zWSS2l5JNb2/DlFcT6WzodTk=",
+    "quant": "none",
+    "dtype": "bfloat16",
+    "execution_profile_ver": "transformers-qwen2.5-s22-cpu-v1",
+    "tolerance_table_ref": "sha256:4463bd3d3db8e3ca0a739c4d77f488bbfcfa2f9b3b574db3ad57f746abf6de7f",
+    "price_input": "1",
+    "price_output": "1",
+    "audit_params": {
+      "new_node_percent": 30,
+      "mature_node_percent": 5,
+      "floor_percent": 2,
+      "inline_percent": 3,
+      "canary_percent": 1,
+      "slash_multiplier": 20,
+      "min_stake_multiplier": 50,
+      "exposure_divisor": 5,
+      "dispute_seconds": "60",
+      "numeric_tolerance": 0.001
+    },
+    "numeric_audit_policy": {
+      "metric": "union-interval-v1",
+      "bands": [
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.5.1",
+          "producer_device": "cpu",
+          "reference_engine": "transformers/4.45.2|torch=2.5.1",
+          "reference_device": "cpu",
+          "tolerance": 0.001,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.5.1+cpu",
+          "producer_device": "cpu",
+          "reference_engine": "transformers/4.45.2|torch=2.5.1+cpu",
+          "reference_device": "cpu",
+          "tolerance": 0.03,
+          "mode": "enforce"
+        }
+      ],
+      "layers": [
+        "0",
+        "14",
+        "27"
+      ],
+      "top_k": 16,
+      "calibration_ref": "tiQvNurDp3OdaAU/trx4saY0GTvgy33/OfJ/FdRes+M="
+    },
+    "signer": "C4wTPfHT0GvefB9/1rkGYToFz9UndaE7Y50f4L2KLl8=",
+    "signature": "gfIqpR0uz2yWdSvm9BLgkGnJSQLXMcnPZkBjKXOVCtZ8vmgIobDv61M8p03/BkLog+mBg1wAc+bqD3EAi7dFAQ=="
+  },
+  "manifest": {
+    "chain_id": "ember-qwen2.5-1.5b-s22-cpu-v1",
+    "artifacts": [
+      {
+        "name": "config.json",
+        "sha256": "mNL/jMR0iNCKKws6z065nvIQd5tCvUhgX2uONqzb9nA=",
+        "size": "660"
+      },
+      {
+        "name": "generation_config.json",
+        "sha256": "5ViEeotEAmFvEnN5ewFRBNwmb+S1IAVvyoiCO6j46+Y=",
+        "size": "242"
+      },
+      {
+        "name": "merges.txt",
+        "sha256": "WZurVAdQiHdLFzP96GXVvXR8vMelR8W8EmEOh04m9eM=",
+        "size": "1671839"
+      },
+      {
+        "name": "model.safetensors",
+        "sha256": "3ZJKEbTCIPOFtR/6Ui2up8nz2FDjGxYrtWYd9IPG0+4=",
+        "size": "3087467144"
+      },
+      {
+        "name": "tokenizer.json",
+        "sha256": "wDghF+oynN8JcEETL21zWSS2l5JNb2/DlFcT6WzodTk=",
+        "size": "7031645"
+      },
+      {
+        "name": "tokenizer_config.json",
+        "sha256": "W11PZdCs07LVajW1bTdKNsvByPpc87P+u7+r8i81lYM=",
+        "size": "7305"
+      },
+      {
+        "name": "vocab.json",
+        "sha256": "yhDX6fs+0YV13R4neiV5wW0QjjLydDloSvoOELFECRA=",
+        "size": "2776833"
+      }
+    ],
+    "graph_hash": "kUFGZWTV/N58pxwYIwPLfoh1TarEu40PFK/dzqnCwpc=",
+    "config_hash": "mNL/jMR0iNCKKws6z065nvIQd5tCvUhgX2uONqzb9nA=",
+    "license": "Apache-2.0",
+    "signer": "C4wTPfHT0GvefB9/1rkGYToFz9UndaE7Y50f4L2KLl8=",
+    "signature": "ezSxY+NgRoO1h+tEzTevb7NCBfOaFXQgfv32zG22o0qGN/6UKenuz6T1LnWAphSbSoDuB0tb1CCwZa7RDeJ8AA=="
+  }
+}

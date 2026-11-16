@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ember-qwen2.5-1.5b-publisher-cpu-v1 — Ember profile release</title>
+<style>body{max-width:72rem;margin:3rem auto;padding:0 1rem;font:16px/1.6 system-ui;background:#10141c;color:#e5eaf3}a{color:#9dcaff}code,pre{overflow-wrap:anywhere}pre{white-space:pre-wrap;padding:1rem;background:#1c2432}h1{font-size:1.6rem}</style>
+<a href="../">All profile records</a><h1>ember-qwen2.5-1.5b-publisher-cpu-v1</h1>
+<p>Generated from publisher-signed artifacts and a verified chain query. Chain:
+<code>ember-s25-publishing-staging</code>. Endorsement snapshot at height 1184.
+Endorsements are data; serving requires your local trust policy. This record does not upgrade another network.</p>
+<p>Publication status: registered.</p>
+<h2>Manifest and on-chain anchor</h2>
+<p>Manifest root: <code>2d3f6735d61eb4196311fc50bd72c732f4e0074851decae9e5a1557a97470258</code><br>
+Profile hash: <code>ab9e7d0a72346125e9a25fb1afd81010f620196a3d91876e21f14178921d4969</code><br>
+Registration height: 537<br>
+Publisher: <code>2a91cb03ca6b9b09842d2cefe2fce1753e153e8ed82d76eb5db386625bcc6829</code></p>
+<p><a href="genesis.pb">Signed profile</a> · <a href="manifest.pb">Signed manifest</a> ·
+<a href="release.json">Machine-readable release record</a> · <a href="ledger-genesis.json">Ledger verification anchor</a></p>
+<h2>Recompute from the pinned origin</h2><pre>{
+  &quot;repository&quot;: &quot;https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct&quot;,
+  &quot;revision&quot;: &quot;989aa7980e4cf806f80c7fef2b1adb7bc71aa306&quot;
+}</pre>
+<pre>python -c &#x27;from huggingface_hub import snapshot_download; snapshot_download(&#x27;&quot;&#x27;&quot;&#x27;Qwen/Qwen2.5-1.5B-Instruct&#x27;&quot;&#x27;&quot;&#x27;, revision=&#x27;&quot;&#x27;&quot;&#x27;989aa7980e4cf806f80c7fef2b1adb7bc71aa306&#x27;&quot;&#x27;&quot;&#x27;, local_dir=&#x27;&quot;&#x27;&quot;&#x27;./origin&#x27;&quot;&#x27;&quot;&#x27;, allow_patterns=[&#x27;&quot;&#x27;&quot;&#x27;config.json&#x27;&quot;&#x27;&quot;&#x27;, &#x27;&quot;&#x27;&quot;&#x27;generation_config.json&#x27;&quot;&#x27;&quot;&#x27;, &#x27;&quot;&#x27;&quot;&#x27;merges.txt&#x27;&quot;&#x27;&quot;&#x27;, &#x27;&quot;&#x27;&quot;&#x27;model.safetensors&#x27;&quot;&#x27;&quot;&#x27;, &#x27;&quot;&#x27;&quot;&#x27;tokenizer.json&#x27;&quot;&#x27;&quot;&#x27;, &#x27;&quot;&#x27;&quot;&#x27;tokenizer_config.json&#x27;&quot;&#x27;&quot;&#x27;, &#x27;&quot;&#x27;&quot;&#x27;vocab.json&#x27;&quot;&#x27;&quot;&#x27;])&#x27;
+ember-node profile verify --genesis genesis.pb --manifest manifest.pb --model-path ./origin</pre>
+<p>Use the pinned Ember runtime and download the two signed artifacts above first. Verification checks every
+artifact's hash/size, both signatures and the domain-separated manifest root. A conformance probe does not
+establish numerical calibration on other hardware.</p>
+<h2>Version history</h2><pre>[
+  {
+    &quot;model_id&quot;: &quot;ember-qwen2.5-1.5b-publisher-cpu-v1&quot;,
+    &quot;previous_profile_hash&quot;: null,
+    &quot;profile_hash&quot;: &quot;ab9e7d0a72346125e9a25fb1afd81010f620196a3d91876e21f14178921d4969&quot;,
+    &quot;registration_height&quot;: 537
+  }
+]</pre>
+<h2>Endorsements from chain state</h2><ul><li><code>1ab7c786db819c770998cbbf6a8b9c5773ecdc8f87f3777d81e9e7eb5b35fff5</code> (height 542)</li></ul>
+<p>This is a build-time snapshot. Query finalized state for current endorsements and revocations:</p>
+<pre>emberchain query --rpc http://13.140.242.11:41657 --path /model/ember-qwen2.5-1.5b-publisher-cpu-v1
+emberchain query --rpc http://13.140.242.11:41657 --path /endorsements</pre>
+<h2>Executable conformance check</h2><pre>ember-node profile verify --genesis genesis.pb --manifest manifest.pb --model-path ./origin --conformance --device cpu</pre>
+<h2>Signed audit parameters and bands</h2><pre>{
+  &quot;canary_percent&quot;: 1,
+  &quot;dispute_seconds&quot;: &quot;60&quot;,
+  &quot;exposure_divisor&quot;: 5,
+  &quot;floor_percent&quot;: 2,
+  &quot;inline_percent&quot;: 3,
+  &quot;mature_node_percent&quot;: 5,
+  &quot;min_stake_multiplier&quot;: 50,
+  &quot;new_node_percent&quot;: 30,
+  &quot;numeric_tolerance&quot;: 0.001,
+  &quot;slash_multiplier&quot;: 20
+}</pre>
+<pre>{
+  &quot;bands&quot;: [
+    {
+      &quot;mode&quot;: &quot;enforce&quot;,
+      &quot;producer_device&quot;: &quot;cpu&quot;,
+      &quot;producer_engine&quot;: &quot;transformers/4.45.2|torch=2.5.1&quot;,
+      &quot;reference_device&quot;: &quot;cpu&quot;,
+      &quot;reference_engine&quot;: &quot;transformers/4.45.2|torch=2.5.1&quot;,
+      &quot;tolerance&quot;: 0.001
+    },
+    {
+      &quot;mode&quot;: &quot;enforce&quot;,
+      &quot;producer_device&quot;: &quot;cpu&quot;,
+      &quot;producer_engine&quot;: &quot;transformers/4.45.2|torch=2.5.1+cpu&quot;,
+      &quot;reference_device&quot;: &quot;cpu&quot;,
+      &quot;reference_engine&quot;: &quot;transformers/4.45.2|torch=2.5.1+cpu&quot;,
+      &quot;tolerance&quot;: 0.03
+    }
+  ],
+  &quot;calibration_ref&quot;: &quot;tiQvNurDp3OdaAU/trx4saY0GTvgy33/OfJ/FdRes+M=&quot;,
+  &quot;layers&quot;: [
+    &quot;0&quot;,
+    &quot;14&quot;,
+    &quot;27&quot;
+  ],
+  &quot;metric&quot;: &quot;union-interval-v1&quot;,
+  &quot;top_k&quot;: 16
+}</pre>
+<h2>Artifact inventory</h2><pre>[
+  {
+    &quot;name&quot;: &quot;config.json&quot;,
+    &quot;sha256&quot;: &quot;mNL/jMR0iNCKKws6z065nvIQd5tCvUhgX2uONqzb9nA=&quot;,
+    &quot;size&quot;: &quot;660&quot;,
+    &quot;source&quot;: &quot;git:config.json&quot;
+  },
+  {
+    &quot;name&quot;: &quot;generation_config.json&quot;,
+    &quot;sha256&quot;: &quot;5ViEeotEAmFvEnN5ewFRBNwmb+S1IAVvyoiCO6j46+Y=&quot;,
+    &quot;size&quot;: &quot;242&quot;,
+    &quot;source&quot;: &quot;git:generation_config.json&quot;
+  },
+  {
+    &quot;name&quot;: &quot;merges.txt&quot;,
+    &quot;sha256&quot;: &quot;WZurVAdQiHdLFzP96GXVvXR8vMelR8W8EmEOh04m9eM=&quot;,
+    &quot;size&quot;: &quot;1671839&quot;,
+    &quot;source&quot;: &quot;git:merges.txt&quot;
+  },
+  {
+    &quot;name&quot;: &quot;model.safetensors&quot;,
+    &quot;sha256&quot;: &quot;3ZJKEbTCIPOFtR/6Ui2up8nz2FDjGxYrtWYd9IPG0+4=&quot;,
+    &quot;size&quot;: &quot;3087467144&quot;,
+    &quot;source&quot;: &quot;git:model.safetensors&quot;
+  },
+  {
+    &quot;name&quot;: &quot;tokenizer.json&quot;,
+    &quot;sha256&quot;: &quot;wDghF+oynN8JcEETL21zWSS2l5JNb2/DlFcT6WzodTk=&quot;,
+    &quot;size&quot;: &quot;7031645&quot;,
+    &quot;source&quot;: &quot;git:tokenizer.json&quot;
+  },
+  {
+    &quot;name&quot;: &quot;tokenizer_config.json&quot;,
+    &quot;sha256&quot;: &quot;W11PZdCs07LVajW1bTdKNsvByPpc87P+u7+r8i81lYM=&quot;,
+    &quot;size&quot;: &quot;7305&quot;,
+    &quot;source&quot;: &quot;git:tokenizer_config.json&quot;
+  },
+  {
+    &quot;name&quot;: &quot;vocab.json&quot;,
+    &quot;sha256&quot;: &quot;yhDX6fs+0YV13R4neiV5wW0QjjLydDloSvoOELFECRA=&quot;,
+    &quot;size&quot;: &quot;2776833&quot;,
+    &quot;source&quot;: &quot;git:vocab.json&quot;
+  }
+]</pre>
+</html>

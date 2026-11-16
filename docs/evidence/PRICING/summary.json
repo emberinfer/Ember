@@ -1,0 +1,284 @@
+{
+  "app_version": 5,
+  "chain": "local-deterministic-abci",
+  "default_step_policy": {
+    "epoch_blocks": 6,
+    "min_ppm": 800000,
+    "max_ppm": 2000000,
+    "step_ppm": 100000,
+    "min_settled_samples": 1
+  },
+  "double_supply": {
+    "after_supply": 4,
+    "before_supply": 2,
+    "expected_ppm": 1000000,
+    "observed": {
+      "multiplier_ppm": 1000000,
+      "effective_height": 41,
+      "cumulative_samples": 2,
+      "window": {
+        "requests": 0,
+        "tokens": 0
+      },
+      "previous_window": {
+        "requests": 1,
+        "tokens": 65
+      },
+      "supply": 4,
+      "target": 4,
+      "raw_ppm": 1000000,
+      "corridor_ppm": 1000000
+    }
+  },
+  "epoch_blocks": 20,
+  "formula": "P=min(1000000,(Q+ceil(T/1024))*1000000/L); raw=1000000+trunc(P*(K-S)/max(K,S,1)); corridor then relative step clamp",
+  "half_supply": {
+    "after_supply": 2,
+    "before_supply": 4,
+    "expected_ppm": 1050000,
+    "observed": {
+      "multiplier_ppm": 1050000,
+      "effective_height": 21,
+      "cumulative_samples": 1,
+      "window": {
+        "requests": 0,
+        "tokens": 0
+      },
+      "previous_window": {
+        "requests": 1,
+        "tokens": 65
+      },
+      "supply": 2,
+      "target": 4,
+      "raw_ppm": 1050000,
+      "corridor_ppm": 1050000
+    }
+  },
+  "issuance": {
+    "audit_formula_unchanged": true,
+    "authorized_work_output": 30,
+    "genesis_pool_used": false,
+    "split": "80/15/5, largest remainder",
+    "subsidy_after": 0,
+    "subsidy_after_work_output": 30,
+    "subsidy_before": 0,
+    "total_after": 180000000,
+    "total_after_work_output": 180000030,
+    "total_before": 180000000
+  },
+  "lower_corridor": {
+    "multiplier_ppm": 980000,
+    "effective_height": 21,
+    "cumulative_samples": 1,
+    "window": {
+      "requests": 0,
+      "tokens": 0
+    },
+    "previous_window": {
+      "requests": 1,
+      "tokens": 65
+    },
+    "supply": 8,
+    "target": 4,
+    "raw_ppm": 950000,
+    "corridor_ppm": 980000
+  },
+  "protected": {
+    "multiplier_ppm": 1000000,
+    "effective_height": 81,
+    "cumulative_samples": 0,
+    "window": {
+      "requests": 0,
+      "tokens": 0
+    },
+    "previous_window": {
+      "requests": 0,
+      "tokens": 0
+    },
+    "supply": 0,
+    "target": 1,
+    "raw_ppm": 1000000,
+    "corridor_ppm": 1000000
+  },
+  "quote_spam": {
+    "after_ppm": 1000000,
+    "before_ppm": 1000000,
+    "queries": 10000,
+    "settled_requests": 0,
+    "state_hash_matches_control": true
+  },
+  "requests": [
+    {
+      "audit_escrow": 1571,
+      "audit_receipts": [
+        {
+          "version": 2,
+          "request_id": "50ea6e7b7719836726cd50e78033548fbff8357a8e26668191a24e4131efcfd1",
+          "audit_comp": {
+            "auditor": "4071cd657e3033082dcebb6ef1c25f2f8ab58ef26f234c58bef965f505082a3f",
+            "formula_ver": 2,
+            "n_in": 33,
+            "n_out_billed": 1,
+            "comp_subunits": 896
+          }
+        }
+      ],
+      "base_fee": 16449,
+      "effective_height": 1,
+      "freeze": 16449,
+      "freeze_height": 5,
+      "id": "first",
+      "multiplier_ppm": 1000000,
+      "quote": 16449,
+      "settle": 16449,
+      "settle_height": 11,
+      "shares": {
+        "fee": 16449,
+        "executor": 13159,
+        "auditor": 2467,
+        "consumer": 823,
+        "coverage": {
+          "height": 10,
+          "profile": "ember-unit-test",
+          "runtime": "transformers/4.45.2|torch=2.5.1",
+          "executors": 4,
+          "auditors": 3,
+          "target_executors": 4,
+          "target_auditors": 3
+        }
+      }
+    },
+    {
+      "audit_escrow": 1695,
+      "audit_receipts": [
+        {
+          "version": 2,
+          "request_id": "7e8b8af8678c8d3ea44cb9b8eaa0696d5ab7d1e076849d29667422010c9a7566",
+          "audit_comp": {
+            "auditor": "6f1e5b61ed9a821457aa6b4d7c2a2b37715ffb16e41585d25c4679cda12e441b",
+            "formula_ver": 2,
+            "n_in": 33,
+            "n_out_billed": 1,
+            "comp_subunits": 896
+          }
+        }
+      ],
+      "base_fee": 16449,
+      "effective_height": 21,
+      "freeze": 17271,
+      "freeze_height": 23,
+      "id": "second",
+      "multiplier_ppm": 1050000,
+      "quote": 17271,
+      "settle": 17271,
+      "settle_height": 29,
+      "shares": {
+        "fee": 17271,
+        "executor": 13817,
+        "auditor": 2591,
+        "consumer": 863,
+        "coverage": {
+          "height": 28,
+          "profile": "ember-unit-test",
+          "runtime": "transformers/4.45.2|torch=2.5.1",
+          "executors": 4,
+          "auditors": 3,
+          "target_executors": 4,
+          "target_auditors": 3
+        }
+      }
+    },
+    {
+      "audit_escrow": 1695,
+      "audit_receipts": [
+        {
+          "version": 2,
+          "request_id": "9856d3133a93b3a5e08da3cbccf45d1c621525b9c0ae6c2178342a19c90bbc01",
+          "audit_comp": {
+            "auditor": "4071cd657e3033082dcebb6ef1c25f2f8ab58ef26f234c58bef965f505082a3f",
+            "formula_ver": 2,
+            "n_in": 33,
+            "n_out_billed": 1,
+            "comp_subunits": 896
+          }
+        }
+      ],
+      "base_fee": 16449,
+      "effective_height": 21,
+      "freeze": 17271,
+      "freeze_height": 39,
+      "id": "cross-epoch",
+      "multiplier_ppm": 1050000,
+      "quote": 17271,
+      "settle": 17271,
+      "settle_height": 45,
+      "shares": {
+        "fee": 17271,
+        "executor": 13817,
+        "auditor": 2591,
+        "consumer": 863,
+        "coverage": {
+          "height": 44,
+          "profile": "ember-unit-test",
+          "runtime": "transformers/4.45.2|torch=2.5.1",
+          "executors": 4,
+          "auditors": 3,
+          "target_executors": 4,
+          "target_auditors": 3
+        }
+      }
+    }
+  ],
+  "restart_hash_preserved": true,
+  "sampled_protection": {
+    "multiplier_ppm": 1000000,
+    "effective_height": 21,
+    "cumulative_samples": 1,
+    "window": {
+      "requests": 0,
+      "tokens": 0
+    },
+    "previous_window": {
+      "requests": 1,
+      "tokens": 65
+    },
+    "supply": 2,
+    "target": 4,
+    "raw_ppm": 1000000,
+    "corridor_ppm": 1000000
+  },
+  "step_clamp": {
+    "multiplier_ppm": 1100000,
+    "effective_height": 13,
+    "cumulative_samples": 1,
+    "window": {
+      "requests": 0,
+      "tokens": 0
+    },
+    "previous_window": {
+      "requests": 1,
+      "tokens": 65
+    },
+    "supply": 2,
+    "target": 4,
+    "raw_ppm": 1166666,
+    "corridor_ppm": 1166666
+  },
+  "upper_corridor": {
+    "multiplier_ppm": 1020000,
+    "effective_height": 21,
+    "cumulative_samples": 1,
+    "window": {
+      "requests": 0,
+      "tokens": 0
+    },
+    "previous_window": {
+      "requests": 1,
+      "tokens": 65
+    },
+    "supply": 2,
+    "target": 4,
+    "raw_ppm": 1050000,
+    "corridor_ppm": 1020000
+  }
+}

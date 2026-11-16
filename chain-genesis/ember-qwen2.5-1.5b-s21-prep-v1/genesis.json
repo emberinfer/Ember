@@ -1,0 +1,118 @@
+{
+  "experimental": true,
+  "scope": "S21 private rehearsal profile combining existing S16 CPU and S19 cloud same-runtime bands; cross-runtime verdicts remain observe-only",
+  "genesis": {
+    "chain_id": "ember-qwen2.5-1.5b-s21-prep-v1",
+    "model_manifest_root": "Ih7CwilXXMbNsM0GVfqkubeF2CjuCwtWLN29f8jEnoQ=",
+    "tokenizer_hash": "wDghF+oynN8JcEETL21zWSS2l5JNb2/DlFcT6WzodTk=",
+    "quant": "none",
+    "dtype": "bfloat16",
+    "execution_profile_ver": "transformers-qwen2.5-s21-prep-v1",
+    "tolerance_table_ref": "sha256:bb8764367b8aafaee99b53679430f017386e7fc58c22d4e5a8e13d31aee10232",
+    "price_input": "1",
+    "price_output": "1",
+    "audit_params": {
+      "new_node_percent": 30,
+      "mature_node_percent": 5,
+      "floor_percent": 2,
+      "inline_percent": 3,
+      "canary_percent": 1,
+      "slash_multiplier": 20,
+      "min_stake_multiplier": 50,
+      "exposure_divisor": 5,
+      "dispute_seconds": "60",
+      "numeric_tolerance": 0.001
+    },
+    "numeric_audit_policy": {
+      "metric": "union-interval-v1",
+      "bands": [
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.5.1",
+          "producer_device": "cpu",
+          "reference_engine": "transformers/4.45.2|torch=2.5.1",
+          "reference_device": "cpu",
+          "tolerance": 0.001,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+          "producer_device": "cpu",
+          "reference_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+          "reference_device": "cpu",
+          "tolerance": 0.03,
+          "mode": "enforce"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+          "producer_device": "cpu",
+          "reference_engine": "transformers/4.45.2|torch=2.5.1",
+          "reference_device": "cpu",
+          "tolerance": 0.3,
+          "mode": "observe"
+        },
+        {
+          "producer_engine": "transformers/4.45.2|torch=2.5.1",
+          "producer_device": "cpu",
+          "reference_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+          "reference_device": "cpu",
+          "tolerance": 0.3,
+          "mode": "observe"
+        }
+      ],
+      "layers": [
+        "0",
+        "14",
+        "27"
+      ],
+      "top_k": 16,
+      "calibration_ref": "8qAltcJDn5dQhATnsOsXgJYTiWqd8m1+Zf9DUibAMV4="
+    },
+    "signer": "mnxaF7Yg1drQIZLf85gRPER8NDM2j4y8tPws41qlQqA=",
+    "signature": "ezLU6vBEqfrN6B9BpFuIQIdTa4+OlFtbzVDoCzyKK+WwmMO55vvvl3LtzE7pIRb9YlD7NrYLCD7S0ZEWwMqeDA=="
+  },
+  "manifest": {
+    "chain_id": "ember-qwen2.5-1.5b-s21-prep-v1",
+    "artifacts": [
+      {
+        "name": "config.json",
+        "sha256": "mNL/jMR0iNCKKws6z065nvIQd5tCvUhgX2uONqzb9nA=",
+        "size": "660"
+      },
+      {
+        "name": "generation_config.json",
+        "sha256": "5ViEeotEAmFvEnN5ewFRBNwmb+S1IAVvyoiCO6j46+Y=",
+        "size": "242"
+      },
+      {
+        "name": "merges.txt",
+        "sha256": "WZurVAdQiHdLFzP96GXVvXR8vMelR8W8EmEOh04m9eM=",
+        "size": "1671839"
+      },
+      {
+        "name": "model.safetensors",
+        "sha256": "3ZJKEbTCIPOFtR/6Ui2up8nz2FDjGxYrtWYd9IPG0+4=",
+        "size": "3087467144"
+      },
+      {
+        "name": "tokenizer.json",
+        "sha256": "wDghF+oynN8JcEETL21zWSS2l5JNb2/DlFcT6WzodTk=",
+        "size": "7031645"
+      },
+      {
+        "name": "tokenizer_config.json",
+        "sha256": "W11PZdCs07LVajW1bTdKNsvByPpc87P+u7+r8i81lYM=",
+        "size": "7305"
+      },
+      {
+        "name": "vocab.json",
+        "sha256": "yhDX6fs+0YV13R4neiV5wW0QjjLydDloSvoOELFECRA=",
+        "size": "2776833"
+      }
+    ],
+    "graph_hash": "kUFGZWTV/N58pxwYIwPLfoh1TarEu40PFK/dzqnCwpc=",
+    "config_hash": "mNL/jMR0iNCKKws6z065nvIQd5tCvUhgX2uONqzb9nA=",
+    "license": "Apache-2.0",
+    "signer": "mnxaF7Yg1drQIZLf85gRPER8NDM2j4y8tPws41qlQqA=",
+    "signature": "fK9RQfB3NVWTxENlOT821JrSxZoRQKRZcwSAf33h9GBtTr5GzJzf+r9UoOWD7xwhgM5u662PjkJtEsZ0wDe5BA=="
+  }
+}

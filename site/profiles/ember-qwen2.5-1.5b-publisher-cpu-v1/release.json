@@ -1,0 +1,129 @@
+{
+  "artifacts": [
+    {
+      "name": "config.json",
+      "sha256": "mNL/jMR0iNCKKws6z065nvIQd5tCvUhgX2uONqzb9nA=",
+      "size": "660",
+      "source": "git:config.json"
+    },
+    {
+      "name": "generation_config.json",
+      "sha256": "5ViEeotEAmFvEnN5ewFRBNwmb+S1IAVvyoiCO6j46+Y=",
+      "size": "242",
+      "source": "git:generation_config.json"
+    },
+    {
+      "name": "merges.txt",
+      "sha256": "WZurVAdQiHdLFzP96GXVvXR8vMelR8W8EmEOh04m9eM=",
+      "size": "1671839",
+      "source": "git:merges.txt"
+    },
+    {
+      "name": "model.safetensors",
+      "sha256": "3ZJKEbTCIPOFtR/6Ui2up8nz2FDjGxYrtWYd9IPG0+4=",
+      "size": "3087467144",
+      "source": "git:model.safetensors"
+    },
+    {
+      "name": "tokenizer.json",
+      "sha256": "wDghF+oynN8JcEETL21zWSS2l5JNb2/DlFcT6WzodTk=",
+      "size": "7031645",
+      "source": "git:tokenizer.json"
+    },
+    {
+      "name": "tokenizer_config.json",
+      "sha256": "W11PZdCs07LVajW1bTdKNsvByPpc87P+u7+r8i81lYM=",
+      "size": "7305",
+      "source": "git:tokenizer_config.json"
+    },
+    {
+      "name": "vocab.json",
+      "sha256": "yhDX6fs+0YV13R4neiV5wW0QjjLydDloSvoOELFECRA=",
+      "size": "2776833",
+      "source": "git:vocab.json"
+    }
+  ],
+  "audit_parameters": {
+    "canary_percent": 1,
+    "dispute_seconds": "60",
+    "exposure_divisor": 5,
+    "floor_percent": 2,
+    "inline_percent": 3,
+    "mature_node_percent": 5,
+    "min_stake_multiplier": 50,
+    "new_node_percent": 30,
+    "numeric_tolerance": 0.001,
+    "slash_multiplier": 20
+  },
+  "chain_id": "ember-s25-publishing-staging",
+  "chain_query_commands": [
+    "emberchain query --rpc http://13.140.242.11:41657 --path /model/ember-qwen2.5-1.5b-publisher-cpu-v1",
+    "emberchain query --rpc http://13.140.242.11:41657 --path /endorsements"
+  ],
+  "conformance_commands": [
+    "ember-node profile verify --genesis genesis.pb --manifest manifest.pb --model-path ./origin --conformance --device cpu"
+  ],
+  "endorsements": [
+    {
+      "account": "1ab7c786db819c770998cbbf6a8b9c5773ecdc8f87f3777d81e9e7eb5b35fff5",
+      "height": 542
+    }
+  ],
+  "execution_profile": "transformers-qwen2.5-publisher-cpu-v1",
+  "genesis_sha256": "cac6dd41404969cafb40e6570b1d9def63678901a915da9160465310f0e6311b",
+  "invalid": false,
+  "manifest_root": "2d3f6735d61eb4196311fc50bd72c732f4e0074851decae9e5a1557a97470258",
+  "manifest_sha256": "f0c3d6d8bf86d2524cee239a0c3444c45238e9132588a1cea1bf38e4b976599a",
+  "model_id": "ember-qwen2.5-1.5b-publisher-cpu-v1",
+  "numeric_audit_policy": {
+    "bands": [
+      {
+        "mode": "enforce",
+        "producer_device": "cpu",
+        "producer_engine": "transformers/4.45.2|torch=2.5.1",
+        "reference_device": "cpu",
+        "reference_engine": "transformers/4.45.2|torch=2.5.1",
+        "tolerance": 0.001
+      },
+      {
+        "mode": "enforce",
+        "producer_device": "cpu",
+        "producer_engine": "transformers/4.45.2|torch=2.5.1+cpu",
+        "reference_device": "cpu",
+        "reference_engine": "transformers/4.45.2|torch=2.5.1+cpu",
+        "tolerance": 0.03
+      }
+    ],
+    "calibration_ref": "tiQvNurDp3OdaAU/trx4saY0GTvgy33/OfJ/FdRes+M=",
+    "layers": [
+      "0",
+      "14",
+      "27"
+    ],
+    "metric": "union-interval-v1",
+    "top_k": 16
+  },
+  "origin": {
+    "repository": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
+  },
+  "profile_hash": "ab9e7d0a72346125e9a25fb1afd81010f620196a3d91876e21f14178921d4969",
+  "publisher": "2a91cb03ca6b9b09842d2cefe2fce1753e153e8ed82d76eb5db386625bcc6829",
+  "recompute_commands": [
+    "python -c 'from huggingface_hub import snapshot_download; snapshot_download('\"'\"'Qwen/Qwen2.5-1.5B-Instruct'\"'\"', revision='\"'\"'989aa7980e4cf806f80c7fef2b1adb7bc71aa306'\"'\"', local_dir='\"'\"'./origin'\"'\"', allow_patterns=['\"'\"'config.json'\"'\"', '\"'\"'generation_config.json'\"'\"', '\"'\"'merges.txt'\"'\"', '\"'\"'model.safetensors'\"'\"', '\"'\"'tokenizer.json'\"'\"', '\"'\"'tokenizer_config.json'\"'\"', '\"'\"'vocab.json'\"'\"'])'",
+    "ember-node profile verify --genesis genesis.pb --manifest manifest.pb --model-path ./origin"
+  ],
+  "registration_height": 537,
+  "rpc": "http://13.140.242.11:41657",
+  "schema": "ember-profile-release-v1",
+  "snapshot_height": 1184,
+  "state_verification": "state_height=1184 proof_header_height=1185 app_hash=ca1057ac1697f3c40fe6b378a2678c3cbb36d31f00789f41a27b9780e5f30c54 proof=whole-state commit=genesis-verified",
+  "version_history": [
+    {
+      "model_id": "ember-qwen2.5-1.5b-publisher-cpu-v1",
+      "previous_profile_hash": null,
+      "profile_hash": "ab9e7d0a72346125e9a25fb1afd81010f620196a3d91876e21f14178921d4969",
+      "registration_height": 537
+    }
+  ]
+}

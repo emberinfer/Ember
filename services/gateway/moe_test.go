@@ -141,3 +141,21 @@ fi
 		})
 	}
 }
+
+func TestMoeContextLimitAdmission(t *testing.T) {
+	g, book := moeFixture(t)
+	path := filepath.Join(g.Moe.WorkDir, "tokenizer")
+	if err := os.WriteFile(path, []byte("#!/bin/sh\necho '{\"input_tokens\":3,\"tokenizer_version\":\"test\"}'\n"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	g.Moe.Python = path
+	g.ContextLimit = 4
+	w := httptest.NewRecorder()
+	g.serveMoe(w, httptest.NewRequest("POST", "/v1/chat/completions", nil), request{Model: MoeProfile, MaxTokens: 2, Stream: true}, "prompt", "payer", "hold")
+	if w.Code != 400 || !strings.Contains(w.Body.String(), "input_tokens 3 + max_tokens 2") || !strings.Contains(w.Body.String(), "4 tokens") {
+		t.Fatalf("status=%d body=%s", w.Code, w.Body)
+	}
+	if book.frozen {
+		t.Fatal("over-limit MoE request froze funds")
+	}
+}

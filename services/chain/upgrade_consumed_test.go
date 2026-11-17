@@ -28,7 +28,7 @@ func TestConsumedUpgradeDecisionTable(t *testing.T) {
 						app := &Application{committed: s}
 						err := app.ConfigureMembershipUpgrade(u)
 						consumed := matching && height <= s.Height && version >= 6 && version != 10
-						armed := matching && height > s.Height && version >= 5 && version <= 11
+						armed := matching && height > s.Height && version >= 5 && version <= 12
 						if (err == nil) != (consumed || armed) {
 							t.Fatalf("err=%v consumed=%t armed=%t", err, consumed, armed)
 						}

@@ -4267,6 +4267,75 @@ func (x *NodeFrameReceipt) GetSignature() []byte {
 	return nil
 }
 
+// Request constants omitted from compact transport's signed segments.
+type MoeReceiptHeader struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	ChainId             string                 `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	ManifestRoot        []byte                 `protobuf:"bytes,2,opt,name=manifest_root,json=manifestRoot,proto3" json:"manifest_root,omitempty"`
+	ExecutionProfileVer string                 `protobuf:"bytes,3,opt,name=execution_profile_ver,json=executionProfileVer,proto3" json:"execution_profile_ver,omitempty"`
+	RequestId           string                 `protobuf:"bytes,4,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *MoeReceiptHeader) Reset() {
+	*x = MoeReceiptHeader{}
+	mi := &file_ember_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MoeReceiptHeader) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MoeReceiptHeader) ProtoMessage() {}
+
+func (x *MoeReceiptHeader) ProtoReflect() protoreflect.Message {
+	mi := &file_ember_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MoeReceiptHeader.ProtoReflect.Descriptor instead.
+func (*MoeReceiptHeader) Descriptor() ([]byte, []int) {
+	return file_ember_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *MoeReceiptHeader) GetChainId() string {
+	if x != nil {
+		return x.ChainId
+	}
+	return ""
+}
+
+func (x *MoeReceiptHeader) GetManifestRoot() []byte {
+	if x != nil {
+		return x.ManifestRoot
+	}
+	return nil
+}
+
+func (x *MoeReceiptHeader) GetExecutionProfileVer() string {
+	if x != nil {
+		return x.ExecutionProfileVer
+	}
+	return ""
+}
+
+func (x *MoeReceiptHeader) GetRequestId() string {
+	if x != nil {
+		return x.RequestId
+	}
+	return ""
+}
+
 // MoE execution evidence carried by a pipeline aggregate receipt. Coverage
 // is algebraic: backbone stage receipts tile the layer axis per frame, and
 // every (frame, layer) has exactly one routing record whose expert branches
@@ -4276,13 +4345,16 @@ type MoeExecutionData struct {
 	RoutingRecords  []*RoutingRecord       `protobuf:"bytes,1,rep,name=routing_records,json=routingRecords,proto3" json:"routing_records,omitempty"`
 	SegmentReceipts []*SegmentReceipt      `protobuf:"bytes,2,rep,name=segment_receipts,json=segmentReceipts,proto3" json:"segment_receipts,omitempty"`
 	FrameReceipts   []*NodeFrameReceipt    `protobuf:"bytes,3,rep,name=frame_receipts,json=frameReceipts,proto3" json:"frame_receipts,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// Zero is the original v1 encoding; 2 compacts transport over v1 signatures.
+	FormatVersion uint32            `protobuf:"varint,4,opt,name=format_version,json=formatVersion,proto3" json:"format_version,omitempty"`
+	Header        *MoeReceiptHeader `protobuf:"bytes,5,opt,name=header,proto3" json:"header,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *MoeExecutionData) Reset() {
 	*x = MoeExecutionData{}
-	mi := &file_ember_proto_msgTypes[36]
+	mi := &file_ember_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4294,7 +4366,7 @@ func (x *MoeExecutionData) String() string {
 func (*MoeExecutionData) ProtoMessage() {}
 
 func (x *MoeExecutionData) ProtoReflect() protoreflect.Message {
-	mi := &file_ember_proto_msgTypes[36]
+	mi := &file_ember_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4307,7 +4379,7 @@ func (x *MoeExecutionData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MoeExecutionData.ProtoReflect.Descriptor instead.
 func (*MoeExecutionData) Descriptor() ([]byte, []int) {
-	return file_ember_proto_rawDescGZIP(), []int{36}
+	return file_ember_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *MoeExecutionData) GetRoutingRecords() []*RoutingRecord {
@@ -4331,6 +4403,20 @@ func (x *MoeExecutionData) GetFrameReceipts() []*NodeFrameReceipt {
 	return nil
 }
 
+func (x *MoeExecutionData) GetFormatVersion() uint32 {
+	if x != nil {
+		return x.FormatVersion
+	}
+	return 0
+}
+
+func (x *MoeExecutionData) GetHeader() *MoeReceiptHeader {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
 // Identity-less pipeline aggregate. Every work claim is independently signed
 // by the stage that produced it; the assembly client has no signer or account.
 type PipelineExecutionReceipt struct {
@@ -4350,7 +4436,7 @@ type PipelineExecutionReceipt struct {
 
 func (x *PipelineExecutionReceipt) Reset() {
 	*x = PipelineExecutionReceipt{}
-	mi := &file_ember_proto_msgTypes[37]
+	mi := &file_ember_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4362,7 +4448,7 @@ func (x *PipelineExecutionReceipt) String() string {
 func (*PipelineExecutionReceipt) ProtoMessage() {}
 
 func (x *PipelineExecutionReceipt) ProtoReflect() protoreflect.Message {
-	mi := &file_ember_proto_msgTypes[37]
+	mi := &file_ember_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4375,7 +4461,7 @@ func (x *PipelineExecutionReceipt) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PipelineExecutionReceipt.ProtoReflect.Descriptor instead.
 func (*PipelineExecutionReceipt) Descriptor() ([]byte, []int) {
-	return file_ember_proto_rawDescGZIP(), []int{37}
+	return file_ember_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *PipelineExecutionReceipt) GetRequestId() string {
@@ -4449,7 +4535,7 @@ type StageLatencyWitness struct {
 
 func (x *StageLatencyWitness) Reset() {
 	*x = StageLatencyWitness{}
-	mi := &file_ember_proto_msgTypes[38]
+	mi := &file_ember_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4461,7 +4547,7 @@ func (x *StageLatencyWitness) String() string {
 func (*StageLatencyWitness) ProtoMessage() {}
 
 func (x *StageLatencyWitness) ProtoReflect() protoreflect.Message {
-	mi := &file_ember_proto_msgTypes[38]
+	mi := &file_ember_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4474,7 +4560,7 @@ func (x *StageLatencyWitness) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StageLatencyWitness.ProtoReflect.Descriptor instead.
 func (*StageLatencyWitness) Descriptor() ([]byte, []int) {
-	return file_ember_proto_rawDescGZIP(), []int{38}
+	return file_ember_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *StageLatencyWitness) GetStageReceiptRef() []byte {
@@ -4529,7 +4615,7 @@ type AuditComp struct {
 
 func (x *AuditComp) Reset() {
 	*x = AuditComp{}
-	mi := &file_ember_proto_msgTypes[39]
+	mi := &file_ember_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4541,7 +4627,7 @@ func (x *AuditComp) String() string {
 func (*AuditComp) ProtoMessage() {}
 
 func (x *AuditComp) ProtoReflect() protoreflect.Message {
-	mi := &file_ember_proto_msgTypes[39]
+	mi := &file_ember_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4554,7 +4640,7 @@ func (x *AuditComp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuditComp.ProtoReflect.Descriptor instead.
 func (*AuditComp) Descriptor() ([]byte, []int) {
-	return file_ember_proto_rawDescGZIP(), []int{39}
+	return file_ember_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *AuditComp) GetAuditor() string {
@@ -4618,7 +4704,7 @@ type SettlementReceipt struct {
 
 func (x *SettlementReceipt) Reset() {
 	*x = SettlementReceipt{}
-	mi := &file_ember_proto_msgTypes[40]
+	mi := &file_ember_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4630,7 +4716,7 @@ func (x *SettlementReceipt) String() string {
 func (*SettlementReceipt) ProtoMessage() {}
 
 func (x *SettlementReceipt) ProtoReflect() protoreflect.Message {
-	mi := &file_ember_proto_msgTypes[40]
+	mi := &file_ember_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4643,7 +4729,7 @@ func (x *SettlementReceipt) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SettlementReceipt.ProtoReflect.Descriptor instead.
 func (*SettlementReceipt) Descriptor() ([]byte, []int) {
-	return file_ember_proto_rawDescGZIP(), []int{40}
+	return file_ember_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *SettlementReceipt) GetVersion() uint32 {
@@ -5154,11 +5240,19 @@ const file_ember_proto_rawDesc = "" +
 	"\rsegments_root\x18\x04 \x01(\fR\fsegmentsRoot\x12#\n" +
 	"\rsegment_count\x18\x05 \x01(\rR\fsegmentCount\x12\x16\n" +
 	"\x06signer\x18\x1e \x01(\fR\x06signer\x12\x1c\n" +
-	"\tsignature\x18\x1f \x01(\fR\tsignature\"\xd3\x01\n" +
+	"\tsignature\x18\x1f \x01(\fR\tsignature\"\xa5\x01\n" +
+	"\x10MoeReceiptHeader\x12\x19\n" +
+	"\bchain_id\x18\x01 \x01(\tR\achainId\x12#\n" +
+	"\rmanifest_root\x18\x02 \x01(\fR\fmanifestRoot\x122\n" +
+	"\x15execution_profile_ver\x18\x03 \x01(\tR\x13executionProfileVer\x12\x1d\n" +
+	"\n" +
+	"request_id\x18\x04 \x01(\tR\trequestId\"\xab\x02\n" +
 	"\x10MoeExecutionData\x12=\n" +
 	"\x0frouting_records\x18\x01 \x03(\v2\x14.ember.RoutingRecordR\x0eroutingRecords\x12@\n" +
 	"\x10segment_receipts\x18\x02 \x03(\v2\x15.ember.SegmentReceiptR\x0fsegmentReceipts\x12>\n" +
-	"\x0eframe_receipts\x18\x03 \x03(\v2\x17.ember.NodeFrameReceiptR\rframeReceipts\"\x81\x03\n" +
+	"\x0eframe_receipts\x18\x03 \x03(\v2\x17.ember.NodeFrameReceiptR\rframeReceipts\x12%\n" +
+	"\x0eformat_version\x18\x04 \x01(\rR\rformatVersion\x12/\n" +
+	"\x06header\x18\x05 \x01(\v2\x17.ember.MoeReceiptHeaderR\x06header\"\x81\x03\n" +
 	"\x18PipelineExecutionReceipt\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12>\n" +
@@ -5212,7 +5306,7 @@ func file_ember_proto_rawDescGZIP() []byte {
 	return file_ember_proto_rawDescData
 }
 
-var file_ember_proto_msgTypes = make([]protoimpl.MessageInfo, 42)
+var file_ember_proto_msgTypes = make([]protoimpl.MessageInfo, 43)
 var file_ember_proto_goTypes = []any{
 	(*ChainGenesis)(nil),             // 0: ember.ChainGenesis
 	(*ToleranceBand)(nil),            // 1: ember.ToleranceBand
@@ -5250,12 +5344,13 @@ var file_ember_proto_goTypes = []any{
 	(*RoutingRecord)(nil),            // 33: ember.RoutingRecord
 	(*SegmentReceipt)(nil),           // 34: ember.SegmentReceipt
 	(*NodeFrameReceipt)(nil),         // 35: ember.NodeFrameReceipt
-	(*MoeExecutionData)(nil),         // 36: ember.MoeExecutionData
-	(*PipelineExecutionReceipt)(nil), // 37: ember.PipelineExecutionReceipt
-	(*StageLatencyWitness)(nil),      // 38: ember.StageLatencyWitness
-	(*AuditComp)(nil),                // 39: ember.AuditComp
-	(*SettlementReceipt)(nil),        // 40: ember.SettlementReceipt
-	nil,                              // 41: ember.ShardForwardResponse.ActivationsEntry
+	(*MoeReceiptHeader)(nil),         // 36: ember.MoeReceiptHeader
+	(*MoeExecutionData)(nil),         // 37: ember.MoeExecutionData
+	(*PipelineExecutionReceipt)(nil), // 38: ember.PipelineExecutionReceipt
+	(*StageLatencyWitness)(nil),      // 39: ember.StageLatencyWitness
+	(*AuditComp)(nil),                // 40: ember.AuditComp
+	(*SettlementReceipt)(nil),        // 41: ember.SettlementReceipt
+	nil,                              // 42: ember.ShardForwardResponse.ActivationsEntry
 }
 var file_ember_proto_depIdxs = []int32{
 	5,  // 0: ember.ChainGenesis.audit_params:type_name -> ember.AuditParams
@@ -5282,7 +5377,7 @@ var file_ember_proto_depIdxs = []int32{
 	23, // 21: ember.AuditVerdict.offense:type_name -> ember.OffenseGrade
 	25, // 22: ember.AuditVerdict.segment_distances:type_name -> ember.SegmentDistance
 	22, // 23: ember.SegmentDistance.ref:type_name -> ember.SegmentRef
-	41, // 24: ember.ShardForwardResponse.activations:type_name -> ember.ShardForwardResponse.ActivationsEntry
+	42, // 24: ember.ShardForwardResponse.activations:type_name -> ember.ShardForwardResponse.ActivationsEntry
 	32, // 25: ember.ShardForwardResponse.receipt:type_name -> ember.ShardStepReceipt
 	33, // 26: ember.ShardForwardResponse.routing_records:type_name -> ember.RoutingRecord
 	34, // 27: ember.ShardForwardResponse.segment_receipt:type_name -> ember.SegmentReceipt
@@ -5291,21 +5386,22 @@ var file_ember_proto_depIdxs = []int32{
 	33, // 30: ember.MoeExecutionData.routing_records:type_name -> ember.RoutingRecord
 	34, // 31: ember.MoeExecutionData.segment_receipts:type_name -> ember.SegmentReceipt
 	35, // 32: ember.MoeExecutionData.frame_receipts:type_name -> ember.NodeFrameReceipt
-	32, // 33: ember.PipelineExecutionReceipt.stage_receipts:type_name -> ember.ShardStepReceipt
-	38, // 34: ember.PipelineExecutionReceipt.latency_witnesses:type_name -> ember.StageLatencyWitness
-	36, // 35: ember.PipelineExecutionReceipt.moe:type_name -> ember.MoeExecutionData
-	39, // 36: ember.SettlementReceipt.audit_comp:type_name -> ember.AuditComp
-	27, // 37: ember.NodeTunnel.Connect:input_type -> ember.TunnelFrame
-	27, // 38: ember.NodeTunnel.FetchEvidence:input_type -> ember.TunnelFrame
-	30, // 39: ember.ShardPipeline.Forward:input_type -> ember.ShardForwardRequest
-	27, // 40: ember.NodeTunnel.Connect:output_type -> ember.TunnelFrame
-	29, // 41: ember.NodeTunnel.FetchEvidence:output_type -> ember.EvidenceChunk
-	31, // 42: ember.ShardPipeline.Forward:output_type -> ember.ShardForwardResponse
-	40, // [40:43] is the sub-list for method output_type
-	37, // [37:40] is the sub-list for method input_type
-	37, // [37:37] is the sub-list for extension type_name
-	37, // [37:37] is the sub-list for extension extendee
-	0,  // [0:37] is the sub-list for field type_name
+	36, // 33: ember.MoeExecutionData.header:type_name -> ember.MoeReceiptHeader
+	32, // 34: ember.PipelineExecutionReceipt.stage_receipts:type_name -> ember.ShardStepReceipt
+	39, // 35: ember.PipelineExecutionReceipt.latency_witnesses:type_name -> ember.StageLatencyWitness
+	37, // 36: ember.PipelineExecutionReceipt.moe:type_name -> ember.MoeExecutionData
+	40, // 37: ember.SettlementReceipt.audit_comp:type_name -> ember.AuditComp
+	27, // 38: ember.NodeTunnel.Connect:input_type -> ember.TunnelFrame
+	27, // 39: ember.NodeTunnel.FetchEvidence:input_type -> ember.TunnelFrame
+	30, // 40: ember.ShardPipeline.Forward:input_type -> ember.ShardForwardRequest
+	27, // 41: ember.NodeTunnel.Connect:output_type -> ember.TunnelFrame
+	29, // 42: ember.NodeTunnel.FetchEvidence:output_type -> ember.EvidenceChunk
+	31, // 43: ember.ShardPipeline.Forward:output_type -> ember.ShardForwardResponse
+	41, // [41:44] is the sub-list for method output_type
+	38, // [38:41] is the sub-list for method input_type
+	38, // [38:38] is the sub-list for extension type_name
+	38, // [38:38] is the sub-list for extension extendee
+	0,  // [0:38] is the sub-list for field type_name
 }
 
 func init() { file_ember_proto_init() }
@@ -5320,7 +5416,7 @@ func file_ember_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_ember_proto_rawDesc), len(file_ember_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   42,
+			NumMessages:   43,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

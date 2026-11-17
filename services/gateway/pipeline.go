@@ -172,6 +172,10 @@ func (g *Gateway) servePipeline(w http.ResponseWriter, r *http.Request, q reques
 		http.Error(w, err.Error(), 503)
 		return
 	}
+	if err := g.checkContext(inputTokens, q.MaxTokens); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	pinned := &pb.ExecutionCommitment{}
 	_ = proto.Unmarshal(commitment, pinned)
 	input.TokenizerVersion = pinned.TokenizerVersion

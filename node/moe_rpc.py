@@ -26,6 +26,8 @@ from pinned_tls import pinned_channel
 from shard_rpc import bytes_tensor, tensor_bytes
 
 MAX_TENSOR_BYTES = 64 * 1024 * 1024
+# Stage responses aggregate many individually bounded activation tensors.
+MAX_MESSAGE_BYTES = 320 * 1024 * 1024
 
 
 def rows_bytes(tensor):
@@ -76,6 +78,13 @@ class ReceiptSigner:
         from cryptography.hazmat.primitives import serialization
         self.node = node_id(key.public_key().public_bytes(
             serialization.Encoding.Raw, serialization.PublicFormat.Raw))
+
+    @staticmethod
+    def execution(receipt, receipt_v2=False):
+        """Emit transport v2 only after full v1 signatures and roots exist."""
+        if receipt_v2:
+            return moe_core.compact_moe_receipt(receipt)
+        return moe_core.expand_moe_receipt(receipt)
 
     def segment(self, **fields):
         receipt = SegmentReceipt(
@@ -267,8 +276,8 @@ class MoeAttentionService(ShardPipelineServicer):
 class _BaseClient:
     def __init__(self, target, scheduler_key, profile=None):
         address, fingerprint = target.rsplit('@', 1)
-        options = (('grpc.max_send_message_length', MAX_TENSOR_BYTES),
-                   ('grpc.max_receive_message_length', MAX_TENSOR_BYTES))
+        options = (('grpc.max_send_message_length', MAX_MESSAGE_BYTES),
+                   ('grpc.max_receive_message_length', MAX_MESSAGE_BYTES))
         self.channel = pinned_channel(address, fingerprint, options)
         self.stub = ShardPipelineStub(self.channel)
         self.scheduler_key = scheduler_key

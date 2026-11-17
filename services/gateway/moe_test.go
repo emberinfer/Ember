@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"bytes"
 	"crypto/ed25519"
 	"crypto/rand"
 	core "ember/core-go"
@@ -137,7 +138,86 @@ fi
 				if !f.submitted || !strings.Contains(w.Body.String(), `"content":"Paris"`) || !strings.Contains(w.Body.String(), "data: [DONE]") {
 					t.Fatal(w.Body.String())
 				}
+				archived, err := os.ReadFile(filepath.Join(g.Moe.WorkDir, "evidence", "hold", "receipt.pb"))
+				if err != nil || !bytes.Equal(archived, raw) {
+					t.Fatal("submitted receipt archive", err)
+				}
 			}
 		})
+	}
+}
+
+func TestMoeContextLimitAdmission(t *testing.T) {
+	g, book := moeFixture(t)
+	path := filepath.Join(g.Moe.WorkDir, "tokenizer")
+	if err := os.WriteFile(path, []byte("#!/bin/sh\necho '{\"input_tokens\":3,\"tokenizer_version\":\"test\"}'\n"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	g.Moe.Python = path
+	g.ContextLimit = 4
+	w := httptest.NewRecorder()
+	g.serveMoe(w, httptest.NewRequest("POST", "/v1/chat/completions", nil), request{Model: MoeProfile, MaxTokens: 2, Stream: true}, "prompt", "payer", "hold")
+	if w.Code != 400 || !strings.Contains(w.Body.String(), "input_tokens 3 + max_tokens 2") || !strings.Contains(w.Body.String(), "4 tokens") {
+		t.Fatalf("status=%d body=%s", w.Code, w.Body)
+	}
+	if book.frozen {
+		t.Fatal("over-limit MoE request froze funds")
+	}
+}
+
+func TestMoeReceiptArchive(t *testing.T) {
+	g, _ := moeFixture(t)
+	g.Moe.EvidenceRoot = t.TempDir()
+	dir := filepath.Join(g.Moe.EvidenceRoot, "hold")
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	index := filepath.Join(dir, "index.json")
+	if err := os.WriteFile(index, []byte("existing evidence"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	r := &pb.PipelineExecutionReceipt{RequestId: "hold", Moe: &pb.MoeExecutionData{}}
+	for _, output := range []uint32{1, 2} {
+		r.OutputTokens = output
+		if err := g.archiveMoeReceipt("hold", r); err != nil {
+			t.Fatal(err)
+		}
+		raw, err := os.ReadFile(filepath.Join(dir, "receipt.pb"))
+		want, _ := proto.MarshalOptions{Deterministic: true}.Marshal(r)
+		if err != nil || !bytes.Equal(raw, want) {
+			t.Fatal("archive mismatch", err)
+		}
+		info, err := os.Stat(filepath.Join(dir, "receipt.pb"))
+		if err != nil || info.Mode().Perm() != 0600 {
+			t.Fatal("archive permissions", info, err)
+		}
+	}
+	raw, _ := os.ReadFile(index)
+	if string(raw) != "existing evidence" {
+		t.Fatal("evidence index changed")
+	}
+	files, _ := filepath.Glob(filepath.Join(dir, ".receipt-*"))
+	if len(files) != 0 {
+		t.Fatal("temporary files leaked", files)
+	}
+	for _, id := range []string{"", ".", "..", "../escape", `hold\escape`, "hold/escape"} {
+		if err := g.archiveMoeReceipt(id, r); err == nil {
+			t.Fatal("unsafe archive id accepted", id)
+		}
+	}
+}
+
+func TestMoeExecutionTimeoutBudget(t *testing.T) {
+	for _, d := range []time.Duration{0, -1, 4 * time.Second, 15 * time.Minute, 59 * time.Minute, time.Hour} {
+		if got := moeExecutionTimeout(d); got != time.Hour {
+			t.Fatal(d, got)
+		}
+	}
+	if got := moeExecutionTimeout(2 * time.Hour); got != 2*time.Hour {
+		t.Fatal(got)
+	}
+	if defaultMoeQueueWait != 10*time.Minute {
+		t.Fatal("queue budget changed")
+
 	}
 }

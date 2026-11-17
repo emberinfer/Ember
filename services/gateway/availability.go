@@ -14,9 +14,10 @@ import (
 // A renewed tracker lease supersedes the older signed chain profile expiry.
 func (g *Gateway) liveCandidates() []scheduler.Candidate {
 	candidates := unexpiredCandidates(g.Candidates(), time.Now())
+	exited := g.chainExecExited()
 	out := candidates[:0]
 	for _, c := range candidates {
-		if !g.ExecExclude[c.Profile.NodeId] {
+		if !g.ExecExclude[c.Profile.NodeId] && !exited[c.Profile.NodeId] {
 			out = append(out, c)
 		}
 	}

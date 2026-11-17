@@ -518,3 +518,18 @@ func (l *ChainLedger) ResolveAudit(id string) (bool, error) {
 	}
 	return h.Unaudited, nil
 }
+
+// ExecExitedNodes returns only effective chain exits, leaving pending nodes eligible.
+func (l *ChainLedger) ExecExitedNodes() (map[string]bool, error) {
+	var statuses map[string]*chainapp.NodeStatusView
+	if err := l.query("/node-statuses", &statuses); err != nil {
+		return nil, err
+	}
+	out := map[string]bool{}
+	for id, v := range statuses {
+		if v != nil && v.ExecExited {
+			out[id] = true
+		}
+	}
+	return out, nil
+}

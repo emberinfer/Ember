@@ -27,6 +27,14 @@ import (
 )
 
 type Gateway struct {
+	execExitedDone       chan struct{}
+	ChainExecExited      func() (map[string]bool, error)
+	execExitedMu         sync.Mutex
+	execExitedSet        map[string]bool
+	execExitedAt         time.Time
+	execExitedRefreshing bool
+	// ContextLimit is the context window in tokens; zero keeps the legacy output cap.
+	ContextLimit         int
 	SpeedStats           *SpeedStats
 	ExecExclude          map[string]bool
 	SpeedEnabled         bool
@@ -101,6 +109,39 @@ type request struct {
 }
 
 func id() string { b := make([]byte, 16); _, _ = rand.Read(b); return hex.EncodeToString(b) }
+
+// DefaultMaxTokens is the output cap applied when max_tokens is omitted or zero.
+const DefaultMaxTokens = 1024
+
+// legacyMaxTokensCap bounds max_tokens when no profile context limit
+// is configured; it preserves the pre-existing admission behaviour.
+const legacyMaxTokensCap = 4096
+
+// maxTokensCap is the largest max_tokens admitted before tokenization:
+// the profile context limit when configured (the input still has to
+// fit alongside it, which checkContext verifies after tokenization),
+// otherwise the legacy flat cap.
+func (g *Gateway) maxTokensCap() int {
+	if g.ContextLimit > 0 {
+		return g.ContextLimit
+	}
+	return legacyMaxTokensCap
+}
+
+// checkContext rejects a priced request whose tokenized input plus the
+// requested output cap exceeds the profile's context window. It runs
+// after tokenization and before any freeze, so an over-limit request
+// is refused at admission instead of failing mid-generation. With no
+// context limit configured it admits everything (legacy behaviour).
+func (g *Gateway) checkContext(inputTokens uint32, maxTokens int) error {
+	if g.ContextLimit <= 0 {
+		return nil
+	}
+	if int64(inputTokens)+int64(maxTokens) > int64(g.ContextLimit) {
+		return fmt.Errorf("input_tokens %d + max_tokens %d exceeds the profile context limit of %d tokens", inputTokens, maxTokens, g.ContextLimit)
+	}
+	return nil
+}
 func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/v2/requests" {
 		if g.Privacy == nil {
@@ -149,8 +190,15 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if maxBody <= 0 {
 		maxBody = 1 << 20
 	}
-	if json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBody)).Decode(&q) != nil || len(q.Messages) == 0 || q.MaxTokens < 1 || q.MaxTokens > 4096 || !strings.HasPrefix(q.Model, "ember-") {
+	if json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBody)).Decode(&q) != nil || len(q.Messages) == 0 || q.MaxTokens < 0 || !strings.HasPrefix(q.Model, "ember-") {
 		http.Error(w, "invalid request", 400)
+		return
+	}
+	if q.MaxTokens == 0 {
+		q.MaxTokens = DefaultMaxTokens
+	}
+	if cap := g.maxTokensCap(); q.MaxTokens > cap {
+		http.Error(w, fmt.Sprintf("max_tokens %d exceeds this profile's limit of %d tokens", q.MaxTokens, cap), 400)
 		return
 	}
 	if q.Tier == "P1" {
@@ -244,6 +292,10 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		commitment, inputTokens, err = g.tokenize(r.Context(), q, prompt, holdID, chosen.NodeID)
 		if err != nil {
 			http.Error(w, err.Error(), 503)
+			return
+		}
+		if err := g.checkContext(inputTokens, q.MaxTokens); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		pinned := &pb.ExecutionCommitment{}

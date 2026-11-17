@@ -13,6 +13,10 @@ def main():
         from .publish import main as publish_main
         publish_main(sys.argv[2:])
         return
+    if len(sys.argv) > 1 and sys.argv[1] == 'request-exec-exit':
+        from .lifecycle import request_exec_exit_main
+        request_exec_exit_main(sys.argv[2:])
+        return
     if len(sys.argv) > 1 and sys.argv[1] == 'exit':
         from .lifecycle import main as exit_main
         exit_main(sys.argv[2:])

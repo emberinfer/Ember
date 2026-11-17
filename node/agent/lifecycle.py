@@ -64,3 +64,29 @@ def main(args=None):
         unbondings=account.get('unbondings',[])),sort_keys=True))
     if opts.action!='status':
         print('Transaction committed. Run --action status to query the resulting balance and release heights.')
+
+
+def request_exec_exit_main(args=None):
+    parser = argparse.ArgumentParser(prog='ember-node request-exec-exit')
+    parser.add_argument('--state-dir', required=True)
+    parser.add_argument('--chain-rpc', required=True)
+    parser.add_argument('--chain-cli', default='emberchain')
+    parser.add_argument('--ledger-chain-id', required=True)
+    opts = parser.parse_args(args)
+    state_dir = Path(opts.state_dir)
+    key = state_dir / 'identity.key'
+    if not key.is_file():
+        raise ValueError('execution exit requires an existing node identity; no key was created')
+    _, ident = identity(state_dir)
+    parameters = _chain_json(opts.chain_cli, opts.chain_rpc, '/parameters')
+    if parameters['chain_id'] != opts.ledger_chain_id:
+        raise ValueError('execution exit RPC ledger chain ID mismatch')
+    account = _chain_json(opts.chain_cli, opts.chain_rpc, '/account/' + ident)
+    _chain_tx(opts, key, account['nonce'] + 1, {'type': 'request_exec_exit'})
+    status = _chain_json(opts.chain_cli, opts.chain_rpc, '/node-status/' + ident)
+    summary = dict(node_id=ident, height=status['height'],
+                   exec_exit_pending=status.get('exec_exit_pending', False),
+                   exec_exit_effective_height=status.get('exec_exit_effective_height', 0),
+                   exec_exited=status.get('exec_exited', False))
+    print(json.dumps(summary, sort_keys=True))
+    print('Execution exit effective height: %d' % summary['exec_exit_effective_height'])

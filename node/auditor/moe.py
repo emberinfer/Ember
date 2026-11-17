@@ -28,6 +28,7 @@ from ember_core import moe as moe_core
 from ember_pb2 import (OffenseGrade, PipelineExecutionReceipt, SegmentDistance)
 from engine.moe import AttentionStage, MoeWeights, make_expert_unit
 from moe_rpc import rows_bytes
+from auditor.receipt_source import moe_receipt_for_job
 
 
 def _tensor(raw, hidden):
@@ -101,7 +102,8 @@ class MoeAuditor:
 
         Returns verdict fields; the caller signs the AuditVerdict.
         """
-        receipt = PipelineExecutionReceipt.FromString(bytes.fromhex(job['receipt']))
+        receipt = moe_core.expand_moe_receipt(
+            PipelineExecutionReceipt.FromString(moe_receipt_for_job(job)))
         profiles = job['profiles']
         evidence = _Evidence(Path(job['evidence_dir']))
         data = receipt.moe

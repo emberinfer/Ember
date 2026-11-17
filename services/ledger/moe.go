@@ -1,11 +1,22 @@
 package ledger
 
 import (
+	"bytes"
+	"context"
+	"crypto/ed25519"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"fmt"
+	"log"
+	"strings"
 	"time"
 
+	core "ember/core-go"
 	pb "ember/proto"
 	chainapp "ember/services/chain"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
+	"github.com/cometbft/cometbft/types"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -37,10 +48,176 @@ func (l *ChainLedger) SubmitMoe(id string, r *pb.PipelineExecutionReceipt, actua
 	if err != nil {
 		return nil, err
 	}
+	if len(raw) > chainapp.ChunkPayloadBytes {
+		return l.chunkedSubmitMoe(id, raw, actual)
+	}
 	if err = l.submit(l.coordinator, chainapp.Action{Type: "submit_moe", HoldID: id, Actual: actual, Receipt: raw}); err != nil {
 		return nil, err
 	}
 	return l.MoeCredits(id)
+}
+
+// ChunkedSubmitMoe can be retried with the same receipt after interruption.
+// Only chunks absent from the consensus bitmap are sent again.
+func (l *ChainLedger) ChunkedSubmitMoe(id string, r *pb.PipelineExecutionReceipt, actual int64) ([]StageShare, error) {
+	raw, err := proto.MarshalOptions{Deterministic: true}.Marshal(r)
+	if err != nil {
+		return nil, err
+	}
+	return l.chunkedSubmitMoe(id, raw, actual)
+}
+
+func (l *ChainLedger) chunkedSubmitMoe(id string, raw []byte, actual int64) ([]StageShare, error) {
+	// ReceiptRef identifies the expanded logical v1 receipt; ChunkRoot below
+	// still anchors the exact compact bytes uploaded and archived.
+	var receipt pb.PipelineExecutionReceipt
+	if err := proto.Unmarshal(raw, &receipt); err != nil {
+		return nil, err
+	}
+	logical, err := core.ExpandMoeReceipt(&receipt)
+	if err != nil {
+		return nil, err
+	}
+	ref, err := core.PipelineReceiptRef(logical)
+	if err != nil {
+		return nil, err
+	}
+	return sendMoeChunks(id, raw, actual, hex.EncodeToString(ref), l.submitMoeChunk, l.hold)
+}
+
+func sendMoeChunks(id string, raw []byte, actual int64, receiptRef string, send func(chainapp.Action) error, hold func(string) (*chainapp.Hold, error)) ([]StageShare, error) {
+	if len(raw) == 0 || len(raw) > chainapp.MaxChunkBytes {
+		return nil, errors.New("invalid chunked MoE receipt size")
+	}
+	root := sha256.Sum256(raw)
+	total := (len(raw) + chainapp.ChunkPayloadBytes - 1) / chainapp.ChunkPayloadBytes
+	hashes := make([][]byte, total)
+	list := sha256.New()
+	for i := range hashes {
+		end := min((i+1)*chainapp.ChunkPayloadBytes, len(raw))
+		hash := sha256.Sum256(raw[i*chainapp.ChunkPayloadBytes : end])
+		hashes[i] = hash[:]
+		list.Write(hash[:])
+	}
+	listHash := list.Sum(nil)
+	matches := func(h *chainapp.Hold) bool {
+		return h != nil && h.Moe != nil && bytes.Equal(h.Moe.ChunkRoot, root[:]) && bytes.Equal(h.Moe.ChunkListHash, listHash) && h.Moe.ChunkBytes == len(raw) && h.Moe.ChunkTotal == total && h.Moe.ChunkActual == actual
+	}
+	finalized := func(h *chainapp.Hold) bool {
+		return matches(h) && (h.State == "dispute" || h.State == "settled" || h.State == "slashed") && h.ReceiptRef == receiptRef
+	}
+	h, err := hold(id)
+	if err != nil {
+		return nil, err
+	}
+	if finalized(h) {
+		return h.Moe.Credits, nil
+	}
+	if h == nil || h.Moe == nil || h.State != "frozen" {
+		return nil, errors.New("MoE hold is not frozen")
+	}
+	if h.Moe.ChunkTotal > 0 && !matches(h) {
+		return nil, errors.New("MoE hold has a different chunk manifest")
+	}
+	if err = send(chainapp.Action{Type: "submit_moe_manifest", HoldID: id, Actual: actual, ChunkRoot: root[:], ChunkBytes: len(raw), ChunkTotal: total, ChunkHashes: hashes}); err != nil {
+		return nil, err
+	}
+	for i := range hashes {
+		h, err = hold(id)
+		if err != nil {
+			return nil, err
+		}
+		if !matches(h) || h.State != "frozen" {
+			return nil, errors.New("MoE chunk manifest changed during upload")
+		}
+		if i/8 < len(h.Moe.ChunkBitmap) && h.Moe.ChunkBitmap[i/8]&(1<<uint(i%8)) != 0 {
+			continue
+		}
+		end := min((i+1)*chainapp.ChunkPayloadBytes, len(raw))
+		if err = send(chainapp.Action{Type: "submit_moe_chunk", HoldID: id, ChunkIndex: i, ReceiptChunk: raw[i*chainapp.ChunkPayloadBytes : end]}); err != nil {
+			return nil, err
+		}
+	}
+	finalizeErr := send(chainapp.Action{Type: "submit_moe_finalize", HoldID: id})
+	// A lost final broadcast response is reconciled by the hold, never guessed
+	// from the transaction receipt alone.
+	h, err = hold(id)
+	if err != nil {
+		return nil, err
+	}
+	if finalized(h) {
+		return h.Moe.Credits, nil
+	}
+	if finalizeErr != nil {
+		return nil, finalizeErr
+	}
+	return nil, errors.New("MoE finalize did not enter dispute")
+}
+
+type moeChunkRPC interface {
+	BroadcastTxCommit(context.Context, types.Tx) (*coretypes.ResultBroadcastTxCommit, error)
+	Tx(context.Context, []byte, bool) (*coretypes.ResultTx, error)
+}
+
+// Chunk broadcasts use the design's 60-second commit wait. The legacy small
+// receipt path continues to use submit and its existing sync/poll behavior.
+func (l *ChainLedger) submitMoeChunk(action chainapp.Action) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	id := chainapp.AccountID(l.coordinator.Public().(ed25519.PublicKey))
+	var account chainapp.Account
+	if err := l.query("/account/"+id, &account); err != nil {
+		return err
+	}
+	raw, err := chainapp.Sign(l.chainID, l.coordinator, account.Nonce+1, action)
+	if err != nil {
+		return err
+	}
+	tx, err := broadcastMoeChunk(context.Background(), l.rpc, raw, 60*time.Second, ConfirmationTimeout, confirmationPollInterval)
+	if err != nil {
+		return err
+	}
+	log.Printf("CHAIN TX type=%s height=%d tx_hash=%X", action.Type, tx.Height, tx.Hash)
+	return nil
+}
+
+func broadcastMoeChunk(ctx context.Context, rpc moeChunkRPC, raw []byte, broadcastWait, pollWait, interval time.Duration) (*coretypes.ResultTx, error) {
+	hash := sha256.Sum256(raw)
+	wait, cancel := context.WithTimeout(ctx, broadcastWait)
+	result, broadcastErr := rpc.BroadcastTxCommit(wait, raw)
+	cancel()
+	duplicate := func(s string) bool {
+		s = strings.ToLower(s)
+		return strings.Contains(s, "already exists in cache") || strings.Contains(s, "tx already exists") || strings.Contains(s, "duplicate")
+	}
+	if broadcastErr == nil && result != nil {
+		if result.CheckTx.Code != 0 && !duplicate(result.CheckTx.Log) {
+			return nil, fmt.Errorf("chain CheckTx: %s", result.CheckTx.Log)
+		}
+		if result.CheckTx.Code == 0 && result.TxResult.Code != 0 {
+			return nil, fmt.Errorf("chain transaction: %s", result.TxResult.Log)
+		}
+	}
+	// Even transport errors can follow admission. Poll the exact signed hash
+	// before permitting the caller to reconcile its bitmap and nonce.
+	poll, stop := context.WithTimeout(ctx, pollWait)
+	defer stop()
+	for {
+		tx, err := rpc.Tx(poll, hash[:], false)
+		if err == nil && tx != nil {
+			if tx.TxResult.Code != 0 {
+				return nil, fmt.Errorf("chain transaction: %s", tx.TxResult.Log)
+			}
+			return tx, nil
+		}
+		timer := time.NewTimer(interval)
+		select {
+		case <-poll.Done():
+			timer.Stop()
+			return nil, &UnconfirmedError{Hash: hash, Cause: poll.Err()}
+		case <-timer.C:
+		}
+	}
 }
 
 func (l *ChainLedger) FinishMoe(id, outcome string, _ time.Time, multiplier int64) error {

@@ -111,6 +111,7 @@ func main() {
 	moeWeights := flags.String("moe-weights", "", "MoE tokenizer weights")
 	moeFleet := flags.String("moe-fleet-dir", "", "MoE fleet directory")
 	moeEvidence := flags.String("moe-evidence-dir", "", "MoE evidence directory")
+	moeReceiptV2 := flags.Bool("moe-receipt-v2", false, "compact MoE receipt transport over logical v1 signatures (requires chain version 13)")
 	pipelinePython := flags.String("pipeline-python", "", "Python interpreter for dynamic shard assembly")
 	pipelineModelPath := flags.String("pipeline-model-path", "", "tokenizer/config path for dynamic shard assembly")
 	pipelineSchedulerKey := flags.String("pipeline-scheduler-key", "", "mode-0600 on-chain scheduler key for shard RPC")
@@ -119,6 +120,7 @@ func main() {
 	auditTimeout := flags.Duration("audit-timeout", 3*time.Minute, "deadline for each reference replay")
 	maxConcurrent := flags.Int("max-concurrent", 8, "maximum in-flight inference requests")
 	requestTimeout := flags.Duration("request-timeout", 5*time.Minute, "per-attempt inference timeout")
+	contextLimit := flags.Int("context-limit-tokens", 0, "served profile's context window in tokens, from the model config; admission requires input_tokens + max_tokens to fit (0 = unconfigured, legacy flat max_tokens cap)")
 	rateLimit := flags.Int("rate-limit", 60, "maximum requests per identity per minute (0 disables)")
 	httpCert := flags.String("http-tls-cert", "", "optional HTTPS certificate")
 	httpKey := flags.String("http-tls-key", "", "optional HTTPS private key")
@@ -134,7 +136,7 @@ func main() {
 	if *faucetTrustedProxy != "" && net.ParseIP(*faucetTrustedProxy) == nil {
 		log.Fatal("--faucet-trusted-proxy must be one IP address")
 	}
-	if *auditWorkers < 1 || *auditTimeout <= 0 || *maxConcurrent < 1 || *requestTimeout <= 0 || *rateLimit < 0 || *faucetAmount < 0 || *faucetWindow <= 0 || (*httpCert == "") != (*httpKey == "") {
+	if *auditWorkers < 1 || *auditTimeout <= 0 || *maxConcurrent < 1 || *requestTimeout <= 0 || *rateLimit < 0 || *faucetAmount < 0 || *faucetWindow <= 0 || *contextLimit < 0 || (*httpCert == "") != (*httpKey == "") {
 		log.Fatal("invalid concurrency, timeout, or HTTP TLS configuration")
 	}
 	if mode != "all" && mode != "gateway" {
@@ -284,7 +286,10 @@ func main() {
 	}
 	api := &gateway.Gateway{SpeedStats: speedStats, Ledger: book, Tunnel: relay, Profile: "v1", Manifest: make([]byte, 32), Price: 1, Dispute: 0, DemoBootstrap: *demo,
 		Admission: make(chan struct{}, *maxConcurrent), RequestTimeout: *requestTimeout, MaxBodyBytes: 1 << 20,
-		RateLimit: *rateLimit, RateWindow: time.Minute}
+		ContextLimit: *contextLimit, RateLimit: *rateLimit, RateWindow: time.Minute}
+	if chainBook != nil {
+		api.ChainExecExited = chainBook.ExecExitedNodes
+	}
 	if *execExcludeFile != "" {
 		var err error
 		api.ExecExclude, err = gateway.LoadExecExcludeFile(*execExcludeFile)
@@ -382,7 +387,7 @@ func main() {
 		}
 		api.TotalLayers = manifest.TotalLayers
 		if *moePython != "" && *moeWork != "" && *moeWeights != "" && *moeFleet != "" && *moeEvidence != "" && genesis.ChainId == gateway.MoeProfile {
-			api.Moe = &gateway.MoeConfig{Python: *moePython, WorkDir: *moeWork, Weights: *moeWeights, FleetDir: *moeFleet, EvidenceRoot: *moeEvidence, SchedulerKeyFile: *schedulerKeyFile}
+			api.Moe = &gateway.MoeConfig{Python: *moePython, WorkDir: *moeWork, Weights: *moeWeights, FleetDir: *moeFleet, EvidenceRoot: *moeEvidence, ReceiptV2: *moeReceiptV2, SchedulerKeyFile: *schedulerKeyFile}
 		}
 		if *pipelinePython != "" || *pipelineModelPath != "" || *pipelineSchedulerKey != "" {
 			layout := manifest

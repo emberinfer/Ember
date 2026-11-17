@@ -19,6 +19,11 @@ import (
 
 const invalidTxCode uint32 = 1
 
+const BlockMaxBytesV13 int64 = 8388608
+
+// BlockMaxGas is the verified current chain value carried unchanged into v13.
+const BlockMaxGas int64 = 10000000
+
 type Application struct {
 	abci.BaseApplication
 	mu                 sync.Mutex
@@ -291,7 +296,12 @@ func (app *Application) FinalizeBlock(_ context.Context, req *abci.FinalizeBlock
 	app.staged = trial
 	app.stagedBytes = stagedBytes
 	response := &abci.FinalizeBlockResponse{TxResults: results, AppHash: hash, ValidatorUpdates: updates}
-	if trial.Version != app.committed.Version {
+	if trial.Version >= 13 {
+		response.ConsensusParamUpdates = &cmtproto.ConsensusParams{
+			Version: &cmtproto.VersionParams{App: trial.Version},
+			Block:   &cmtproto.BlockParams{MaxBytes: BlockMaxBytesV13, MaxGas: BlockMaxGas},
+		}
+	} else if trial.Version != app.committed.Version {
 		response.ConsensusParamUpdates = &cmtproto.ConsensusParams{Version: &cmtproto.VersionParams{App: trial.Version}}
 	}
 	return response, nil

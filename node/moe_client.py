@@ -22,16 +22,18 @@ from ember_core import moe as moe_core
 from ember_pb2 import (MoeExecutionData, PipelineExecutionReceipt)
 from engine import Step
 from evidence import canonical, encode_step
-from moe_rpc import MoeAttentionClient
+from moe_rpc import MoeAttentionClient, ReceiptSigner
 from shard_rpc import bytes_tensor
 
 
 class MoeAssembler:
-    def __init__(self, stages, tokenizer, manifest, genesis, expert_node_clients=None):
+    def __init__(self, stages, tokenizer, manifest, genesis, expert_node_clients=None,
+                 receipt_v2=False):
         """stages: [(MoeAttentionClient, stage ResourceProfile)] in span order.
         expert_node_clients: {node_id: MoeExpertClient} used to seal each
         expert node's frame receipt once per frame, after all stages of the
         frame completed (a node may serve several stages in one frame)."""
+        self.receipt_v2 = receipt_v2
         self.stages = stages
         self.expert_node_clients = expert_node_clients or {}
         self.tokenizer = tokenizer
@@ -125,7 +127,7 @@ class MoeAssembler:
             output_commitment=commitment,
             input_tokens=len(input_ids), output_tokens=len(tokens),
             elapsed_ms=max(1, int((time.time() - started) * 1000)))
-        return receipt, evidence
+        return ReceiptSigner.execution(receipt, self.receipt_v2), evidence
 
     def save_evidence(self, directory, receipt, evidence, prompt, input_ids):
         """Persist the segment evidence bundle the auditor consumes."""

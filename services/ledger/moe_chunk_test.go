@@ -77,14 +77,14 @@ func TestMoeChunksResumeAndFinalizeConfirmation(t *testing.T) {
 		return nil
 	}
 	hold := func(string) (*ch.Hold, error) { queries++; return h, nil }
-	if _, err := sendMoeChunks("hold", raw, 9, send, hold); err == nil {
+	if _, err := sendMoeChunks("hold", raw, 9, chunkTestRef(raw), send, hold); err == nil {
 		t.Fatal("interruption ignored")
 	}
 	if !reflect.DeepEqual(indices, []int{0, 1}) {
 		t.Fatal(indices)
 	}
 	indices = nil
-	shares, err := sendMoeChunks("hold", raw, 9, send, hold)
+	shares, err := sendMoeChunks("hold", raw, 9, chunkTestRef(raw), send, hold)
 	if err != nil || len(shares) != 1 || shares[0].Amount != 9 {
 		t.Fatal(shares, err)
 	}
@@ -92,12 +92,12 @@ func TestMoeChunksResumeAndFinalizeConfirmation(t *testing.T) {
 		t.Fatal(indices, manifests, queries)
 	}
 	indices = nil
-	if _, err = sendMoeChunks("hold", raw, 9, func(ch.Action) error { t.Fatal("finalized replay broadcast"); return nil }, hold); err != nil {
+	if _, err = sendMoeChunks("hold", raw, 9, chunkTestRef(raw), func(ch.Action) error { t.Fatal("finalized replay broadcast"); return nil }, hold); err != nil {
 		t.Fatal(err)
 	}
 	changed := append([]byte(nil), raw...)
 	changed[0]++
-	if _, err = sendMoeChunks("hold", changed, 9, func(ch.Action) error { t.Fatal("conflicting replay broadcast"); return nil }, hold); err == nil {
+	if _, err = sendMoeChunks("hold", changed, 9, chunkTestRef(changed), func(ch.Action) error { t.Fatal("conflicting replay broadcast"); return nil }, hold); err == nil {
 		t.Fatal("accepted different receipt")
 	}
 }
@@ -108,15 +108,15 @@ func TestMoeChunksRequireHoldConfirmation(t *testing.T) {
 	list := sha256.Sum256(root[:])
 	h := &ch.Hold{State: "frozen", Moe: &ch.MoeHold{ChunkRoot: root[:], ChunkListHash: list[:], ChunkBytes: len(raw), ChunkTotal: 1, ChunkActual: 1, ChunkBitmap: []byte{1}}}
 	sent := []string{}
-	_, err := sendMoeChunks("hold", raw, 1, func(a ch.Action) error { sent = append(sent, a.Type); return nil }, func(string) (*ch.Hold, error) { return h, nil })
+	_, err := sendMoeChunks("hold", raw, 1, chunkTestRef(raw), func(a ch.Action) error { sent = append(sent, a.Type); return nil }, func(string) (*ch.Hold, error) { return h, nil })
 	if err == nil || !strings.Contains(err.Error(), "did not enter dispute") || !reflect.DeepEqual(sent, []string{"submit_moe_manifest", "submit_moe_finalize"}) {
 		t.Fatal(sent, err)
 	}
 	h.Moe.ChunkActual = 2
-	if _, err = sendMoeChunks("hold", raw, 1, func(ch.Action) error { t.Fatal("conflict broadcast"); return nil }, func(string) (*ch.Hold, error) { return h, nil }); err == nil {
+	if _, err = sendMoeChunks("hold", raw, 1, chunkTestRef(raw), func(ch.Action) error { t.Fatal("conflict broadcast"); return nil }, func(string) (*ch.Hold, error) { return h, nil }); err == nil {
 		t.Fatal("manifest conflict accepted")
 	}
-	if _, err = sendMoeChunks("hold", nil, 1, func(ch.Action) error { t.Fatal("empty broadcast"); return nil }, func(string) (*ch.Hold, error) { t.Fatal("empty queried"); return nil, nil }); err == nil {
+	if _, err = sendMoeChunks("hold", nil, 1, "", func(ch.Action) error { t.Fatal("empty broadcast"); return nil }, func(string) (*ch.Hold, error) { t.Fatal("empty queried"); return nil, nil }); err == nil {
 		t.Fatal("empty accepted")
 	}
 }

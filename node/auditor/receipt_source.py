@@ -13,6 +13,7 @@ from pathlib import Path
 import re
 
 from ember_pb2 import PipelineExecutionReceipt
+from ember_core.moe import expand_moe_receipt
 
 _MAX_RECEIPT_BYTES = 256 * 1024 * 1024
 _SAFE_HOLD_ID = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,255}\Z')
@@ -69,7 +70,7 @@ def load_moe_receipt(hold, evidence_root=None):
         receipt_ref = bytes.fromhex(hold['receipt_ref'])
     except (KeyError, ValueError, TypeError) as exc:
         raise ValueError('invalid chain receipt ref') from exc
-    canonical = receipt.SerializeToString(deterministic=True)
+    canonical = expand_moe_receipt(receipt).SerializeToString(deterministic=True)
     expected_ref = hashlib.sha256(b'ember/pipeline-receipt/v1\x00' + canonical).digest()
     if len(receipt_ref) != 32 or expected_ref != receipt_ref:
         raise ValueError('receipt differs from chain receipt ref')

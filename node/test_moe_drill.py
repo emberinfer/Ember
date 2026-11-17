@@ -324,6 +324,32 @@ class MoeDrillTest(unittest.TestCase):
         for d in result['distances']:
             self.assertLess(d.distance, 0.006, f'segment distance {d}')
 
+    def test_1b_transport_v2_generation_and_auditor(self):
+        from ember_core import moe as moe_core, verify
+        from ember_pb2 import SegmentRef
+        assembler = self.assembler()
+        assembler.receipt_v2 = True
+        receipt, evidence = assembler.generate('drill-compact', 'hello moe world',
+                                               max_tokens=5)
+        self.assertEqual(receipt.moe.format_version, 2)
+        directory = ARTIFACTS / 'evidence-compact'
+        assembler.save_evidence(directory, receipt, evidence, 'hello moe world',
+                                [(ord(c) % 100) + 3 for c in 'hello moe world'])
+        expanded = moe_core.expand_moe_receipt(receipt)
+        for segment in expanded.moe.segment_receipts:
+            verify(segment)
+        for frame in expanded.moe.frame_receipts:
+            verify(frame)
+        drawn = [SegmentRef(kind=s.kind, layer=s.layer, expert=s.expert,
+                            frame=s.frame, end_layer=s.end_layer)
+                 for s in expanded.moe.segment_receipts if s.frame == 0]
+        result = self.auditor().audit(self.audit_job(receipt, directory, drawn))
+        logical_result = self.auditor().audit(self.audit_job(expanded, directory, drawn))
+        self.assertEqual(result['verdict'], 'accept')
+        self.assertEqual(result['verdict'], logical_result['verdict'])
+        self.assertEqual([d.SerializeToString(deterministic=True) for d in result['distances']],
+                         [d.SerializeToString(deterministic=True) for d in logical_result['distances']])
+
     def test_2_tampered_expert_is_attributed(self):
         self._start_fleet(tamper=True)
         receipt, directory = self.run_generation('drill-cheat', 'evidence-cheat')

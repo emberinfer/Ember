@@ -111,6 +111,7 @@ func main() {
 	moeWeights := flags.String("moe-weights", "", "MoE tokenizer weights")
 	moeFleet := flags.String("moe-fleet-dir", "", "MoE fleet directory")
 	moeEvidence := flags.String("moe-evidence-dir", "", "MoE evidence directory")
+	moeReceiptV2 := flags.Bool("moe-receipt-v2", false, "compact MoE receipt transport over logical v1 signatures (requires chain version 13)")
 	pipelinePython := flags.String("pipeline-python", "", "Python interpreter for dynamic shard assembly")
 	pipelineModelPath := flags.String("pipeline-model-path", "", "tokenizer/config path for dynamic shard assembly")
 	pipelineSchedulerKey := flags.String("pipeline-scheduler-key", "", "mode-0600 on-chain scheduler key for shard RPC")
@@ -386,7 +387,7 @@ func main() {
 		}
 		api.TotalLayers = manifest.TotalLayers
 		if *moePython != "" && *moeWork != "" && *moeWeights != "" && *moeFleet != "" && *moeEvidence != "" && genesis.ChainId == gateway.MoeProfile {
-			api.Moe = &gateway.MoeConfig{Python: *moePython, WorkDir: *moeWork, Weights: *moeWeights, FleetDir: *moeFleet, EvidenceRoot: *moeEvidence, SchedulerKeyFile: *schedulerKeyFile}
+			api.Moe = &gateway.MoeConfig{Python: *moePython, WorkDir: *moeWork, Weights: *moeWeights, FleetDir: *moeFleet, EvidenceRoot: *moeEvidence, ReceiptV2: *moeReceiptV2, SchedulerKeyFile: *schedulerKeyFile}
 		}
 		if *pipelinePython != "" || *pipelineModelPath != "" || *pipelineSchedulerKey != "" {
 			layout := manifest

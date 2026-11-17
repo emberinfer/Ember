@@ -102,7 +102,8 @@ class MoeAuditor:
 
         Returns verdict fields; the caller signs the AuditVerdict.
         """
-        receipt = PipelineExecutionReceipt.FromString(moe_receipt_for_job(job))
+        receipt = moe_core.expand_moe_receipt(
+            PipelineExecutionReceipt.FromString(moe_receipt_for_job(job)))
         profiles = job['profiles']
         evidence = _Evidence(Path(job['evidence_dir']))
         data = receipt.moe

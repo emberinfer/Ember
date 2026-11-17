@@ -403,7 +403,19 @@ func (s *State) deriveMoeSubmission(signer string, a Action, height int64, retai
 		return errors.New("invalid MoE submission")
 	}
 	receipt := &pb.PipelineExecutionReceipt{}
-	if proto.Unmarshal(a.Receipt, receipt) != nil || receipt.RequestId != h.ID ||
+	if proto.Unmarshal(a.Receipt, receipt) != nil {
+		return errors.New("invalid MoE aggregate")
+	}
+	if receipt.GetMoe().GetFormatVersion() == core.MoeReceiptFormatV2 && s.Version < 13 {
+		return errors.New("MoE receipt v2 requires AppVersion 13")
+	}
+	// Transport compaction never changes settlement's logical v1 receipt.
+	// Keep a.Receipt intact for the wire-byte archive / ChunkRoot anchor.
+	receipt, err := core.ExpandMoeReceipt(receipt)
+	if err != nil {
+		return err
+	}
+	if receipt.RequestId != h.ID ||
 		receipt.InputTokens != h.Moe.InputTokens || receipt.OutputTokens == 0 ||
 		receipt.OutputTokens > h.Moe.MaxOutputTokens || receipt.ElapsedMs <= 0 ||
 		len(receipt.OutputCommitment) != 32 || receipt.Moe == nil {
@@ -719,6 +731,10 @@ func (s *State) moeFaultSegments(h *Hold, v *pb.AuditVerdict) ([]string, []strin
 	}
 	if proto.Unmarshal(raw, receipt) != nil || receipt.Moe == nil {
 		return nil, nil, errors.New("invalid frozen MoE receipt")
+	}
+	receipt, err = core.ExpandMoeReceipt(receipt)
+	if err != nil {
+		return nil, nil, err
 	}
 	owners := map[string]string{}
 	for _, seg := range receipt.Moe.SegmentReceipts {

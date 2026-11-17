@@ -268,3 +268,83 @@ def draw_segments(seed: bytes, candidates, n: int):
         out.append(pool[idx][0])
         pool.pop(idx)
     return out
+
+
+def expand_moe_receipt(receipt):
+    """Pure transport expansion, restoring the exact logical v1 receipt.
+
+    Coordinator ruling overrides design 4.1's compact-byte signing wording:
+    signatures and frame roots cover the full logical v1 receipt. The header
+    constants re-enter that signed payload on expansion, so header tampering
+    breaks existing segment signatures rather than weakening their bindings.
+    """
+    if receipt is None:
+        raise ValueError('missing MoE receipt')
+    result = type(receipt)()
+    result.CopyFrom(receipt)
+    if not result.HasField('moe'):
+        return result
+    data = result.moe
+    if data.format_version == 0:
+        if data.HasField('header'):
+            raise ValueError('legacy MoE receipt has a compact header')
+        return result
+    if data.format_version != 2:
+        raise ValueError('unsupported MoE receipt format')
+    if not data.HasField('header'):
+        raise ValueError('missing compact MoE header')
+    header = data.header
+    if (not header.chain_id or len(header.manifest_root) != 32 or
+            not header.execution_profile_ver or not header.request_id or
+            header.request_id != result.request_id):
+        raise ValueError('invalid compact MoE header')
+    for segment in data.segment_receipts:
+        if (segment.chain_id or segment.manifest_root or
+                segment.execution_profile_ver or segment.request_id):
+            raise ValueError('compact MoE segment carries repeated constants')
+        segment.chain_id = header.chain_id
+        segment.manifest_root = header.manifest_root
+        segment.execution_profile_ver = header.execution_profile_ver
+        segment.request_id = header.request_id
+    for frame in data.frame_receipts:
+        if frame.request_id:
+            raise ValueError('compact MoE frame carries repeated request id')
+        frame.request_id = header.request_id
+    data.ClearField('format_version')
+    data.ClearField('header')
+    return result
+
+
+def compact_moe_receipt(receipt):
+    """Strip only transport repetition after v1 signatures/roots are final."""
+    logical = expand_moe_receipt(receipt)
+    if not logical.HasField('moe') or not logical.moe.segment_receipts:
+        raise ValueError('missing MoE segments for compaction')
+    if receipt.moe.format_version == 2:
+        result = type(receipt)()
+        result.CopyFrom(receipt)
+        return result
+    data = logical.moe
+    first = data.segment_receipts[0]
+    constants = (first.chain_id, first.manifest_root,
+                 first.execution_profile_ver, first.request_id)
+    if (not constants[0] or len(constants[1]) != 32 or not constants[2] or
+            not constants[3] or constants[3] != logical.request_id):
+        raise ValueError('invalid logical MoE constants')
+    for segment in data.segment_receipts:
+        if ((segment.chain_id, segment.manifest_root,
+             segment.execution_profile_ver, segment.request_id) != constants):
+            raise ValueError('inconsistent logical MoE segment constants')
+    for frame in data.frame_receipts:
+        if frame.request_id != constants[3]:
+            raise ValueError('inconsistent logical MoE frame request id')
+    data.header.chain_id, data.header.manifest_root = constants[:2]
+    data.header.execution_profile_ver, data.header.request_id = constants[2:]
+    for segment in data.segment_receipts:
+        for field in ('chain_id', 'manifest_root', 'execution_profile_ver',
+                      'request_id'):
+            segment.ClearField(field)
+    for frame in data.frame_receipts:
+        frame.ClearField('request_id')
+    data.format_version = 2
+    return logical

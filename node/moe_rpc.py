@@ -79,6 +79,13 @@ class ReceiptSigner:
         self.node = node_id(key.public_key().public_bytes(
             serialization.Encoding.Raw, serialization.PublicFormat.Raw))
 
+    @staticmethod
+    def execution(receipt, receipt_v2=False):
+        """Emit transport v2 only after full v1 signatures and roots exist."""
+        if receipt_v2:
+            return moe_core.compact_moe_receipt(receipt)
+        return moe_core.expand_moe_receipt(receipt)
+
     def segment(self, **fields):
         receipt = SegmentReceipt(
             node_id=self.node, chain_id=self.genesis.chain_id,

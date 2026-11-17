@@ -392,6 +392,11 @@ type MoeProfileBinding struct {
 func VerifyMoeExecution(manifest *pb.ModelManifest, receipt *pb.PipelineExecutionReceipt,
 	chain string, manifestRoot []byte, executionProfile string,
 	profiles map[string]MoeProfileBinding) (*MoeWork, error) {
+	var err error
+	receipt, err = ExpandMoeReceipt(receipt)
+	if err != nil {
+		return nil, err
+	}
 	layout := manifest.GetMoeLayout()
 	if err := ValidateMoeLayout(manifest); err != nil {
 		return nil, err

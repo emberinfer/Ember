@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	core "ember/core-go"
 	pb "ember/proto"
 	chainapp "ember/services/chain"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
@@ -67,10 +68,24 @@ func (l *ChainLedger) ChunkedSubmitMoe(id string, r *pb.PipelineExecutionReceipt
 }
 
 func (l *ChainLedger) chunkedSubmitMoe(id string, raw []byte, actual int64) ([]StageShare, error) {
-	return sendMoeChunks(id, raw, actual, l.submitMoeChunk, l.hold)
+	// ReceiptRef identifies the expanded logical v1 receipt; ChunkRoot below
+	// still anchors the exact compact bytes uploaded and archived.
+	var receipt pb.PipelineExecutionReceipt
+	if err := proto.Unmarshal(raw, &receipt); err != nil {
+		return nil, err
+	}
+	logical, err := core.ExpandMoeReceipt(&receipt)
+	if err != nil {
+		return nil, err
+	}
+	ref, err := core.PipelineReceiptRef(logical)
+	if err != nil {
+		return nil, err
+	}
+	return sendMoeChunks(id, raw, actual, hex.EncodeToString(ref), l.submitMoeChunk, l.hold)
 }
 
-func sendMoeChunks(id string, raw []byte, actual int64, send func(chainapp.Action) error, hold func(string) (*chainapp.Hold, error)) ([]StageShare, error) {
+func sendMoeChunks(id string, raw []byte, actual int64, receiptRef string, send func(chainapp.Action) error, hold func(string) (*chainapp.Hold, error)) ([]StageShare, error) {
 	if len(raw) == 0 || len(raw) > chainapp.MaxChunkBytes {
 		return nil, errors.New("invalid chunked MoE receipt size")
 	}
@@ -85,10 +100,6 @@ func sendMoeChunks(id string, raw []byte, actual int64, send func(chainapp.Actio
 		list.Write(hash[:])
 	}
 	listHash := list.Sum(nil)
-	refHash := sha256.New()
-	refHash.Write([]byte("ember/pipeline-receipt/v1\x00"))
-	refHash.Write(raw)
-	receiptRef := hex.EncodeToString(refHash.Sum(nil))
 	matches := func(h *chainapp.Hold) bool {
 		return h != nil && h.Moe != nil && bytes.Equal(h.Moe.ChunkRoot, root[:]) && bytes.Equal(h.Moe.ChunkListHash, listHash) && h.Moe.ChunkBytes == len(raw) && h.Moe.ChunkTotal == total && h.Moe.ChunkActual == actual
 	}

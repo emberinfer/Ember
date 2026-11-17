@@ -29,6 +29,8 @@ import (
 const MoeProfile = "ember-olmoe-1b-7b-moe-v1"
 
 type MoeConfig struct {
+	// ReceiptV2 compacts transport only; signatures and roots stay logical v1.
+	ReceiptV2                                                          bool
 	Python, WorkDir, Weights, FleetDir, EvidenceRoot, SchedulerKeyFile string
 	// Owned here to keep queue state entirely in the MoE path. Key by Gateway
 	// so even gateways sharing a configuration have independent fleet queues.
@@ -314,7 +316,7 @@ func (g *Gateway) serveMoe(w http.ResponseWriter, r *http.Request, q request, pr
 	timeout := moeExecutionTimeout(g.RequestTimeout)
 	ctx, cancel := context.WithTimeout(r.Context(), timeout)
 	defer cancel()
-	raw, _ := json.Marshal(map[string]any{"request_id": id, "prompt": prompt, "max_tokens": q.MaxTokens, "fleet_dir": g.Moe.FleetDir, "weights": g.Moe.Weights, "evidence_root": g.Moe.EvidenceRoot})
+	raw, _ := json.Marshal(map[string]any{"request_id": id, "prompt": prompt, "max_tokens": q.MaxTokens, "fleet_dir": g.Moe.FleetDir, "weights": g.Moe.Weights, "evidence_root": g.Moe.EvidenceRoot, "receipt_v2": g.Moe.ReceiptV2})
 	c := exec.CommandContext(ctx, g.Moe.Python, "-m", "moe_gateway")
 	c.Dir = g.Moe.WorkDir
 	c.Env = append(os.Environ(), "PYTHONPATH=core-py:proto:node")

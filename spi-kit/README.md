@@ -1,4 +1,4 @@
-# Ember Engine SPI Conformance Kit 0.6.0
+# Ember Engine SPI Conformance Kit 0.7.0
 
 This archive is standalone. Read `SPEC.md`, implement an adapter using
 `ember_spi.py`, then run it against the released real node host:

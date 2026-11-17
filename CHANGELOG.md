@@ -1,6 +1,29 @@
 # Changelog
 
-## 0.6.0 — current published release
+## 0.7.0 — current published release
+
+Latest GitHub release: v0.7.0. Snapshot source `1e6ecfc` (the release commit
+adds version metadata to this snapshot; its exact SHA is recorded in the build).
+AppVersion 13 activated on `ember-testnet-1` at height **129067**.
+
+- Consensus parameter mechanism: Version >= 13 attaches Block parameters to each
+  block; max_bytes increases from 4194304 to 8388608, while max_gas stays 10000000.
+- Protocol execution-role exit: `request_exec_exit` takes effect after 1000 blocks,
+  gateways filter the on-chain exit set, and clients provide `request-exec-exit`.
+- MoE receipt chunking and incremental submission: manifest + 1MiB chunks +
+  finalize, spool excluded from consensus state, block-history reconstruction,
+  stage gRPC limit 320MiB, and Tier-1 compact transport v2 with signatures still
+  over the v1 logical receipt.
+- Context-window admission: gateways jointly check input + max_tokens against
+  profile ContextLimit, errors include numeric limits, and pricing/quote expose
+  context_limit_tokens. Includes the LONG35 HTTP 400 adapter production patch;
+  the live 35B service window is 46080 tokens.
+
+Assets: Linux amd64/arm64 archives, Engine SPI kit, SHA256SUMS and
+release-signing.pub. SHA256SUMS.sig will be added for v0.7.0 and v0.6.0 when the
+offline signing key is available.
+
+## 0.6.0 — previous published release
 
 Latest GitHub release: v0.6.0, snapshot `b8b3128`. The release sequence below
 retains older version labels as historical records; do not infer current status
@@ -9,9 +32,9 @@ from their numerically larger version strings.
 Available assets: Linux amd64 and arm64 archives, Engine SPI kit, `SHA256SUMS`
 and `release-signing.pub`. `SHA256SUMS.sig` is not yet published for this release.
 
-## Current network snapshot — 2026-11-17
+## Current network snapshot — 2026-11-18
 
-The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
+The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 13 activated at height 129067. The source base constant is 11; the coordinated upgrade ladder advances the running state to 13.
 
 The live catalog includes unified 1.5B and 35B profiles and serving OLMoE layer +
 expert sharding. Kimi is published but not deployed. AppVersion 12 corrected its
@@ -19,7 +42,7 @@ compute derivation to 208,736,282,112 FLOPs/token (correction count 0 to 1).
 AppVersion 10 supplies default execution/audit registration availability and
 bounded whole-model adjudication; AppVersion 11 supplies token-price overrides.
 This snapshot describes chain state, not a claim that every mechanism first
-shipped in v0.6.0. See [pricing](docs/PRICING.md) and [upgrades](docs/UPGRADE.md).
+shipped in v0.7.0. See [pricing](docs/PRICING.md) and [upgrades](docs/UPGRADE.md).
 
 ## Historical 0.22.0 - 2026-11-11
 

@@ -4,9 +4,9 @@ Read the [disclaimer](DISCLAIMER.md). Testnet Spark is valueless test credit.
 
 ## Verify a release
 
-The latest software release is [v0.6.0](https://github.com/emberinfer/Ember/releases/tag/v0.6.0), whose tag points to snapshot `b8b3128`. Assets are the Linux amd64 and arm64 archives, `ember-engine-spi-kit-0.6.0.tar.gz`, `SHA256SUMS` and `release-signing.pub`.
+The latest software release is [v0.7.0](https://github.com/emberinfer/Ember/releases/tag/v0.7.0), whose tag points to snapshot `b8b3128`. Assets are the Linux amd64 and arm64 archives, `ember-engine-spi-kit-0.7.0.tar.gz`, `SHA256SUMS` and `release-signing.pub`.
 
-**v0.6.0 has no published `SHA256SUMS.sig`.** The signing key is offline. Checksum comparison detects mismatched downloaded bytes but does not authenticate unsigned checksums.
+**v0.7.0 has no published `SHA256SUMS.sig`.** The signing key is offline. Checksum comparison detects mismatched downloaded bytes but does not authenticate unsigned checksums.
 
 Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
 `d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb`.
@@ -17,7 +17,7 @@ is not a trust anchor. The repository trust statement names an older key; its de
 verification against the checked-in root key and current statement bytes. See [signing](SIGNING.md).
 
 ```sh
-EMBER_VERSION=0.6.0
+EMBER_VERSION=0.7.0
 EMBER_RELEASE="https://github.com/emberinfer/Ember/releases/download/v$EMBER_VERSION"
 # Use arm64 instead of amd64 for ARM64.
 for file in "ember-$EMBER_VERSION-linux-amd64.tar.gz" SHA256SUMS release-signing.pub; do

@@ -4,7 +4,7 @@ Ember is an open inference network: independent hardware operators run models,
 submit signed execution evidence and settle inference fees in Spark on a
 CometBFT ledger. Participation is permissionless, subject to protocol admission.
 
-The public testnet is live with v0.6.0. The chain is `ember-testnet-1`.
+The public testnet is live with v0.7.0. The chain is `ember-testnet-1`.
 **Testnet Spark is valueless test credit.**
 
 ## How the network works
@@ -83,10 +83,10 @@ audit work by default; each requires the appropriate evidence and replay capabil
 Start with the [quickstart](docs/QUICKSTART.md): check the release, install,
 authenticate network parameters and signed profile artifacts, verify local model
 weights, fund the account, then configure and start the node. Linux amd64 and
-arm64 release archives are available from the [v0.6.0 release](https://github.com/emberinfer/Ember/releases/tag/v0.6.0).
+arm64 release archives are available from the [v0.7.0 release](https://github.com/emberinfer/Ember/releases/tag/v0.7.0).
 Installation does not provide model weights.
 
-**v0.6.0 has no published `SHA256SUMS.sig`.** Checksum comparison detects mismatched
+**v0.7.0 has no published `SHA256SUMS.sig`.** Checksum comparison detects mismatched
 bytes but does not authenticate unsigned checksums. Authenticate the release-key
 fingerprint through a trusted channel; read [release signing](docs/SIGNING.md)
 for the measured keys and trust-statement verification gap.

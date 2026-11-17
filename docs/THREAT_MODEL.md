@@ -63,7 +63,7 @@ runtime declarations are not hardware or ownership attestation.
    stale work, cross-attempt frames, evidence downgrade, resource saturation,
    partitions and poisoned discovery endpoints. Keep configurations and results
    reproducible without exposing secrets.
-6. Check available release authentication material on a clean machine. v0.6.0
+6. Check available release authentication material on a clean machine. v0.7.0
    has no published checksum signature; see [signing](SIGNING.md). Exercise key
    rotation and backup restore, and inventory prompt retention. Contract tests alone are not an
    independent security audit or public-network acceptance.

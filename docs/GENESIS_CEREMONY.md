@@ -14,7 +14,7 @@ independently verify a network genesis. Only public Ledger node material is exch
 
 ## Operator procedure
 
-On each operator host, use a verified compatible build. For v0.6.0, no checksum
+On each operator host, use a verified compatible build. For v0.7.0, no checksum
 signature is published; see [release checks](SIGNING.md). Then run:
 
 ```sh

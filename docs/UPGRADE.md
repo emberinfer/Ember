@@ -10,7 +10,7 @@ or replacing a binary alone does not activate consensus rules.
 
 ## Plan and activate
 
-1. Authenticate the release and exact build. For v0.6.0, checksum signatures are
+1. Authenticate the release and exact build. For v0.7.0, checksum signatures are
    not published; see [signing](SIGNING.md) for the available checks and trust gap.
 2. Query chain ID, current state version, height and parameters. Preserve a
    finalized state snapshot, consensus signing state and all dependent archives.

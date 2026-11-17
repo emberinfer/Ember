@@ -1,56 +1,66 @@
 # Ember
 
-Ember is an open inference network with signed execution evidence, sampled replay
-audits and Spark accounting on a CometBFT ledger. Joining is permissionless;
-Ledger membership and serving registrations are queryable on-chain.
+Ember is an open inference network: independent hardware operators run models,
+submit signed execution evidence and settle inference fees in Spark on a
+CometBFT ledger. Participation is permissionless, subject to protocol admission.
 
-## Disclaimer
+The public testnet is live with v0.6.0. The chain is `ember-testnet-1`.
+**Testnet Spark is valueless test credit.**
 
-Ember is experimental, open-source research software provided **as-is, without
-warranty**, subject to the [Apache-2.0 license](LICENSE).
-**Testnet Spark is valueless test credit.** It is not money or a financial
-instrument and is not offered for sale. The Ember project operates no exchange
-or fiat on/off-ramp. Nothing here is an offer, solicitation or investment advice.
-Participation is at your own risk and subject to local rules. Read the
-[full disclaimer](docs/DISCLAIMER.md).
+## How the network works
 
-## Network status
+Inference and replay run outside consensus. Ledger nodes order deterministic
+accounting transitions; they do not run models or floating-point comparisons
+inside consensus.
 
-The public testnet is live with v0.6.0.
+```text
+Authenticated request → Gateway → Model or shard execution
+                                      ↓
+                               Signed evidence
+                                      ↓
+                              Sampled replay audit
+                                      ↓
+                            Ledger settlement / refund
+```
 
-The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
+Gateways authorize requests and reserve bounded fees. Discovery and scheduling
+use finalized registrations and availability information to select compatible
+capacity. Nodes connect through outbound authenticated tunnels. The Engine SPI
+separates model execution and evidence extraction from network services.
 
-The latest software release is [v0.6.0](https://github.com/emberinfer/Ember/releases/tag/v0.6.0), whose tag points to snapshot `b8b3128`. Assets are the Linux amd64 and arm64 archives, `ember-engine-spi-kit-0.6.0.tar.gz`, `SHA256SUMS` and `release-signing.pub`.
+A request follows five steps:
 
-**v0.6.0 has no published `SHA256SUMS.sig`.** The signing key is offline. Checksum comparison detects mismatched downloaded bytes but does not authenticate unsigned checksums.
+1. Freeze a bounded hold that pins the request's profile, price and maximum fee.
+2. Execute on a compatible whole model or sharded path.
+3. Commit signed evidence binding the request, profile and output.
+4. Resolve sampled audit using eligible replay capacity. The gateway cannot name
+   the assigned reviewer. Confirmed penalties require corroborated rejection evidence.
+5. Settle using actual token counts and refund unused reservation.
 
-Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
-`d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb`.
+Accepted fees allocate 80% to execution, 15% to audit and 5% back to the caller.
+The audit allocation and an individual reviewer's actual payment are distinct.
+Unresolved live holds have a 5,000-block expiry; gateway recovery submits the
+expiry transaction for refunds. This is height-based, not a wall-clock timer.
+HTTP output does not establish final settlement.
 
+Audits sample work rather than verify every request. Unsampled settlement is
+explicitly unaudited. Registered equality-audit workers default to teacher-forcing
+replay; supported alternative tokens within the declared margin can be accepted.
+Signatures and consensus finality do not prove inference correctness. See
+[audit design](docs/AUDIT_DESIGN.md), [sampling](docs/AUDIT_SAMPLING.md) and
+[architecture](docs/PRODUCTION_ARCH.md).
 
-## Use / Serve / Ledger
+## Participate
 
-- **Use:** send authenticated OpenAI-compatible chat-completion requests to a gateway.
-- **Serve:** run a compatible model or shard, submit signed evidence and receive test credit after settlement. Eligible serving registrations also offer audit work by default.
-- **Ledger:** run a consensus node that orders deterministic account, registration, hold and settlement transitions. Ledger nodes do not run model inference inside consensus.
+### Use
 
-## Models and profiles
+Send authenticated OpenAI-compatible chat-completion requests to a gateway.
+Use [site/network.json](site/network.json) for current gateway addresses, faucet,
+RPC, seeds and certificate pins. Obtain your bearer token through the deployment
+operator and fund your account using the listed faucet.
 
-A model is one set of weights; a profile is a deployment form. Forms are **Whole model** and **Sharded** (by layer, by expert, or layer + expert). A unified profile covers whole-model and sharded forms under one card. CPU/GPU describes a node, not a form. The 1.5B `-segmented` listing is the unified profile's sharded entry point, not another profile.
-
-| Profile | Model | Context tokens | Availability |
-| --- | --- | ---: | --- |
-| `ember-qwen2.5-1.5b-unified-v1` | Qwen2.5-1.5B-Instruct | 32768 | Serving; unified Whole model and Sharded forms |
-| `ember-qwen3.6-35b-a3b-fp8-unified-v1` | Qwen3.6-35B-A3B FP8 | 262144 | Serving via vLLM on GPU nodes |
-| `ember-olmoe-1b-7b-moe-v1` | OLMoE-1B-7B | 4096 | Serving; Sharded by layer + expert; sampled segment-replay audits pass |
-| `ember-kimi-k3.1-pro-v1` | Kimi K3.1 Pro | Not specified | Published on-chain; not deployed; no serving nodes |
-
-
-## Use it
-
-Obtain a current authenticated gateway address, bearer token and funded account.
-Endpoint addresses and certificate pins must be verified with the deployment
-operator; the repository website copy is not a current endpoint directory.
+For a first request, set `EMBER_GATEWAY_URL` to a listed gateway and `EMBER_TOKEN`
+to your operator-issued bearer token and run:
 
 ```sh
 curl -N -fsS "$EMBER_GATEWAY_URL/v1/chat/completions" \
@@ -59,56 +69,89 @@ curl -N -fsS "$EMBER_GATEWAY_URL/v1/chat/completions" \
   -d '{"model":"ember-qwen2.5-1.5b-unified-v1","messages":[{"role":"user","content":"Say OK"}],"max_tokens":2,"stream":true}'
 ```
 
-Whole-model and MoE paths support true SSE streaming. The reference live block
-cadence is about 1.5–1.9 seconds, segmented execution about 1.02 seconds/token,
-and a short 35B request about 10–12 seconds end-to-end. These reference numbers
-are not throughput or latency guarantees.
+Whole-model and MoE paths support SSE streaming. For a quote before inference,
+use authenticated `POST /v1/quote` with the intended request body; quoting creates
+no hold. Effective prices and frozen multipliers come from chain state. See
+[pricing](docs/PRICING.md).
 
-## Run a node
+### Serve
 
-Follow the [quickstart](docs/QUICKSTART.md) for release checks, installation,
-verified profile artifacts, registration and exit. Model weights are separate.
-Since AppVersion 10, registration offers both execution and on-chain audit eligibility by default. `--no-exec` and `--no-audit` select registration-time opt-outs. Eligibility still requires the appropriate evidence and replay capabilities. Registration binds the identity, exact signed profile, layer range and capacity. There is no deregistration or mid-term removal of an enabled role. Registrations lapse after the live 200,000-block TTL; stopping a process does not erase its registration.
+Run a compatible model or shard, submit signed evidence and receive test credit
+after accepted settlement. Eligible serving registrations offer execution and
+audit work by default; each requires the appropriate evidence and replay capabilities.
 
-For consensus participation, follow the [Ledger node guide](docs/VALIDATOR_GUIDE.md).
+Start with the [quickstart](docs/QUICKSTART.md): check the release, install,
+authenticate network parameters and signed profile artifacts, verify local model
+weights, fund the account, then configure and start the node. Linux amd64 and
+arm64 release archives are available from the [v0.6.0 release](https://github.com/emberinfer/Ember/releases/tag/v0.6.0).
+Installation does not provide model weights.
 
-## How it works
+**v0.6.0 has no published `SHA256SUMS.sig`.** Checksum comparison detects mismatched
+bytes but does not authenticate unsigned checksums. Authenticate the release-key
+fingerprint through a trusted channel; read [release signing](docs/SIGNING.md)
+for the measured keys and trust-statement verification gap.
 
-Freeze a bounded hold, execute, commit signed evidence, resolve sampled audit, then settle using actual token counts. Accepted fees allocate 80% to execution, 15% to audit and 5% back to the caller. Unused reservation is refunded. The live hold timeout is 5,000 blocks; expiry refunds unresolved holds through `expire_hold` and gateway recovery, rather than a wall-clock timer.
+Registrations bind identity, exact signed profile, layer range and capacity.
+`--no-exec` and `--no-audit` select registration-time opt-outs. There is no
+mid-term removal of an enabled role or deregistration. The live registration TTL
+is 200,000 blocks; stopping a process does not erase the commitment. Follow the
+[exit procedure](docs/QUICKSTART.md#exit-and-recover-stake) and
+[operations guide](docs/OPERATIONS.md) before withdrawing capacity.
 
-Audit assignment requires committed evidence and a later finalized transaction;
-the code derives its entropy from blocks immediately after **freeze**, not
-necessarily after evidence commit. Gateways cannot name the assigned auditor.
-Teacher-forcing replay is the default equality-audit path. The first divergent
-token is evaluated with epsilon 1.0; a known alternative within the margin can
-be accepted. Conviction requires corroboration, and whole-model adjudication
-allows at most one reviewer beyond the second. See [audit design](docs/AUDIT_DESIGN.md).
+### Ledger
 
-Gateway dispatch combines reputation, session/cache affinity and locally measured
-speed. Whole-model and sharded candidates stay separate. Speed does not alter
-trust reputation or consensus audit sampling. The source currently records speed
-after successful receipt submission, before final settlement. MoE generation
-uses a bounded FIFO per gateway; full or expired waits return retryable 503.
-See [scheduling](docs/SCHEDULING.md) and [MoE queue operation](docs/moe-serialization.md).
+Run a consensus node for accounts, stake, registrations, holds and settlement.
+The documented live network has five Ledger nodes. Membership and serving
+registrations are queryable on-chain; serving registration alone does not grant
+consensus membership.
 
-## Status and limitations
+Follow the [Ledger node guide](docs/VALIDATOR_GUIDE.md) for existing-network
+participation, the [membership rules](docs/VALIDATORS.md) for admission and
+readiness, and [upgrades](docs/UPGRADE.md) for coordinated changes. Do not create
+a new genesis to join an existing chain. Keep consensus signing keys separate
+from account keys and never run two live copies of the same consensus identity.
 
-Signatures attribute statements; sampled audits do not prove every computation.
-Distinct identities do not prove independent ownership. Ordinary gateway requests
-expose needed plaintext to gateways, execution nodes and auditors. TLS does not
-make execution confidential. Contract conformance is not model correctness or
-a security audit. The source includes a separate [encrypted API](docs/PRIVACY.md)
-with its own trust assumptions; no live deployment of that API is asserted here.
+## Models and deployment forms
 
-The live website is built from a separate repository. This repository's `site/`
-is a documentation baseline, not evidence of live endpoint availability.
+A model is one set of weights. A profile fixes the signed deployment and evidence
+contract. Whole model and Sharded are forms; shards may divide layers, experts,
+or both. CPU/GPU describes the node, not a form. Unified profiles cover
+whole-model and sharded forms under one card.
+
+Qwen2.5-1.5B-Instruct serves in Whole model and Sharded forms.
+Qwen3.6-35B-A3B FP8 serves through vLLM on GPU nodes. OLMoE-1B-7B serves
+sharded by layer + expert, with sampled segment-replay audits. Kimi K3.1 Pro is
+published on-chain but is not deployed and has no serving nodes.
+
+Publication and endorsement do not activate execution. Consult the
+[profile records](docs/PROFILE_RELEASES.md) for exact identifiers and context
+limits, [sharding](docs/SHARDING.md) for supported paths and
+[publishing](docs/PUBLISHING.md) for immutable profile releases.
 
 ## Documentation
 
-- [Quickstart](docs/QUICKSTART.md), [operations](docs/OPERATIONS.md), [public network](docs/PUBLIC_NETWORK.md), [Ledger membership](docs/VALIDATORS.md)
-- [Pricing](docs/PRICING.md), [publishing](docs/PUBLISHING.md), [profiles](docs/PROFILE_RELEASES.md)
-- [Engine SPI](docs/ENGINE_SPI.md), [adapters](docs/ENGINE_ADAPTERS.md), [SPI kit](spi-kit/README.md), [sharding](docs/SHARDING.md)
-- [Audit design](docs/AUDIT_DESIGN.md), [slashing](docs/SLASHING.md), [threat model](docs/THREAT_MODEL.md), [release signing](docs/SIGNING.md), [upgrade](docs/UPGRADE.md)
+| Task | Guides |
+| --- | --- |
+| Join and operate | [Quickstart](docs/QUICKSTART.md), [public network](docs/PUBLIC_NETWORK.md), [operations](docs/OPERATIONS.md) |
+| Participate in consensus | [Ledger guide](docs/VALIDATOR_GUIDE.md), [membership](docs/VALIDATORS.md), [upgrades](docs/UPGRADE.md) |
+| Understand network rules | [Architecture](docs/PRODUCTION_ARCH.md), [pricing](docs/PRICING.md), [audit design](docs/AUDIT_DESIGN.md), [slashing](docs/SLASHING.md) |
+| Supply model capacity | [Profiles](docs/PROFILE_RELEASES.md), [hardware](docs/HARDWARE.md), [contribution limits](docs/CONTRIBUTION_CAPS.md), [sharding](docs/SHARDING.md) |
+| Build integrations | [Engine SPI](docs/ENGINE_SPI.md), [adapters](docs/ENGINE_ADAPTERS.md), [publishing](docs/PUBLISHING.md) |
+
+## Status and limitations
+
+Ember is experimental software, provided as-is without warranty. **Testnet Spark
+is valueless test credit**, not money or a financial instrument, and is not
+for sale. The project operates no exchange or fiat on/off-ramp. Participation is
+at your own risk and subject to local rules. Read the [full disclaimer](docs/DISCLAIMER.md).
+
+Signed evidence attributes statements; sampled audits do not prove every
+computation. Unsampled settlement is explicitly unaudited. Distinct identities
+do not establish independent ownership. Ordinary requests expose needed plaintext
+to gateways, execution nodes and auditors; TLS does not make execution confidential.
+The separate [encrypted API](docs/PRIVACY.md) is documented in source without a
+claim of live deployment. There is no public mainnet, production SLA or
+third-party security audit. See the [threat model](docs/THREAT_MODEL.md).
 
 ## Contributing
 

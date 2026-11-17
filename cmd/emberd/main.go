@@ -285,6 +285,9 @@ func main() {
 	api := &gateway.Gateway{SpeedStats: speedStats, Ledger: book, Tunnel: relay, Profile: "v1", Manifest: make([]byte, 32), Price: 1, Dispute: 0, DemoBootstrap: *demo,
 		Admission: make(chan struct{}, *maxConcurrent), RequestTimeout: *requestTimeout, MaxBodyBytes: 1 << 20,
 		RateLimit: *rateLimit, RateWindow: time.Minute}
+	if chainBook != nil {
+		api.ChainExecExited = chainBook.ExecExitedNodes
+	}
 	if *execExcludeFile != "" {
 		var err error
 		api.ExecExclude, err = gateway.LoadExecExcludeFile(*execExcludeFile)

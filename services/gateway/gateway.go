@@ -27,6 +27,12 @@ import (
 )
 
 type Gateway struct {
+	execExitedDone       chan struct{}
+	ChainExecExited      func() (map[string]bool, error)
+	execExitedMu         sync.Mutex
+	execExitedSet        map[string]bool
+	execExitedAt         time.Time
+	execExitedRefreshing bool
 	SpeedStats           *SpeedStats
 	ExecExclude          map[string]bool
 	SpeedEnabled         bool

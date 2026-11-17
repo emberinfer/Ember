@@ -198,6 +198,59 @@ func (g *Gateway) finishMoe(b moeLedger, id string) {
 		}
 	}
 }
+
+// archiveMoeReceipt supplies the auditor's local receipt channel in addition
+// to the executor's existing evidence index. It does not alter that index.
+func (g *Gateway) archiveMoeReceipt(id string, receipt *pb.PipelineExecutionReceipt) error {
+	if id == "" || id == "." || id == ".." || strings.ContainsAny(id, `/\\`) {
+		return errors.New("invalid MoE receipt archive id")
+	}
+	raw, err := proto.MarshalOptions{Deterministic: true}.Marshal(receipt)
+	if err != nil {
+		return err
+	}
+	root := g.Moe.EvidenceRoot
+	if root == "" {
+		root = filepath.Join(g.Moe.WorkDir, "evidence")
+	}
+	dir := filepath.Join(root, id)
+	if err = os.MkdirAll(dir, 0700); err != nil {
+		return err
+	}
+	f, err := os.CreateTemp(dir, ".receipt-*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(f.Name())
+	if _, err = f.Write(raw); err == nil {
+		err = f.Sync()
+	}
+	if closeErr := f.Close(); err == nil {
+		err = closeErr
+	}
+	if err != nil {
+		return err
+	}
+	if err = os.Rename(f.Name(), filepath.Join(dir, "receipt.pb")); err != nil {
+		return err
+	}
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	return d.Sync()
+}
+
+func moeExecutionTimeout(configured time.Duration) time.Duration {
+	// Queue waiting has its own ten-minute budget; this is generation only.
+	// Long-context generation needs a full hour even under gateway defaults.
+	if configured < time.Hour {
+		return time.Hour
+	}
+	return configured
+}
+
 func (g *Gateway) serveMoe(w http.ResponseWriter, r *http.Request, q request, prompt, account, id string) {
 	b, ok := g.Ledger.(moeLedger)
 	if !ok || g.ChainID != MoeProfile {
@@ -258,10 +311,7 @@ func (g *Gateway) serveMoe(w http.ResponseWriter, r *http.Request, q request, pr
 			log.Printf("MOE cancel failed id=%s error=%v", id, ce)
 		}
 	}
-	timeout := g.RequestTimeout
-	if timeout <= 0 {
-		timeout = 15 * time.Minute
-	}
+	timeout := moeExecutionTimeout(g.RequestTimeout)
 	ctx, cancel := context.WithTimeout(r.Context(), timeout)
 	defer cancel()
 	raw, _ := json.Marshal(map[string]any{"request_id": id, "prompt": prompt, "max_tokens": q.MaxTokens, "fleet_dir": g.Moe.FleetDir, "weights": g.Moe.Weights, "evidence_root": g.Moe.EvidenceRoot})
@@ -365,6 +415,9 @@ func (g *Gateway) serveMoe(w http.ResponseWriter, r *http.Request, q request, pr
 			charge, _, _, e = g.quoteFee(input, count)
 		}
 		err = e
+		if err == nil {
+			err = g.archiveMoeReceipt(id, receipt)
+		}
 		if err == nil {
 			_, err = b.SubmitMoe(id, receipt, charge.Total)
 		}

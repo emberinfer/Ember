@@ -43,10 +43,10 @@ for a Ledger node. See the [Ledger node guide](VALIDATOR_GUIDE.md).
 
 Obtain current signed profile artifacts, their chain anchors, model origin and
 immutable revision through an authenticated deployment channel. Verify local
-weights against the manifest before serving. Do not substitute old repository
-website addresses, hashes or certificate pins. A separate operator-verified
-network-parameter file must contain the required seed, RPC, scheduler and profile
-anchors; the repository's draft metadata is not a ready-to-use connection file.
+weights against the manifest before serving. The repository's [network parameter file](../site/network.json) contains synchronized
+public seed, RPC, scheduler and profile anchors for configure. Verify these values
+against the current public network before use, and supply the matching signed
+profile artifacts to the installation.
 
 The configuration helper consumes a complete parameter file and refuses existing
 config overwrite:

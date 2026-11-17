@@ -4,29 +4,15 @@
   "status": "public-testnet-live",
   "description": "Open inference network with signed evidence, sampled audits and test-credit accounting.",
   "ledger": {
-    "application": "emberchain",
-    "engine": "CometBFT",
-    "chain_id": "ember-testnet-1",
-    "genesis_date": "2026-11-14",
-    "consensus_nodes": 5,
-    "base_app_version": 11,
-    "live_app_version": 12,
-    "live_app_version_activation_height": 116582
-  },
+  "application": "emberchain",
+  "chain_id": "ember-testnet-1",
+  "engine": "CometBFT"
+ },
   "release": {
-    "version": "0.6.0",
-    "base_url": "https://github.com/emberinfer/Ember/releases/download/v0.6.0",
-    "snapshot_commit": "b8b3128",
-    "signing_public_key_sha256_der": "d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb",
-    "checksum_signature_available": false,
-    "assets": [
-      "ember-0.6.0-linux-amd64.tar.gz",
-      "ember-0.6.0-linux-arm64.tar.gz",
-      "ember-engine-spi-kit-0.6.0.tar.gz",
-      "SHA256SUMS",
-      "release-signing.pub"
-    ]
-  },
+  "base_url": "https://github.com/emberinfer/Ember/releases/download/v0.6.0",
+  "signing_public_key_sha256_der": "d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb",
+  "version": "0.6.0"
+ },
   "access": {
   "faucet": "http://relay.emberinfer.org:39095/testnet/faucet",
   "gateway": "http://relay.emberinfer.org:39090",
@@ -132,11 +118,27 @@
     "multiplier_cap_ppm": 2000000,
     "max_relative_step_ppm": 100000,
     "live_epoch_blocks": 1000,
-    "effective_price_source": "on-chain query; no live multiplier snapshot asserted"
+    "effective_price_source": "on-chain query; no live multiplier snapshot asserted",
+    "coverage_query": "/coverage/<node-account-id>",
+    "target_auditors": 3,
+    "target_executors": 2
   },
   "spark": {
     "sub_per_spark": 1000000,
     "testnet": "valueless test credit - no price, no exchange, no returns"
   },
-  "source_note": "Repository website baseline; live website is built from a separate repository. The access object contains current public connection values for configure; other metadata is maintained independently."
+  "source_note": "Repository website baseline; live website is built from a separate repository. Network configuration parameters are synchronized with the live network.json for configure, including access, current_profile, ledger, links, public_testnet and release. Descriptions, profile listings, coverage presentation, pricing presentation and Spark wording are maintained independently.",
+  "current_profile": {
+  "genesis_sha256": "188f1cb4bbff0f90fa3730a1d49fb5df0e235c2a9202cb23512ba3b71db0254c",
+  "id": "ember-qwen2.5-1.5b-gpu-v1",
+  "manifest_sha256": "4b820e746e59faf067502460594b34de9b64e3f405506cdd253bee52192f137e",
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "model_revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+  "weights": "operator-supplied, verified against the on-chain manifest hash"
+ },
+  "links": {
+  "github": "https://github.com/emberinfer/Ember",
+  "quickstart": "https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md"
+ },
+  "public_testnet": "active"
 }

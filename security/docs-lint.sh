@@ -13,6 +13,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 - <<'PY'
+import json
 import re
 import subprocess
 from pathlib import Path
@@ -68,10 +69,19 @@ for path in sorted(public):
         continue
     checked += 1
     content = (root / path).read_text()
+    # Preserve provider labels verbatim in the synchronized public access object.
+    access_lines = set()
+    if path == 'site/network.json':
+        start = content.index('{', content.index('"access"'))
+        _, length = json.JSONDecoder().raw_decode(content[start:])
+        access_lines = set(range(content.count('\n', 0, start) + 1,
+                                 content.count('\n', 0, start + length) + 1))
     for line, value in enumerate(content.splitlines(), 1):
         for pattern, label in ((markers, 'internal marker'), (cjk, 'non-English draft text')):
             candidate = value
             if pattern is markers:
+                if line in access_lines:
+                    candidate = candidate.replace('Contabo', '')
                 for identifier in immutable_ids:
                     candidate = candidate.replace(identifier, '')
             match = pattern.search(candidate)

@@ -28,14 +28,63 @@
     ]
   },
   "access": {
-    "gateway": null,
-    "faucet": null,
-    "rpc": null,
-    "seed": null,
-    "scheduler_id": null,
-    "tls_fingerprint": null,
-    "note": "Connection values are unverified and omitted. This documentation metadata is not a node configuration file."
-  },
+  "faucet": "http://relay.emberinfer.org:39095/testnet/faucet",
+  "gateway": "http://relay.emberinfer.org:39090",
+  "gateways": [
+   {
+    "relay": "relay1 (Contabo, DE)",
+    "serving": "main gateway",
+    "url": "http://relay.emberinfer.org:39090"
+   },
+   {
+    "relay": "relay1 (Contabo, DE)",
+    "serving": "ember-qwen2.5-1.5b-unified-v1",
+    "url": "http://relay.emberinfer.org:39110"
+   },
+   {
+    "relay": "relay1 (Contabo, DE)",
+    "serving": "ember-qwen3.6-35b-a3b-fp8-unified-v1",
+    "url": "http://relay.emberinfer.org:39107"
+   },
+   {
+    "relay": "relay1 (Contabo, DE)",
+    "serving": "ember-qwen2.5-1.5b-gpu-v1",
+    "url": "http://relay.emberinfer.org:39092"
+   },
+   {
+    "relay": "relay1 (Contabo, DE)",
+    "serving": "ember-qwen3.6-35b-a3b-fp8-v1",
+    "url": "http://relay.emberinfer.org:39097"
+   },
+   {
+    "relay": "relay1 (Contabo, DE)",
+    "serving": "ember-qwen2.5-1.5b-split-v1",
+    "url": "http://relay.emberinfer.org:39101"
+   },
+   {
+    "relay": "relay1 (Contabo, DE)",
+    "serving": "ember-qwen2.5-1.5b-unified-v1 (pipeline form)",
+    "url": "http://relay.emberinfer.org:39113"
+   },
+   {
+    "relay": "relay2 (Contabo, Seattle)",
+    "serving": "ember-qwen2.5-1.5b-unified-v1",
+    "url": "https://relay2.emberinfer.org:39443"
+   },
+   {
+    "relay": "relay2 (Contabo, Seattle)",
+    "serving": "ember-qwen3.6-35b-a3b-fp8-unified-v1",
+    "url": "https://relay2.emberinfer.org:39444"
+   }
+  ],
+  "note": "Dedicated relay ports on two machines (relay1 Contabo DE, relay2 Contabo Seattle); public seed TLS is pinned per relay and covers the advertised address (relay1 fingerprint in tls_fingerprint, relay2 in tls_fingerprint_relay2). The relays verify backend TLS. HTTP RPC/faucet carry valueless test credit. Gateway consumers need an operator-issued bearer <redacted> Additional gateways on a third machine serve the website backend over private tunnels and have no public ingress.",
+  "rpc": "http://relay.emberinfer.org:39657",
+  "scheduler_id": "90ef25ac87a1a59c3476123af952075a093354b6545df5117a5393d40fc565d0",
+  "seed": "relay.emberinfer.org:39091",
+  "seed_relay2": "relay2.emberinfer.org:39103",
+  "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d",
+  "tls_fingerprint_relay2": "585f70342249cab7a15c597b670dce47551faa4348b61b066aac656b196b6b60"
+ },
   "profiles": [
     {
       "id": "ember-qwen2.5-1.5b-unified-v1",
@@ -89,5 +138,5 @@
     "sub_per_spark": 1000000,
     "testnet": "valueless test credit - no price, no exchange, no returns"
   },
-  "source_note": "Repository website baseline; live website is built from a separate repository. Null access fields mean unverified here, not an unlaunched network."
+  "source_note": "Repository website baseline; live website is built from a separate repository. The access object contains current public connection values for configure; other metadata is maintained independently."
 }

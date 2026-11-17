@@ -4,6 +4,9 @@ The encrypted API is `POST /v2/requests`. The existing OpenAI-compatible
 `/v1/chat/completions` API accepts plaintext and has no end-to-end privacy
 property. Do not submit secrets through that legacy API expecting these protections.
 
+This describes an optional source API, not a confirmed live deployment.
+The ordinary gateway API remains plaintext.
+
 ## Visibility and tiers
 
 | Participant | P0 encrypted request |
@@ -100,10 +103,7 @@ top-16 evidence, sampled layers and tolerance. The chain records the verdict and
 a hash of private tolerance statistics. Each encrypted request uses a fee hold
 with the same request id. The executor quotes the chain consumer multiplier and its effective height; the
 request carries `expected_price`, so a stale epoch quote is rejected before lock.
-Registration freezes the pricing-v2 maximum fee using
-the serving executor's signed input-token commitment. Execution and audit check
-
-with the same request id. Registration freezes the pricing-v2 maximum fee using
+Registration freezes the maximum fee using
 the serving executor's signed input-token commitment and tokenizer version.
 Execution and audit require that pinned tokenizer identity. Same-version input
 count mismatches in either direction receive objective offense grading; missing
@@ -216,7 +216,7 @@ For a dedicated single-host GPU integration exercise, build `cmd/emberchain` and
 `cmd/emberd`, then run [the staging runner](../ops/privacy_staging.py) with
 `--work-dir`, `--emberchain`, `--emberd` and `--model-path`. The runner requires
 CUDA and at least 16 GiB available system memory and refuses CPU substitution.
-It creates its own validator, role identities and ciphertext captures, checks
+It creates its own Ledger node, role identities and ciphertext captures, checks
 P0 escrow/replay and P1 refusal, then stops only its own processes. Its sequential
 reference replay reuses one real model instance; it does not demonstrate
 independent-operator or cross-device numerical agreement. The directory contains

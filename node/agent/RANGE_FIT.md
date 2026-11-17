@@ -1,45 +1,46 @@
-# 动态范围注册前 fit 自检（FLR-6）
+# Dynamic range fit admission
 
-动态范围注册入口是 `shard_rpc.register_stage`（生成
-`shard_dynamic_range=true` 的 ResourceProfile），不是通用 `agent.join`。
-`shard_rpc serve` 在加载引擎前检查，注册入口也检查；旧声明段不走此检查。
-先完成既有清单签名/哈希及 artifact 校验，再按同一模型 config 和清单内
-safetensors 的张量字节数估算。分片 index 提供 tensor→file 映射，实际字节数
-从每个文件 header 的 data_offsets 取得；兼容无 index 的单文件权重。
+Dynamic range registration enters through `shard_rpc.register_stage`, which
+creates a `shard_dynamic_range=true` ResourceProfile. The serve path checks fit
+before loading, and registration checks again. Legacy declared fixed stages do
+not use this dynamic-range check. Verify manifest signatures, hashes and artifacts
+through the serving path before admission.
 
-演练启动命令原有参数后追加：
+Supply a positive process memory/VRAM allocation, not total machine capacity:
 
 ```sh
 --range-start 0 --range-end 14 --fit-memory-bytes 17179869184 --fit-reference-sequence 2048
 ```
 
-也可设置 `EMBER_RANGE_MEMORY_BYTES=17179869184`，旗标优先。
-动态范围未提供正预算时拒绝启动/注册。预算是运营者为该进程分配的本机
-内存或显存额度，须扣除其他进程和系统占用，不能直接填机器总容量。
+`EMBER_RANGE_MEMORY_BYTES` also supplies a budget; the explicit flag wins. Missing
+or nonpositive dynamic-range budgets fail. Subtract other process and system use.
 
-独立检查（不加载权重、不注册、不接链）：
+For a standalone estimate, without loading weights, registering or contacting a
+chain, run from the repository root with the node dependencies installed:
 
 ```sh
-PYTHONPATH=node:core-py:proto /root/data/ember-gpu-venv/bin/python \
-  -m agent.range_fit --manifest /path/to/manifest.pb \
-  --model-path /root/models/Qwen2.5-1.5B-Instruct \
+PYTHONPATH=node:core-py:proto python -m agent.range_fit \
+  --manifest "$MANIFEST" --model-path "$MODEL_PATH" \
   --range-start 0 --range-end 14 --fit-memory-bytes 17179869184
 ```
 
-成功输出 JSON 字节明细；超预算退出 1，报告 required/available。
-独立检查验证 artifact 内容，档案签名与链锚仍由实际 serve 路径验证。
+The standalone tool verifies artifact contents; signed-chain anchor verification
+remains the serving path's responsibility. Success reports JSON byte components;
+insufficient budget exits 1 with required/available bytes.
 
-估算公式见 `range_fit.py`：逐层真实存储字节 + 范围端点的 embedding/head，
-权重乘 2 留源数据/加载副本余量；batch=1、BF16、默认参考序列长 2048，
-对 hidden/MLP、稠密 attention、逐层 KV、FP32 logits 总和留 4 倍余量，
-另留 512 MiB runtime/allocator。尾段 head 按当前 Qwen2ShardEngine 的
-独立投影计算（来自 tied embedding），即使范围也持有 embedding 仍单独计费。
-此为参考工作负载的保守准入估算，不是硬件实测峰值；更长序列或更大 batch
-必须重算预算，演练仍须核对实际峰值。既有运行时内存检查继续生效。
+The estimator reads tensor sizes from safetensors header `data_offsets`, using
+an index when present and accepting unindexed single-file weights. Only declared
+files count; a differing local inventory fails. It sums held layer bytes and
+owned embedding/head bytes, doubles weights for loading copies, reserves four
+times reference BF16 activation/attention/KV and FP32-logit storage, and adds
+512 MiB runtime overhead. Reference batch is one and sequence length is 2048 by
+default. The Qwen2 tail's separate tied-weight projection is counted even if the
+range also owns the embedding.
 
-真实目录回归可用 `EMBER_TEST_1_5B_PATH` 覆盖默认模型位置：
+This is a conservative reference-workload estimate, not measured peak memory or
+a guarantee for longer contexts or larger batches. Recalculate and measure those
+workloads; runtime memory guards still apply. `EMBER_TEST_1_5B_PATH` can select
+verified local weights for `python -m pytest -q node/test_range_fit.py`.
 
-```sh
-PYTHONPATH=node:core-py:proto /root/data/ember-gpu-venv/bin/python \
-  -m pytest -q node/test_range_fit.py
-```
+Source: `node/agent/range_fit.py:46`, `node/agent/range_fit.py:96`,
+`node/agent/range_fit.py:141`, `node/shard_rpc.py`.

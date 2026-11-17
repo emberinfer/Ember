@@ -1,10 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ember — Open Decentralized Inference Network</title>
-<meta name="description" content="Ember is experimental, open-source research software for an open inference network with signed evidence, sampled numerical audits, and valueless testnet Spark accounting.">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember — Open inference network</title>
+<meta name="description" content="An open inference network with signed execution evidence, sampled replay audits and valueless test credit.">
 <style>
   :root{
     --bg:#0d0f12; --panel:#15181d; --panel2:#1a1e24; --line:#262b33;
@@ -65,176 +63,25 @@
   footer{border-top:1px solid var(--line);padding:34px 0 46px;color:var(--faint);font-size:13.5px}
   footer .row{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:10px}
   code{font-family:var(--mono);font-size:.92em;background:var(--panel2);padding:1px 6px;border-radius:5px;color:var(--ember2)}
-</style>
-</head>
-<body>
-<header>
-  <div class="wrap nav">
-    <a class="brand" href="./">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2c1 3.5-2.2 5.4-3.6 7C7.2 10.4 6.5 12 6.5 14a5.5 5.5 0 0 0 11 0c0-1.2-.4-2.3-1-3.3-.4 1-1.1 1.8-2 2.3.3-2.3-.6-4.7-2.5-6.5C11.4 5 12.6 3.6 12 2z" fill="#ff7a33"/><path d="M12 22a3.4 3.4 0 0 1-3.4-3.4c0-1.5.9-2.6 1.8-3.6.5-.6 1.1-1.2 1.6-2 .5.8 1.1 1.4 1.6 2 .9 1 1.8 2.1 1.8 3.6A3.4 3.4 0 0 1 12 22z" fill="#ffb25e"/></svg>
-      Ember
-    </a>
-    <nav class="links">
-      <a href="#what">What</a>
-      <a href="#why">Why</a>
-      <a href="#use">Use it</a>
-      <a href="#models">Models</a>
-      <a href="#network">Network</a>
-      <a href="#docs">Docs</a>
-      <a href="https://github.com/emberinfer/Ember">GitHub</a>
-    </nav>
-  </div>
-</header>
-
-<div class="wrap">
-  <div class="hero">
-    <h1>The open, decentralized<br><span class="grad">inference network.</span></h1>
-    <p class="lede">The Ember project develops experimental, open-source research software for a decentralized inference network. The network is open to independent operators contributing inference capacity. Submit signed execution evidence and receive valueless test Spark when sampled replay accepts the work and settlement finalizes.</p>
-    <div class="badges">
-      <span class="badge"><span class="dot green"></span> Public testnet: LIVE</span>
-      <span class="badge">v0.22.0</span>
-      <span class="badge">Valueless test credit</span>
-    </div>
-    <div class="cta">
-      <a class="btn primary" href="https://github.com/emberinfer/Ember/releases/tag/v0.22.0">Download v0.22.0</a>
-      <a class="btn ghost" href="https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md">Quickstart</a>
-    </div>
-  </div>
-
-  <section id="what">
-    <h2>What it is</h2>
-    <p class="sub">Four kinds of participants, one ledger. Ember connects eligible inference hardware through signed work, sampled audits, and test-credit accounting.</p>
-    <div class="grid">
-      <div class="card"><h3>Gateway</h3><p>The consumer-facing entry point. Accepts inference requests, reserves test credit, routes work, and returns results.</p></div>
-      <div class="card"><h3>Inference nodes</h3><p>Run models on their own hardware through engine adapters, execute requests, and commit signed evidence for every token.</p></div>
-      <div class="card"><h3>Auditors</h3><p>Replay sampled work and compare signed evidence. A numerical rejection requires confirmation by a different assigned auditor before slashing; sampling does not detect every deviation.</p></div>
-      <div class="card"><h3>Ledger</h3><p>A CometBFT chain that holds accounts, Spark balances, stake, receipts, verdicts and settlement — the single source of truth.</p></div>
-    </div>
-  </section>
-
-  <section id="why">
-    <h2>Why Ember</h2>
-    <p class="sub">Inference supply today is concentrated and opaque. Ember exists to make it open and verifiable.</p>
-    <div class="why">
-      <div class="card"><p><b>Supply is locked in a few clouds.</b> Ember lets any operator join permissionlessly — stake, register, serve — on hardware from a data-center GPU to a small edge board.</p></div>
-      <div class="card"><p><b>Remote execution is hard to verify.</b> Signed evidence and sampled replay support probabilistic fraud detection before settlement; they do not prove every computation correct.</p></div>
-      <div class="card"><p><b>Open contributors need shared accounting.</b> The ledger records Spark balances, holds, and policy penalties. Testnet Spark is valueless test credit; consensus and audit trust assumptions still apply.</p></div>
-      <div class="card"><p><b>One engine never fits all hardware.</b> A unified Engine SPI with graded evidence lets PyTorch, vLLM, llama.cpp and future engines serve side by side.</p></div>
-    </div>
-  </section>
-
-  <section id="use">
-    <h2>Use it</h2>
-    <p class="sub">Start with the signed <a href="https://github.com/emberinfer/Ember/releases/tag/v0.22.0">v0.22.0 release</a>. Linux amd64 or arm64, Python 3.12 with venv/ensurepip, OpenSSL with Ed25519, tar, sha256sum and curl are required. The installer needs no root access.</p>
-    <p>Download your architecture (replace amd64 with arm64 on ARM64), then verify. Authenticate the signing-key fingerprint through your trusted release channel: <code>35091a3aadf80815b47494439db6a0ee13f5a78eecc5bc516772dddefdd6a092</code> (SHA-256 of DER SubjectPublicKeyInfo, unchanged from rc.3). This release key is endorsed by the Ember root key <code>8f93347f50a04c2d3b420ebde2d7cd73fc792386b18c20e5a0f60f6d47706e09</code>: verify the endorsement chain with <code>release/trust-statement.txt</code> in the repository (see docs/SIGNING.md, Trust anchor).</p>
-    <pre>EMBER_VERSION=0.22.0
-EMBER_RELEASE="https://github.com/emberinfer/Ember/releases/download/v$EMBER_VERSION"
-for file in "ember-$EMBER_VERSION-linux-amd64.tar.gz" SHA256SUMS SHA256SUMS.sig release-signing.pub network.json; do
-  curl -fLO "$EMBER_RELEASE/$file"
-done
-openssl pkey -pubin -in release-signing.pub -outform DER | sha256sum
-openssl pkeyutl -verify -pubin -inkey release-signing.pub \
-  -rawin -in SHA256SUMS -sigfile SHA256SUMS.sig
-sha256sum --ignore-missing -c SHA256SUMS
-tar -xzf "ember-$EMBER_VERSION-linux-amd64.tar.gz"
-cd "ember-$EMBER_VERSION-linux-amd64"
-./install-release.sh --role node --prefix "$HOME/ember" --python python3.12</pre>
-    <p style="margin-top:16px">Download the pinned model revision using the <a href="https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md#install-a-role">Quickstart model command</a>. Then configure, self-fund from the public faucet, and serve. Enrollment stakes the minimum and registers your identity automatically. Keep requests short: external CPU serving is slow for long requests.</p>
-    <div class="grid">
-      <div class="card role"><h3>Run a node</h3><p>Provide compute, receive valueless test Spark per settled request.</p>
-        <pre>"$HOME/ember/bin/ember-node" configure \
-  --network-parameters "$HOME/ember/network.json" \
-  --model-path "$HOME/models/Qwen2.5-1.5B-Instruct" \
-  --config "$HOME/ember/config/join.env"
-ACCOUNT=$("$HOME/ember/bin/ember-node" id --state-dir "$HOME/ember/var/node")
-FAUCET_URL=$(python3.12 -c 'import json,sys; print(json.load(open(sys.argv[1]))["access"]["faucet"])' "$HOME/ember/network.json")
-curl -fsS "$FAUCET_URL" -H 'Content-Type: application/json' \
-  -d "{\"account\":\"$ACCOUNT\"}"
-"$HOME/ember/bin/ember-role" node "$HOME/ember/config/join.env"</pre></div>
-      <div class="card role"><h3>Exit and recover stake</h3><p>Stop serving and automatic restart. Keep your identity. Wait for registration expiry, unbond all stake, wait for the release height, then claim. Use the <a href="https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md#exit-and-recover-stake">complete exit commands</a> and confirm zero stake and no pending unbondings.</p><p>For a disposable smoke check, select a short registration lease before first join as documented; the default lease is 200000 finalized blocks.</p></div>
-      <div class="card role"><h3>Call the gateway</h3><p>Use the gateway URL and model profile from <a href="network.json">network.json</a> with an operator-issued bearer token and funded consumer account. See the <a href="https://github.com/emberinfer/Ember#call-a-gateway">working API example</a>. Faucet funding for nodes needs no gateway token.</p><p>Validator admission follows the <a href="https://github.com/emberinfer/Ember/blob/master/docs/VALIDATOR_GUIDE.md">Validator Guide</a>; validators currently share one organization.</p></div>
-    </div>
-    <p style="margin-top:16px;color:var(--dim);font-size:14.5px">Full instructions: <a href="https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md">Quickstart</a> · <a href="https://github.com/emberinfer/Ember/blob/master/docs/VALIDATOR_GUIDE.md">Validator Guide</a> · <a href="https://github.com/emberinfer/Ember/blob/master/docs/OPERATIONS.md">Operations</a></p>
-  </section>
-
-  <section id="models">
-    <h2>Models &amp; engines</h2>
-    <p class="sub">Ember restricts neither the model nor the inference framework. Three mechanisms keep that freedom verifiable.</p>
-    <ul class="tight">
-      <li><b>Engine SPI adapters.</b> A model runs wherever an adapter runs it — Transformers, vLLM and llama.cpp today; third parties can ship adapters that pass the public conformance kit.</li>
-      <li><b>Immutable execution Profiles.</b> Each model is pinned on-chain by its weights-manifest hash, tokenizer hash and runtime fingerprint. A new model or runtime enters the network as a new Profile, registered on-chain — not as a config change.</li>
-      <li><b>Operators bring their own weights.</b> The network never distributes weights. Nodes obtain them from the model's publisher (e.g. Hugging Face) and the Profile hashes verify them before serving.</li>
-    </ul>
-  </section>
-
-  <section id="network">
-    <h2>Network</h2>
-    <p class="sub">Release profile and public network parameters. Machine-readable version: <a href="network.json"><code>/network.json</code></a></p>
-    <table>
-      <tr><th>Status</th><td><b>Public testnet LIVE</b> — external CPU onboarding, settlement and full stake recovery verified</td></tr>
-      <tr><th>Ledger</th><td>CometBFT (application chain <code>emberchain</code>)</td></tr>
-      <tr><th>Current Profile</th><td><code id="network-profile">ember-qwen2.5-1.5b-s22-cpu-v1</code></td></tr>
-      <tr><th>Model</th><td>Qwen/Qwen2.5-1.5B-Instruct (weights by the operator, hash-pinned)</td></tr>
-      <tr><th>Spark</th><td>Accounting unit of the network. <b>Testnet Spark is valueless test credit</b> — no price, no exchange, no returns.</td></tr>
-      <tr><th>Seed / RPC / Gateway</th><td>Dedicated public ports in the signed <a href="network.json">network parameters</a></td></tr>
-      <tr><th>Faucet</th><td>Public, rate-limited test credit; endpoint in <a href="network.json">network.json</a></td></tr>
-      <tr><th>Settlement weights</th><td id="network-pricing">Base 80 executor / 15 auditor / 5 consumer rebate; scarcity multipliers up to 2x redistribute the existing fee.</td></tr>
-      <tr><th>Role coverage</th><td id="network-coverage">Finalized release snapshot in network.json; query the published chain RPC for current coverage and multipliers.</td></tr>
-      <tr><th>Join</th><td>Permissionless for nodes meeting the stake minimum — see the <a href="https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md">Quickstart</a></td></tr>
-    </table>
-  </section>
-
-  <section id="status">
-    <h2>Status &amp; limitations</h2>
-    <ul class="tight">
-      <li><b>Working today:</b> decentralized ledger with slashing, engine decoupling with a conformance kit, cross-device sharding with failover, public-internet hardening, signed reproducible releases.</li>
-      <li><b>Public testnet LIVE:</b> download v0.22.0, verify, install, self-fund, stake, register and serve; stop and follow the exit procedure to recover stake.</li>
-      <li><b>Governance and security:</b> validators are currently operated by a single organization; no third-party security audit yet. Validator admission and consumer account custody remain operator controlled; the public relay is a single ingress.</li>
-      <li><b>Performance and privacy:</b> external CPU serving is slow for long requests. Short-request settlement does not establish production throughput or a service guarantee. RPC, gateway and faucet use HTTP; seed TLS is pinned. Gateways, executors and auditors see the plaintext needed for their roles.</li>
-      <li><b>Test credit only:</b> testnet Spark is valueless — no price, no exchange, no returns. No public mainnet or production SLA.</li>
-    </ul>
-  </section>
-
-  <section id="docs">
-    <h2>Documentation</h2>
-    <div class="docs">
-      <div class="card"><h3><a href="https://github.com/emberinfer/Ember/blob/master/docs/DISCLAIMER.md">Disclaimer</a></h3><p>Experimental software, valueless test credit, participation risks and local rules.</p></div>
-      <div class="card"><h3><a href="https://github.com/emberinfer/Ember">README</a></h3><p>What Ember is, why it exists, how to use it.</p></div>
-      <div class="card"><h3><a href="https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md">Quickstart</a></h3><p>Install from the signed release and join.</p></div>
-      <div class="card"><h3><a href="https://github.com/emberinfer/Ember/blob/master/docs/ENGINE_SPI.md">Engine SPI</a></h3><p>The adapter contract and evidence grades.</p></div>
-      <div class="card"><h3><a href="profiles/">Profile releases</a></h3><p>Signed artifacts, chain anchors, endorsements and conformance commands. Each record names its chain; staging records are separate from the live public testnet.</p></div>
-      <div class="card"><h3><a href="https://github.com/emberinfer/Ember/blob/master/docs/PUBLIC_NETWORK.md">Public Network</a></h3><p>How the public network is discovered and joined.</p></div>
-      <div class="card"><h3><a href="https://github.com/emberinfer/Ember/blob/master/SECURITY.md">Security</a></h3><p>Threat model summary and reporting.</p></div>
-      <div class="card"><h3><a href="https://github.com/emberinfer/Ember/blob/master/CHANGELOG.md">Changelog</a></h3><p>What changed in each public snapshot and release.</p></div>
-    </div>
-  </section>
-
-  <footer>
-    <div class="row">
-      <a href="https://github.com/emberinfer/Ember">GitHub</a>
-      <a href="network.json">network.json</a>
-      <a href="https://github.com/emberinfer/Ember/blob/master/LICENSE">Apache-2.0 License</a>
-    </div>
-    <p>Ember is experimental, open-source research software provided as-is, without warranty, subject to the Apache-2.0 license. Testnet Spark is valueless test credit: it is not money, is not offered for sale, and is not redeemable for currency or anything else of value. The Ember project operates no exchange or fiat on/off-ramp of any kind. Nothing in this documentation is an offer, solicitation, or investment advice. Operators and consumers participate at their own risk and subject to their own local rules. <a href="https://github.com/emberinfer/Ember/blob/master/docs/DISCLAIMER.md">Read the full disclaimer.</a></p>
-  </footer>
-</div>
-<script>
-fetch('network.json').then(response => {
-  if (!response.ok) throw new Error('network parameters unavailable');
-  return response.json();
-}).then(network => {
-  document.getElementById('network-profile').textContent = network.current_profile.id;
-  if (network.pricing) {
-    const p = network.pricing;
-    document.getElementById('network-pricing').textContent =
-      `Base ${p.executor_weight} executor / ${p.auditor_weight} auditor / ${p.consumer_weight} consumer rebate; scarcity multipliers up to ${p.multiplier_cap_ppm / 1000000}x redistribute the existing fee.`;
-  }
-  if (network.coverage) {
-    const target = document.getElementById('network-coverage');
-    target.classList.remove('pending');
-    target.textContent = JSON.stringify(network.coverage);
-  }
-}).catch(() => {});
-</script>
-</body>
-</html>
+</style></head>
+<body><header><nav class="wrap nav"><a class="brand" href="./">Ember</a><div class="links"><a href="#use">Use</a><a href="#serve">Serve</a><a href="#ledger">Ledger</a><a href="#models">Models</a><a href="https://github.com/emberinfer/Ember">GitHub</a></div></nav></header>
+<main class="wrap">
+<div class="hero"><h1>The open<br><span class="grad">inference network.</span></h1>
+<p class="lede">Run compatible models or shards, submit signed evidence and receive valueless test Spark after settlement. Replay audits sample work; they do not prove every computation.</p>
+<div class="badges"><span class="badge">ember-testnet-1</span><span class="badge">v0.6.0</span><span class="badge">Valueless test credit</span></div>
+<div class="cta"><a class="btn primary" href="https://github.com/emberinfer/Ember/releases/tag/v0.6.0">Download v0.6.0</a><a class="btn ghost" href="https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md">Quickstart</a></div></div>
+<section id="use"><h2>Use</h2><p>Obtain a current authenticated gateway address, bearer token and funded account from the deployment operator. Submit OpenAI-compatible chat completions; whole-model and MoE requests support true SSE streaming. The repository copy does not publish verified live connection addresses.</p><p>Freeze a bounded hold, execute, commit evidence, resolve sampled audit and settle actual tokens. Gross settled fees allocate 80% to execution, 15% to audit and 5% back to the caller.</p></section>
+<section id="serve"><h2>Serve</h2><p>Join permissionlessly with compatible artifacts, runtime, stake and capacity. Registration offers execution and on-chain audit eligibility by default; per-function opt-outs are declared at registration. There is no deregistration or mid-term role removal. Live registrations lapse after 200,000 blocks.</p><p>Keep your identity for exit: stop renewal, wait for registration lapse and pending liabilities, unbond, wait for release height, then claim. See the <a href="https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md#exit-and-recover-stake">exit procedure</a>.</p></section>
+<section id="ledger"><h2>Ledger</h2><p>The CometBFT chain ember-testnet-1 has five Ledger nodes and genesis dated 2026-11-14. Live AppVersion 12 activated at height 116582. Source base AppVersion 11 advances through the coordinated upgrade ladder. The Ledger set and registrations are queryable on-chain; identity counts do not establish operator independence.</p><p>See the <a href="https://github.com/emberinfer/Ember/blob/master/docs/VALIDATOR_GUIDE.md">Ledger node guide</a> and <a href="https://github.com/emberinfer/Ember/blob/master/docs/VALIDATORS.md">membership rules</a>.</p></section>
+<section id="models"><h2>Models and profiles</h2><p>A model is one set of weights. A profile is a deployment form: Whole model or Sharded (by layer, by expert, or layer + expert). Unified profiles cover whole-model and sharded forms under one card. CPU/GPU is a node attribute. The 1.5B segmented entry point belongs to its unified profile.</p>
+<table><thead><tr><th>Profile / model</th><th>Context tokens</th><th>Availability</th><th>Input / output sub per 1,000 tokens</th></tr></thead><tbody><tr><td><code>ember-qwen2.5-1.5b-unified-v1</code><br>Qwen2.5-1.5B-Instruct</td><td>32768</td><td>Serving; unified Whole model and Sharded forms</td><td>229 / 234</td></tr>
+<tr><td><code>ember-qwen3.6-35b-a3b-fp8-unified-v1</code><br>Qwen3.6-35B-A3B FP8</td><td>262144</td><td>Serving via vLLM on GPU nodes</td><td>458 / 571</td></tr>
+<tr><td><code>ember-olmoe-1b-7b-moe-v1</code><br>OLMoE-1B-7B</td><td>4096</td><td>Serving; Sharded by layer + expert; sampled segment-replay audits pass</td><td>195 / 217</td></tr>
+<tr><td><code>ember-kimi-k3.1-pro-v1</code><br>Kimi K3.1 Pro</td><td>Not specified</td><td>Published on-chain; not deployed; no serving nodes</td><td>16660 / 25630</td></tr>
+</tbody></table>
+<p>These intrinsic prices are subject to effective on-chain governance prices and the consumer multiplier. It stays within [0.8, 2.0], changing at most 10% per 1,000-block epoch. Unmet demand is never a raise signal. One Spark is 1,000,000 sub. A price or publication does not make Kimi servable.</p><p><a href="profiles/">Profile records</a> · <a href="network.json">Network metadata</a></p></section>
+<section id="release"><h2>Release checks</h2><p>For release downloads, set <code>EMBER_VERSION=0.6.0</code>; follow the Quickstart for download checks and installation.</p><p>v0.6.0 provides Linux amd64/arm64 archives, the Engine SPI kit, SHA256SUMS and release-signing.pub. SHA256SUMS.sig is not yet published; the signing key is offline. Checksum comparison checks downloaded bytes but does not authenticate unsigned sums.</p>
+<p>Measured release-key fingerprint (SHA-256 of DER SubjectPublicKeyInfo): <code>d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb</code>.</p>
+<p>The repository root key measures <code>8f93347f50a04c2d3b420ebde2d7cd73fc792386b18c20e5a0f60f6d47706e09</code>. Its checked-in trust statement names an older key, and the detached signature fails verification against the current statement bytes. It does not authenticate the current release key. See <a href="https://github.com/emberinfer/Ember/blob/master/docs/SIGNING.md">release trust details</a>.</p></section>
+<section><h2>Status and limits</h2><p>Reference live block time is about 1.5–1.9 seconds, segmented execution about 1.02 seconds/token and a short 35B request about 10–12 seconds end-to-end. These are reference observations, not guarantees. Ordinary requests expose needed plaintext to gateways, execution nodes and auditors. Signatures, sampling and consensus do not eliminate collusion, key or supply-chain risks.</p><p>The live website is built from a separate repository. This repository site copy is a documentation baseline, not evidence of current endpoints or coverage.</p></section>
+</main><footer><div class="wrap"><p>Ember is experimental, open-source research software provided as-is, without warranty, subject to the Apache-2.0 license. Testnet Spark is valueless test credit: it is not money, is not offered for sale, and is not redeemable for currency or anything else of value. The Ember project operates no exchange or fiat on/off-ramp. Nothing here is an offer, solicitation or investment advice. Participation is at your own risk and subject to local rules. <a href="https://github.com/emberinfer/Ember/blob/master/docs/DISCLAIMER.md">Full disclaimer</a>.</p></div></footer></body></html>

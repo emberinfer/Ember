@@ -98,7 +98,7 @@ with fp4 w1/w3 [3072,1792] and w2 [3584,1536]. Remaining blocks pack the expert
 dimension; nonexpert tensors are class aggregates, not the original 96 shard
 headers. Vision contributes 447,358,976 to T only. Shape-based expert width and
 fully counted MLA/KDA/DSA/shared projections exercise both old error sources.
-The taskbook's claimed fractional routed quotient is an arithmetic typo:
+The routed quotient is integral:
 2,722,740,830,208 * 16/896 = 48,620,371,968 exactly. No rounding workaround exists
 or is needed; an independent nonintegral fixture rejects.
 
@@ -131,10 +131,6 @@ fractions, overflow, packing, byte caps, lookup floors, tied heads, canonical
 shape ordering, v10 JSON compatibility, correction authorization/history and
 pipeline weights before/after correction. No live-chain action is performed.
 
-Validation: full `go test ./...` passes (499 test cases including subtests,
-7 skipped, zero failures; 13 packages pass and 3 have no tests). `go vet ./...`
-passes. The taskbook itself, caches and local test logs are not committed.
-
 The architecture-first TopK parsing above is enabled only at AppVersion 12 or
 later. Earlier versions preserve the ordered aliases `num_experts_per_tok`,
 `top_k`, and `num_selected_experts`, including conflict rejection; they do not
@@ -142,3 +138,14 @@ recognize `num_experts_per_token`. Publication and compute correction use the
 state version. Core callers select it with `DerivationInput.AppVersion` or
 `ParseConfigScalarsForVersion`; zero and `ParseConfigScalars` retain legacy
 semantics. No other scalar parsing changes across this gate.
+
+## Live correction
+
+The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
+
+Kimi is published, not deployed. Its current T is 2,780,110,363,392 total
+parameters, A is 105,542,546,176 active parameters, and F is 208,736,282,112
+FLOPs/token. AppVersion 12 corrected the earlier derivation on-chain (correction
+count 0 to 1). Old-value constants in rejection/correction tests are intentional
+negative fixtures, not live compute claims. Shape declarations do not prove
+header inclusion; retain the trust boundary above.

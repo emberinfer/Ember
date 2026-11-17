@@ -21,5 +21,4 @@ optional MoE layout all enter the hash. A profile binds scheme_hash in addition
 to the exact card root and layer range. A frozen pipeline cannot mix schemes;
 step receipts bind the same scheme. Range auditors must bind the same scheme.
 
-Production migration requires full manifest/config recovery. The stockcheck
-records missing components; synthetic test identities are not live identities.
+Production migration requires full manifest/config recovery. Synthetic test identities are not live identities; complete signed config/manifest materials are required.

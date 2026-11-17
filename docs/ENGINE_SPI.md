@@ -79,8 +79,7 @@ capability checks. Engine version labels are declarations, not attestation.
 Existing full-evidence chains require raw logits + activation openings + replay;
 llama-server and OpenAI-compatible vLLM HTTP expose a lower evidence grade without
 an engine extension. Registering them against a full-evidence chain must fail.
-A separate future signed profile may choose topk-logprobs and its weaker guarantees.
-Such a profile requires separate review and calibration.
+Equality profiles use their own evidence contract; the live 35B unified profile serves via vLLM. Forced scoring through prompt logprobs does not create the raw logits and hidden-layer openings needed for a full-evidence profile.
 
 Commitment serialization lives in node/evidence, signing in core-py. Adapters emit
 opening bytes; the framework hashes/signs them. KV stays local; migration and replay

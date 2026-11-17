@@ -13,7 +13,7 @@ runtime policy and audit tolerance.
 ```bash
 PYTHONPATH=core-py:proto node/.venv/bin/python \
   chain-genesis/build_shards.py \
-  --model ~/models/Qwen2.5-1.5B-Instruct \
+  --model "$MODEL_PATH" \
   --output /secure/ember-qwen-pipeline3 \
   --shards 3
 ```
@@ -75,9 +75,7 @@ ember-node join \
   pipeline audit path uses genesis-authorized reference identities; it is separate
   from the registered distributed whole-model replay-worker route.
 - Full-model audit remains required. Cross-runtime comparisons remain observe-only.
-- The reference stage executor implements contiguous Qwen2 layers. Engine SPI
-  profiles may define other model-specific shard units without changing gateway,
-  ledger or signing semantics.
+- The dense reference stage executor implements contiguous Qwen2 layers. OLMoE also has an implemented layer + expert path with its own layout, segment evidence and settlement; other architectures need compatible executors.
 
 Public regression coverage is in [shard receipt tests](../node/test_shard_receipts.py),
 [pipeline audit tests](../node/test_pipeline_audit.py) and

@@ -112,6 +112,4 @@ operator sharing one GPU must divide its available memory between processes.
 
 ## Network upgrade
 
-The consensus application version is 5. Validators must activate the same binary
-and version together. Version-4 state files are rejected by the existing version
-check; this change does not silently rewrite an existing network's state.
+Contribution limits are implemented in the current versioned state machine. The live chain runs AppVersion 12; the source base constant is 11. LoadState accepts supported versions 4 through 12. Follow the coordinated [upgrade procedure](UPGRADE.md) rather than treating the historical introduction version as the live version.

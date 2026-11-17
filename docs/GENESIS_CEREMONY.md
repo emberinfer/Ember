@@ -1,20 +1,21 @@
 # Genesis Ceremony
 
-Validator operators and genesis assemblers can use this procedure to create and
-independently verify a network genesis. Only public validator material is exchanged.
+Ledger node operators and genesis assemblers can use this procedure to create and
+independently verify a network genesis. Only public Ledger node material is exchanged.
 
 ## Roles and inputs
 
-- Each validator operator controls one isolated validator home and its consensus
-  signing key. Validator private keys and signing state never leave that host.
+- Each Ledger node operator controls one isolated Ledger node home and its consensus
+  signing key. Ledger node private keys and signing state never leave that host.
 - The assembler receives reviewed `validator-public` JSON descriptors and the
-  reviewed Ember app-state JSON. The assembler has no validator private keys.
+  reviewed Ember app-state JSON. The assembler has no Ledger node private keys.
 - Every operator receives the complete public descriptor set, app state, and
   assembled genesis, then verifies all three before launch.
 
 ## Operator procedure
 
-On each operator host, from the verified signed release:
+On each operator host, use a verified compatible build. For v0.6.0, no checksum
+signature is published; see [release checks](SIGNING.md). Then run:
 
 ```sh
 install -d -m 0700 "$HOME/ember-operator/validator"
@@ -50,7 +51,7 @@ install -m 0600 genesis.json "$HOME/ember-operator/validator/config/genesis.json
 ```
 
 Launch is blocked if any operator reports a different genesis hash, descriptor
-order, app state, validator name, voting key, or local-key match. Retain each
+order, app state, Ledger node name, voting key, or local-key match. Retain each
 operator's verification output and the ceremony manifest in access-controlled
 operator records; publish the agreed public genesis hash for participants.
 

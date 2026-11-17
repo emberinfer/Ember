@@ -53,69 +53,20 @@ All direct production `pinned_channel` calls are the join factory, StageClient,
 register_stage factory, and MoE base client above. No proto, Go, consensus, or
 AppVersion changes are needed.
 
-## relay2 self-signed workaround retirement runbook
+## Certificate rotation
 
-Steps only: this task does not execute any production action.
+Deploy compatible pinned clients first. Verify the new certificate/key and SANs,
+compute the leaf certificate's SHA-256 DER fingerprint, distribute the intended
+pin through authenticated configuration, and coordinate activation with the relay
+change. `configure` does not overwrite existing configurations. A single-pin
+client cannot accept both certificates: mismatched pins fail closed, so do not
+promise a zero-downtime rotation.
 
-1. **Precondition — roll every client first.** Deploy builds containing this fix
-   to all node/join, stage, and MoE client processes. Identify the executable,
-   Python environment, installed package, and service process actually running
-   (**operator to confirm**). Run `ember-node version` (the `python -m agent
-   version` entry point in the same installed environment) to record its release
-   version. Version alone is insufficient to distinguish builds sharing a release:
-   check the deployed build/revision provenance includes this fix, or compare the
-   installed `pinned_tls.py` with the fixed release artifact. Confirm processes
-   have restarted onto that artifact, including stage and MoE processes; the
-   deployment mechanism and fleet inventory are **operator to confirm**.
-2. Issue a regular certificate for `relay2.emberinfer.org` whose DNS SAN includes
-   `relay2.emberinfer.org`, using the operator's ACME/CA of choice. CA account,
-   challenge routing, issuance command, renewal setup, and destination paths are
-   **operator to confirm**. Preserve the old cert/key and current fingerprint
-   configuration for rollback; verify new key/certificate correspondence.
-3. Compute the leaf certificate fingerprint as lowercase SHA-256 of DER, not PEM
-   text and not SPKI. For example, with the actual leaf PEM path substituted:
-   `openssl x509 -in LEAF.pem -outform DER | openssl dgst -sha256`.
-   The 64 hex digest is what `emberd cert` prints after `tls-fingerprint=` and
-   what `pinned_tls` compares. Confirm the leaf presented by the relay will be
-   this certificate, with any chain files ordered appropriately (**operator to
-   confirm**).
-4. If the pin changes, update the client-facing network artifact's
-   `access.tls_fingerprint`, the source mapped by `node/agent/network.py` to
-   `EMBER_TLS_FINGERPRINT`, **before swapping the served certificate**. Update
-   actual client configurations too: configure deliberately refuses to overwrite
-   existing files. Artifact location, distribution, and all overridden CLI/env
-   sources are **operator to confirm**. A single-pin client cannot accept both
-   old and new certificates: schedule a maintenance window, stage/distribute the
-   new configuration before the swap, and coordinate its activation and client
-   restart/reconnect with the relay change. Clients attempting new connections
-   with the new pin while the old certificate is served will fail closed; old-pin
-   clients after the swap will also fail. Do not claim a zero-downtime rotation.
-5. In that window, swap the certificate/key files selected by
-   `deploy/public-relay.py --seed-cert/--seed-key` and restart **only the relay
-   process**. Production paths, process manager, and restart command are
-   **operator to confirm**. Keep `--seed-upstream-ca` and the upstream's
-   127.0.0.1 SAN arrangement intact: that separate CA-verified leg is unchanged.
-6. Verify the served leaf fingerprint matches the distributed pin. Confirm a
-   fresh node join via `relay2.emberinfer.org` reaches JOIN READY, then force a
-   controlled reconnect of an already-joined node and confirm it rejoins with
-   the new configuration. Exact production commands and node selection are
-   **operator to confirm**. Check stage and MoE connectivity as applicable.
-7. If verification fails, restore previous certificate/key files and previous
-   network fingerprint configuration (including client overrides), restart only
-   the relay, and reactivate/reconnect clients using the previous configuration.
-   Coordinate rollback in the same window because mismatched pins reject new
-   connections. Recheck fresh join and existing-node reconnect. Production
-   restore commands and configuration distribution are **operator to confirm**.
+The relay's CA-verified upstream TLS leg is separate and retains its own hostname
+checks. Verify fresh join, reconnect, stage and MoE channels as applicable after
+rotation. Retain old certificate and configuration for coordinated rollback.
+This is a generic procedure; no current endpoint, process manager, certificate
+path or successful fleet rollout is asserted here.
 
-## Validation
-
-Using `/root/data/ember-gpu-venv/bin/python`:
-
-`python -m unittest -v node/test_pinned_tls.py node/test_node.py node/test_join_retry.py node/test_network.py node/test_reconnect.py`
-
-Result: **29 tests passed**: `test_pinned_tls.py` 6, `test_node.py` 13,
-`test_join_retry.py` 7, `test_network.py` 2, `test_reconnect.py` 1.
-The new tests use real local TLS gRPC for hostname mismatch success, wrong-pin
-rejection before channel creation, IP SAN success, unpinned hostname rejection,
-and missing-SAN rejection; option preservation and DNS preference are unit-tested.
-No Go files changed; Go build/tests are intentionally skipped.
+Source and local regression coverage: `node/pinned_tls.py:10`,
+`node/test_pinned_tls.py`, `deploy/public-relay.py`.

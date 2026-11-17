@@ -6,14 +6,6 @@ explicit value of 1 selects the retained experimental path; do not remove the
 production override as part of a library sync. Legacy per-request mode plus
 streaming protocol readers and cancel-before-reap is the supported configuration.
 
-Verdict (2026-11-17): daemon deprecated. A local real-client probe shows that Python
-stdin iteration responds to a newline without EOF: a nonexistent local model
-produces job_end(ok=false), and a second job does likewise. This disproves a
-universal stdin-iteration buffering explanation on this runtime, but does not
-explain the production zero-forward failure. There is no successful real-client
-freeze -> stage-forward -> result -> job_end proof for that deployment. Fail-fast
-probes and the synthetic Go lifecycle harness do not authorize enablement.
-
 Legacy framing: write one JSON object, close stdin; read stage_start /
 stage_end (or stage_failed), token, and finally result; EOF and process exit
 terminate the request. Resident framing: write JSON plus newline and keep stdin

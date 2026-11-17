@@ -77,28 +77,12 @@ small successful corpus. [build_audit_profile.py](../chain-genesis/build_audit_p
 accepts explicit source, output and policy paths; its historical defaults require
 artifacts supplied separately and are not a source-only reproduction command.
 
-## Consensus safety thresholds
+## Consensus safety thresholds and current equality policy
 
-The consensus safety policy supports two thresholds per model, signed band and
-output-length class, published with score data and a calibration reference. The
-request freezes that table; changing it requires a signed governor policy update
-and affects newly frozen requests. Unknown tables cannot authorize numerical
-penalties. See [settlement safety modes](AUDIT_DESIGN.md#settlement-slashing-and-availability).
-
-The [placeholder regression fixture](../services/chain/testdata/misjudge_placeholder.json)
-contains an explicitly synthetic 128-point perturbation grid spanning zero to
-the historical GB10-to-Thor fresh maximum 0.44078095735695183, alongside the
-historical aggregate counts and source digest. Its soft=0.4 and hard=0.5 values
-are placeholders pending staging measurement. This grid is test input, not a
-measured honest-score distribution or an estimate of false-positive probability.
-No new production hardware calibration is claimed; publishing production policy
-still requires the raw measured score distribution and reproduction artifacts.
-
-The [empirical injection fixture](../services/chain/testdata/misjudge_empirical.json)
-ships five measured GPU-to-CPU request distances with job hashes and the two
-GB10-to-Thor group maxima (development and fresh). Source file SHA-256 hashes
-are included. The consensus injection exercises these seven empirical values:
-zero numerical slashes under gray_gate, with an objective hash violation in
-the same run still slashed. This is a cross-hardware-class injection, not a
-physical Thor run or a population false-positive estimate. Threshold defaults
-remain calibration-pending placeholders.
+The source supports signed/frozen numerical threshold tables and configurable
+safety modes. Synthetic or aggregate historical fixtures are not population
+false-positive bounds and cannot prove live hardware calibration. Read fixture
+metadata before reproducing tests; do not infer measurements from placeholder
+scores. Current text equality audits use their own first-divergence epsilon rule
+and default teacher forcing; see [audit design](AUDIT_DESIGN.md) and
+[teacher forcing](TEACHER-FORCING-AUDITS.md).

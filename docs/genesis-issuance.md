@@ -87,9 +87,9 @@ The same accounting applies to pipeline and encrypted inference requests.
 ## Recompute B awards
 
 Publish `testnet_records` with unique `request_id`, `payer`, `executor`, optional
-`auditor`, and `settled` / `audited` flags. Unsettled records earn no points.
+`auditor`, and `settled` / `audited` flags. Unsettled records receive no points.
 Records whose payer and executor map to the same registered entity are excluded
-entirely, including audit points. A settled non-self request earns 6 supply
+entirely, including audit points. A settled non-self request receives 6 supply
 points, 3 points for a completed audit, and 1 consume point.
 
 One weighted point is valued at one reference-request equivalent. Awards are
@@ -164,6 +164,4 @@ seven signers, including two signers from outside the founding organization, wit
 These records expose the social restructuring obligation; they do not automate
 membership changes.
 
-The consensus state format uses application version 5. Existing version 4 state
-files require a separately reviewed migration; starting a new issuance chain does
-not rewrite them.
+Genesis issuance is an optional configured mechanism, not a claim that it is enabled on the live chain. The current loader accepts supported versions 4 through 12; the live chain is AppVersion 12. Follow [Upgrade](UPGRADE.md) for coordinated activation. Starting a new issuance chain does not rewrite an existing chain.

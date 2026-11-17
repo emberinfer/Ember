@@ -4,12 +4,11 @@ Sizing is per immutable model/Profile and evidence grade. Measure the complete
 process, tokenizer, KV cache, hidden-state buffers, and audit overhead; model file
 size alone is not sufficient.
 
-| Role | Initial sizing estimate | Notes |
-|---|---|---|
-| Validator | 2 CPU cores, 4 GiB RAM, 20 GiB durable disk | Add disk for block/state retention and backups; no GPU is required. |
-| Gateway/seed | 4 CPU cores, 8 GiB RAM, 20 GiB disk | Audit replay can require model-class memory unless delegated to a separate auditor. |
-| Full-model node | model working set plus 30% headroom | Runtime admission guards vary by device/Profile; long contexts can exceed these estimates. |
-| Monitor | 1 CPU core, 1 GiB RAM | Must reach each validator RPC or an authenticated collector. |
+Ledger nodes need durable consensus/application storage and no model GPU for
+consensus. Gateway sizing must include queues, evidence storage and any hosted
+replay worker. Serving/audit sizing depends on the loaded weights, context and
+concurrency. No universal core/RAM/disk minimum is established by the source.
+Measure representative workloads and retain capacity headroom before admission.
 
 ## Small-device shard guidance
 

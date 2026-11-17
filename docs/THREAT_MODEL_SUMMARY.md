@@ -6,7 +6,7 @@ attribution, not a proof of correct execution. Numeric audit is probabilistic an
 uncalibrated runtime pairs cannot slash.
 
 Main residual risks are operator/auditor collusion, stake concentration, gateway
-key custody, validator-key compromise, denial of service, model supply-chain
+key custody, Ledger node-key compromise, denial of service, model supply-chain
 attacks and prompt disclosure to gateways/executors/auditors. There is no TEE,
 MPC, confidential inference, hardware attestation or mainnet economics claim.
 See [the threat model](THREAT_MODEL.md) for the full inventory and controls, and

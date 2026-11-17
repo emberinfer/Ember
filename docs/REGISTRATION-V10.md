@@ -11,8 +11,7 @@ Engine capability roles continue to describe adapters (including shard/MoE
 adapters), but no longer choose review versus execution for new registrations.
 The existing contribution selector selects profiles and measured capacity and
 remains independent of availability. Range admission still selects the held
-range. This baseline contains no separate NM-5 auto-mode implementation or role
-selector; future auto-mode callers must use the same registration opt-out fields.
+range. Callers must use the same signed registration opt-out fields; local adapter role labels do not silently remove enabled functions.
 
 The legacy `--audit-role` flag still parses. Before v10 it appended `auditor` to
 existing engine roles: a model/shard engine therefore offered both roles. That
@@ -20,7 +19,7 @@ behavior is preserved. If an engine had no execution role, the legacy flag maps
 to `no_exec=true`. `--audit-role --no-audit` is rejected as contradictory. No
 sibling legacy execution-role CLI flag exists in this baseline.
 
-Activation follows the existing AppVersion 9 manifest mechanism: all validators
+Activation follows the existing AppVersion 9 manifest mechanism: all Ledger nodes
 load the same `--membership-upgrade` JSON with matching `chain_id` and future
 `activation_height`. A version-9 state remains version 9 until exactly that
 height; missed activation fails closed. The activation writes version 10 and a

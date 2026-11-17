@@ -1,6 +1,6 @@
 # Reputation audit sampling (application version 8)
 
-Sampling is disabled by default. A governor can submit `set_audit_sampling` with
+The live chain uses the 30%/5%/2% sampling policy. The source parameter default is disabled until explicitly enabled. A governor can submit `set_audit_sampling` with
 an entire valid `audit_sampling` parameter block, or a coordinated 7→8 upgrade
 manifest can carry that block. The manifest can independently opt into
 `moe_enabled`; neither feature is enabled by an omitted field.
@@ -45,5 +45,4 @@ lack actual audit/settlement timestamps: their persisted SettleHeight is the
 canonical ordering bound for historical accepted work; slash and freeze heights
 remain exact. New events retain exact heights. Existing signed bytes, payments,
 and request identities are not replayed or rewritten. Zero-valued new parameter
-blocks are omitted when reading legacy state. Rehearse the upgrade on isolated
-state and remove the activation-manifest argument after activation.
+blocks are omitted when reading legacy state. Validate upgrades on isolated copies and retain the activation manifests needed for historical replay. Follow [Upgrade](UPGRADE.md).

@@ -1,7 +1,7 @@
-# Validator membership
+# Ledger node membership
 
-Validators use Ed25519 consensus keys, distinct from signed operator accounts.
-Every validator has power **10**, matching the genesis tool: stake is admission
+Ledger nodes use Ed25519 consensus keys, distinct from signed operator accounts.
+Every Ledger node has power **10**, matching the genesis tool: stake is admission
 collateral and never changes voting weight. `/validators` exposes the registry,
 organization IDs, readiness heights, current change, and applied/rejected history.
 `/state` includes the same data in the application hash. Organization IDs are
@@ -24,8 +24,8 @@ the chain. Keep proofs fresh with operator-signed `validator_ready` transactions
 Do not use the consensus vote-signing endpoint for application proofs; use a
 separate domain-aware signing operation, never arbitrary consensus messages.
 
-An operator of an active validator may propose a join. A voluntary exit must be
-proposed by the leaving validator's operator. This interim authority does not
+An operator of an active Ledger node may propose a join. A voluntary exit must be
+proposed by the leaving Ledger node's operator. This interim authority does not
 implement governor multisignatures or emergency removals. Admission stake alone
 never grants proposal authority.
 
@@ -73,58 +73,17 @@ candidate can withdraw an unproposed or rejected admission using
 `validator_cancel`; it cannot withdraw during its pending/scheduled join.
 Exited keys remain in history; use a fresh key for a later admission.
 
-## Version-4 activation
+## Activation and live status
 
-The new application version is 5. A coordinated legacy upgrade uses the same
-reviewed JSON manifest on every participant:
+The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
 
-```json
-{
-  "chain_id": "example-network",
-  "activation_height": 1000000,
-  "membership": {
-    "change_delay_blocks": 241920,
-    "change_window_blocks": 241922,
-    "readiness_blocks": 120,
-    "max_validators": 100,
-    "registry": {
-      "<consensus-public-key-hex>": {
-        "pubkey": "<base64-ed25519-public-key>",
-        "operator": "<existing-operator-account>",
-        "org_id": "<organization>",
-        "power": 10,
-        "status": "active"
-      }
-    }
-  }
-}
-```
-
-The registry must contain the complete existing consensus set (at least two
-members); repeat the illustrated entry for each member. The example delay
-represents 14 days at five seconds per block; select the actual block count
-from the agreed cadence. All parameters are explicit, with no local defaults.
-
-Start each upgraded participant with `--membership-upgrade /path/to/manifest.json`.
-State bytes, hashes and reported application version remain at version 4 until
-the activation block. At activation, the manifest must match the actual consensus
-addresses and equal powers. The application atomically commits version 5 and
-updates the consensus application-version parameter. Genesis is never rewritten.
-A new observer replaying this legacy chain must also receive the manifest;
-it replays the old version before activation. Keep the original manifest with
-backups and require its checksum in service configuration.
-
-Arrange coordinated maintenance and a common activation height before replacing
-binaries. Two equal-power validators cannot tolerate either being offline.
-Before activation, an old binary can reopen the unchanged version-4 state;
-after activation, use a compatible binary or coordinate a network-wide recovery.
-Never restore just one validator's signing state backwards. Preserve signing
-high-water marks and do not run two copies of a consensus key.
-
-`query --verify-state` remains deliberately restricted to genesis validator sets;
-it fails closed after a set change. `/validators` is an ordinary application
-query, not an independently authenticated membership proof. Use a CometBFT light
-client tracking validator transitions when authenticating a dynamic network.
+Membership changes require initialized on-chain membership and the admission and
+continuity rules above. The optional v10→v11 initialization binds the existing
+consensus set; it is not automatic at every release. Follow [Upgrade](UPGRADE.md)
+for the current version ladder. Historical version-4 activation examples are not
+current deployment instructions. Ordinary `/validators` queries do not constitute
+an independently authenticated dynamic membership proof; use a suitable CometBFT
+light client tracking set transitions.
 
 ## Operator checks and key rotation
 

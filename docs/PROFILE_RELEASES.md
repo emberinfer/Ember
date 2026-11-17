@@ -27,12 +27,12 @@ Generation verifies both publisher signatures, publisher identity, exact chain
 artifact bytes, raw genesis SHA-256, domain-separated profile/manifest digests,
 chain ID and version links. It rejects cycles and missing predecessor anchors.
 The chain CLI verifies the whole-state hash against a CometBFT commit and the
-chosen genesis validator set before any release file is rendered. Downloadable
+chosen genesis Ledger node set before any release file is rendered. Downloadable
 artifacts, executable origin/recomputation and conformance commands, signed
 audit parameters and current active endorsement accounts all come from these
 inputs. Each machine record carries its chain snapshot height and proof summary.
 
-The Pages workflow runs `check-profile-pages.sh` before deployment. It refreshes
+The repository supplies `release/check-profile-pages.sh` for verification, but the current public tree has no Pages deployment workflow. The live emberinfer.org website is built from a separate repository. When run, the script refreshes
 verified chain state, compares every release fact (including endorsements) to
 that state, and confirms HTML is exactly the rendering of the machine record.
 It also checks downloadable artifacts and the ledger anchor bytes. A changed
@@ -94,3 +94,16 @@ whole-model plaintext receipts; policy-bearing shard manifests and encrypted
 request admission are rejected until those protocols support the category.
 External inference backends must implement the pinned execution behavior; a
 backend's independently configured moderation cannot authorize an audit pass.
+
+## Current catalog
+
+A model is one set of weights; a profile is a deployment form. Forms are **Whole model** and **Sharded** (by layer, by expert, or layer + expert). A unified profile covers whole-model and sharded forms under one card. CPU/GPU describes a node, not a form. The 1.5B `-segmented` listing is the unified profile's sharded entry point, not another profile.
+
+| Profile | Model | Context tokens | Availability |
+| --- | --- | ---: | --- |
+| `ember-qwen2.5-1.5b-unified-v1` | Qwen2.5-1.5B-Instruct | 32768 | Serving; unified Whole model and Sharded forms |
+| `ember-qwen3.6-35b-a3b-fp8-unified-v1` | Qwen3.6-35B-A3B FP8 | 262144 | Serving via vLLM on GPU nodes |
+| `ember-olmoe-1b-7b-moe-v1` | OLMoE-1B-7B | 4096 | Serving; Sharded by layer + expert; sampled segment-replay audits pass |
+| `ember-kimi-k3.1-pro-v1` | Kimi K3.1 Pro | Not specified | Published on-chain; not deployed; no serving nodes |
+
+Historical generated records remain immutable and must not be treated as a live serving directory.

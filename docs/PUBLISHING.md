@@ -1,8 +1,7 @@
 # Publish and endorse an Ember profile
 
 Publishing is permissionless on chains running the publishing state machine.
-Public testnet release 0.22.0 predates this feature: use an explicitly advertised
-staging chain until its validators upgrade. Endorsements express local trust;
+The current live chain has published profiles, including Kimi, which has no serving nodes. Publication does not imply deployment or serving availability. Endorsements express local trust;
 they do not activate execution or change consensus membership.
 
 Start with signed template genesis/manifest artifacts and complete local origin

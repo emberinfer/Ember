@@ -17,18 +17,13 @@ returns `(output, past_key_values)` and accepts an absolute `position_offset`.
 The head returns only `[batch,1,vocabulary]`. Hidden boundary tensors, signed
 requests, receipts, activation hashes and protobuf definitions are unchanged.
 
-The gateway lazily maintains two exclusive Python daemon slots per interpreter
-and working directory. Admission defaults to eight concurrent requests, so two
-jobs can run while further admitted requests wait within their request timeout.
-Each daemon processes newline-delimited jobs using the one-shot execution path,
-retaining tokenizers, private-key objects and authenticated stage channels
-(up to 64 channels retained after each job, evicting least recently used).
-A `job_end` marker terminates each job and is consumed by the manager, never SSE.
-Failed Python jobs close all cached channels. A process crash errors the current
-job; a timeout kills and reaps that process. The next job starts a fresh process.
-No failed job is automatically replayed. Interpreter startup failure attempts the
-legacy subprocess path. Set `EMBER_PIPELINE_DAEMON=0` on the gateway to force the
-legacy one-process-per-request behavior. Stop the gateway to stop its residents.
+The gateway uses the legacy one-process-per-request path by default.
+`EMBER_PIPELINE_DAEMON=1` opts into the retained experimental resident path;
+`EMBER_PIPELINE_DAEMON=0` explicitly keeps the supported per-request mode.
+Do not infer production enablement from daemon lifecycle tests. The optional
+manager has exclusive slots and consumes `job_end` internally. Failed jobs,
+read/protocol errors and cancellation discard the process. No failed execution
+is automatically replayed. See [executor operation](gateway-executor-robustness.md).
 
 Stages and gateway can roll independently: new stages accept old clients, and
 new clients/daemons work with old stages. Cache misses and audit replay always

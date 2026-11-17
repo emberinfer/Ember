@@ -1,23 +1,28 @@
-# Validator Guide
+# Ledger node guide
 
-Initialize an offline validator home, export only its public descriptor, and
-assemble one reviewed genesis without collecting private validator homes:
+The live chain is `ember-testnet-1`, with five Ledger nodes and AppVersion 12
+activated at height 116582. Serving-node registration does not by itself grant
+consensus membership. Follow [Ledger membership](VALIDATORS.md) for admission,
+readiness proofs and coordinated set changes; follow [Upgrade](UPGRADE.md) for
+the activation ladder. Do not create a new genesis to join an existing chain.
+
+For a new network ceremony only, initialize an isolated home and export public
+material with the existing CLI names:
 
 ```sh
-emberchain init-validator --home "$HOME/.ember/validator"
-emberchain validator-public --home "$HOME/.ember/validator" \
-  --name <operator-validator-name> --out validator.public.json
-emberchain genesis --out genesis.json --chain-id ember-<network> \
-  --app-state app-state.json --validator-public <comma-separated-public-json>
-emberchain verify-genesis --genesis genesis.json --app-state app-state.json \
-  --validator-public <comma-separated-public-json> \
-  --local-home "$HOME/.ember/validator"
-install -m 0600 genesis.json "$HOME/.ember/validator/config/genesis.json"
-ember-role validator config/validator.env
+emberchain init-validator --home "$HOME/.ember/ledger"
+emberchain validator-public --home "$HOME/.ember/ledger" \
+  --name operator-ledger --out ledger.public.json
 ```
 
-Keep consensus keys separate from account/governor keys. Back up the complete
-validator home only while stopped or from an atomic filesystem snapshot. Monitor
-RPC `/status`, Prometheus `/metrics`, peer count, block height and missed rounds.
-Never reuse a validator signing state on two live machines.
-Follow `GENESIS_CEREMONY.md`; any mismatch blocks launch.
+Exchange only the public descriptor. The assembler and every participant verify
+the complete descriptor set and app state as described in
+[Genesis ceremony](GENESIS_CEREMONY.md). Install only the agreed genesis. The
+`ember-role validator` CLI selects the Ledger role; keep the existing command
+identifier when configuring scripts.
+
+Keep consensus signing keys separate from account/governor keys. Protect private
+files with mode 0600 and state directories with mode 0700. Back up the full home
+and application archive consistently. Never run two live machines with the same
+consensus signing state or restore its high-water mark backward. Monitor RPC
+`/status`, peers, height, vote participation and metrics.

@@ -30,16 +30,18 @@ llama.cpp uses native `/completion`, `return_tokens=true`, `n_probs`,
 ID/logprob schema. Older `probs` schemas/probability values are not silently
 converted. vLLM uses `/v1/completions`, `logprobs` and
 `return_tokens_as_token_ids=true`; token strings must have `token_id:<integer>`
-form. Both are buffered completions; concatenated text is exact, first Step
-contains response text and subsequent Steps contain empty text. TTFT measured
-through these adapters includes the entire buffered completion.
+form. llama.cpp buffers completions. vLLM streams by default and uses incremental
+SSE reading; `EMBER_VLLM_STREAM=0` restores buffering. Fallback is allowed only
+before emitting a step, never after a stream has started. Buffered delivery can
+put all response text in the first step and empty text in subsequent steps;
+concatenation must reproduce the response exactly. A streaming API does not
+remove the requirement to return real token IDs and the profile's evidence.
 
 Pass `api_key` to `load_engine` from a secret store/environment, never a committed
 file. The join command reads `EMBER_ENGINE_API_KEY`. It accepts `--engine llamacpp`
 or `--engine vllm` plus `--engine-endpoint`, `--engine-model`, `--engine-version`,
-but **rejects** them on all currently published full-evidence chains. This is the
-intended outcome: these HTTP APIs cannot provide activation openings, raw logits
-or teacher-forced replay. No lower-evidence production chain is supplied by these adapters.
+but full-evidence profiles still reject adapters missing raw logits, layer openings or replay. This is the
+intended outcome: these HTTP APIs do not supply full activation/raw-logit evidence. vLLM does implement teacher-forced scoring via prompt logprobs for compatible equality profiles. The live 35B unified profile uses vLLM on GPU nodes.
 Direct adapter use is available for external-engine contract/integration work.
 
 Remote device, numeric format and version default to remote/unknown; an operator

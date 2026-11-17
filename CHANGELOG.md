@@ -1,32 +1,42 @@
 # Changelog
 
-## Unreleased
+## 0.6.0 — current published release
 
-- Add input and context-aware Spark fees committed in signed model profiles,
-  serving-tokenizer commitments, exact worst-case itemized gateway quotes,
-  and consensus verification at submission and settlement.
-- Preserve output-only signed profile/receipt compatibility, exact legacy
-  amounts, fee conservation, role allocation and executed-work pipeline splits.
-- Document the pricing formula, integer rounding, reserve/refund flow and
-  profile rollout in `docs/PRICING.md`.
+Latest GitHub release: v0.6.0, snapshot `b8b3128`. The release sequence below
+retains older version labels as historical records; do not infer current status
+from their numerically larger version strings.
 
-## 0.22.0 - 2026-11-11
+Available assets: Linux amd64 and arm64 archives, Engine SPI kit, `SHA256SUMS`
+and `release-signing.pub`. `SHA256SUMS.sig` is not yet published for this release.
+
+## Current network snapshot — 2026-11-17
+
+The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
+
+The live catalog includes unified 1.5B and 35B profiles and serving OLMoE layer +
+expert sharding. Kimi is published but not deployed. AppVersion 12 corrected its
+compute derivation to 208,736,282,112 FLOPs/token (correction count 0 to 1).
+AppVersion 10 supplies default execution/audit registration availability and
+bounded whole-model adjudication; AppVersion 11 supplies token-price overrides.
+This snapshot describes chain state, not a claim that every mechanism first
+shipped in v0.6.0. See [pricing](docs/PRICING.md) and [upgrades](docs/UPGRADE.md).
+
+## Historical 0.22.0 - 2026-11-11
 
 - Launch the public testnet with the externally proven rc.3 code, final version
   labels, signed reproducible Linux archives and refreshed network parameters.
 - Publish the live public onboarding path: verify, install, self-fund, stake,
   register, serve, then exit and recover stake.
-- Retain the established release signing key and document single-organization
-  validators, unaudited security, valueless test credit and slow CPU serving.
+- Retain the established release signing key and document experimental security, valueless test credit and CPU serving limits.
 
-## 0.22.0-rc.3 - 2026-11-11
+## Historical 0.22.0-rc.3 - 2026-11-11
 
 - Support public-address TLS termination with HTTP/2 ALPN and verified backend
   TLS for the seed relay. Preserve standard gRPC hostname verification when
   the backend certificate covers private addresses.
 - Supersede the rc.2 seed fingerprint with the public relay certificate pin.
 
-## 0.22.0-rc.2 - 2026-11-11
+## Historical 0.22.0-rc.2 - 2026-11-11
 
 - Publish public relay access and signed network parameters for the joinability
   candidate, with isolated seed/RPC/gateway/faucet ports.
@@ -34,14 +44,14 @@
   proxy; external callers cannot override the relay-observed source address.
 - Document cold operator model download, Python prerequisites and public releases.
 
-## 0.21.0-rc.1 - 2026-11-09
+## Historical 0.21.0-rc.1 - 2026-11-09
 
 - Added a public-material-only multi-operator genesis ceremony and independent
   operator verification commands.
 - Added a persistent-rate-limit faucet for valueless test Spark and
   expanded validator, hardware, signing, audit, and hard-fork guidance.
 
-## 0.20.0 - 2026-11-09
+## Historical 0.20.0 - 2026-11-09
 
 - Added CometBFT-backed Spark settlement, public seed discovery, outbound NAT
   serving, signed scheduler channels, unpredictable post-commit audit assignment,
@@ -49,11 +59,11 @@
 - Added reproducible Linux amd64/arm64 release archives, signatures, role
   installers, health/metrics endpoints, operations drills and alert rules.
 - Added the standalone Engine SPI conformance kit and public-repository operator
-  documentation. The repository is prepared but is not published.
+  documentation. This note describes the historical release preparation state.
 
-This is a public-testnet readiness release. It is not a mainnet release.
+These historical entries do not describe the current chain or release.
 
-## 0.22.0-rc.1
+## Historical 0.22.0-rc.1
 
 - Resolve replay routes from finalized stake-backed registrations and authenticated
   node tunnels; independent auditors retain custody of their signing keys.

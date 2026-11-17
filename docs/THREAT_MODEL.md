@@ -13,14 +13,14 @@ reproducibility, service availability and prompt confidentiality to the extent
 explicitly offered. Keys may be stolen, nodes may lie about hardware, identities
 are cheap, and auditors/gateways can share an operator without declaring it.
 Adversaries include malicious nodes/stages (compute substitution), consumers
-(replay/overspend/resource exhaustion), validators/coordinators (censorship,
+(replay/overspend/resource exhaustion), Ledger nodes/coordinators (censorship,
 assignment manipulation, fraudulent settlement), and network attackers
 (eavesdropping, partition, eclipse, flood). Model publishers and dependencies may
 also be malicious. No permissionless operator is inherently trusted.
 
 In chain mode, CometBFT orders deterministic account/hold transitions under a
-less-than-one-third Byzantine voting-power assumption. Genesis validator membership
-is static; a multi-validator deployment does not establish independent ownership.
+less-than-one-third Byzantine voting-power assumption. Ledger membership can change through initialized on-chain rules; multiple
+Ledger identities do not establish independent ownership.
 SQLite mode trusts one coordinator for accounting and audit signing. Gateways in
 either mode retain custodial consumer-account mappings. Auditor identities and
 runtime declarations are not hardware or ownership attestation.
@@ -34,7 +34,7 @@ runtime declarations are not hardware or ownership attestation.
 | Evidence downgrade | Profile/genesis bindings, typed capabilities and fail-closed full-evidence admission | Self-reported engine/device facts are not attestation; weaker Profiles require separate review |
 | Replay or cross-attempt mixing | Signed work nonces, fenced request/attempt IDs, receipt binding, ledger transaction nonces | Key compromise and incorrectly configured gateways remain risks |
 | Malicious gateway or seed | Nodes verify signed work and pinned model artifacts; chain validates reservations and assigned verdicts | Gateway custody, censorship, prompt observation and service denial remain possible |
-| Malicious validator or quorum | CometBFT consensus and deterministic integer state transitions | Quorum capture, long-range/key compromise and centralized genesis membership |
+| Malicious Ledger node or quorum | CometBFT consensus and deterministic integer state transitions | Quorum capture, long-range/key compromise and centralized genesis membership |
 | Overspend or cancellation after output | Bounded holds, integer fee checks and deterministic refund/settlement | Failed streams may already have exposed output; no atomic delivery/payment guarantee |
 | Resource exhaustion | Body/token/concurrency bounds, deadlines, expiring holds, rate limits and bounded shard tensors | Distributed floods, tokenizer/inference cost asymmetry and relay bandwidth bottlenecks |
 | Network MITM or replay | Pinned TLS, signed scheduler/stage messages and persistent nonce fencing | Endpoint/timing leakage, censorship, compromised keys and availability loss |
@@ -63,8 +63,9 @@ runtime declarations are not hardware or ownership attestation.
    stale work, cross-attempt frames, evidence downgrade, resource saturation,
    partitions and poisoned discovery endpoints. Keep configurations and results
    reproducible without exposing secrets.
-6. Verify release signatures on a clean machine, exercise key rotation and backup
-   restore, and inventory prompt retention. Contract tests alone are not an
+6. Check available release authentication material on a clean machine. v0.6.0
+   has no published checksum signature; see [signing](SIGNING.md). Exercise key
+   rotation and backup restore, and inventory prompt retention. Contract tests alone are not an
    independent security audit or public-network acceptance.
 
 Numerical audits are screening, not execution proofs. Identity diversity does not

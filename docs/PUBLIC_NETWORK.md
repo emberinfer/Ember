@@ -1,104 +1,53 @@
-# Public network and seed operation
+# Public network and discovery
 
-## Disclaimer
+The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
 
-Ember is experimental, open-source research software provided as-is, without
-warranty, subject to the [Apache-2.0 license](../LICENSE). Testnet Spark is
-valueless test credit: it is not money, is not offered for sale, and is not redeemable for currency or anything else of value.
-offered for sale. The Ember project operates no exchange or fiat on/off-ramp of
-any kind. Nothing in this documentation is an offer, solicitation, or investment
-advice. Operators and consumers participate at their own risk and subject to
-their own local rules. Read the [full disclaimer](DISCLAIMER.md).
+Participation is permissionless subject to protocol admission. Query the Ledger
+set and registrations on-chain; neither count proves independent ownership.
+Read the [disclaimer](DISCLAIMER.md). Testnet Spark is valueless test credit,
+is not money, is not offered for sale and is not redeemable for value. There is
+no project exchange or fiat on/off-ramp. Participation is at your own risk.
 
 ## Network operation
 
-The network is open to independent operators contributing inference capacity;
-validator admission remains static as described below.
-
-Discovery uses finalized,
-signed `ResourceProfile` registrations in `emberchain`. A seed runs the outbound
-`NodeTunnel`, exposes `/seed/peers`, and relays signed scheduler work. It does not
-create node identities, grant stake, choose an audit result, or mutate balances.
-Any seed with the same finalized chain view can replace another seed.
-
-## Request pricing
-
-Profiles can commit separate input, output and context interaction prices.
-The [pricing contract](PRICING.md) defines the formula, exact worst-case quote
-API, tokenization commitments, consensus checks and refunds. Existing profiles
-with zero input/context prices retain their output-only amounts; new pricing
-requires a new signed profile and compatible validators and serving software.
+Nodes use outbound authenticated tunnels. Seeds relay signed work and expose
+finalized registration-derived discovery; they do not create a node identity,
+grant stake or choose audit outcomes. A single configured seed remains an
+availability dependency. Authenticate model/profile artifacts, scheduler identity,
+RPC chain ID and TLS pin before joining. No live endpoint coordinates are asserted
+by this repository copy; obtain them through an authenticated deployment channel.
 
 ## Trust and authority
 
-- Validators remain the authority for accounts, stake, registrations, holds,
-  audit assignment and settlement. The less-than-one-third Byzantine voting
-  power assumption remains; validator admission is still static genesis policy.
-- Seeds and gateways can censor, delay or observe prompts. They cannot forge a
-  node profile, scheduler frame, stage request, receipt, audit verdict or chain
-  transition. Consumers still use a gateway-custodial bearer-to-account-key map.
-- Nodes pin the published genesis and manifest SHA-256 values. A seed presenting
-  different bytes is rejected before model load or registration. Operators should
-  configure multiple seeds; one unavailable seed remains an availability risk for
-  a node configured with only that seed.
-- Audit assignment uses the frozen request identity and three future finalized
-  CometBFT block hashes by default, with pair cooldown rotation. A reject needs confirmation by a different assigned auditor;
-  disagreement cannot slash. Cross-runtime verdicts remain observe-only.
-- TLS hides traffic from passive network observers. Gateways, executors and
-  auditors still see plaintext needed for their roles; Ember does not claim
-  confidential inference.
+Ledger nodes order deterministic accounts, stake, registrations, holds, evidence,
+audits and settlement under CometBFT's less-than-one-third Byzantine voting-power
+assumption. Membership updates are implemented; admission is not simply static
+genesis policy. See [Ledger membership](VALIDATORS.md).
 
-## Node enrollment
+Gateways can censor, delay and observe ordinary plaintext requests and retain
+consumer account custody. Relays cannot forge node signatures. TLS protects
+transport, not data from authorized execution/audit processes. Profile hashes
+bind selected bytes, not model quality or organizational independence.
 
-The live public testnet publishes its signed v0.22.0 access parameters at
-https://emberinfer.org/network.json. Follow the
-[Quickstart](QUICKSTART.md) to verify the release, generate a fresh identity
-and self-fund through the rate-limited faucet. No private operator config or
-manual account transfer is required for that flow. The node then uses
-its own key to stake and submit `register_node`; the seed only verifies the final
-registration. A production join supplies the ledger RPC exposed by the selected
-seed, ledger chain ID, published hashes and authorized scheduler account:
+Audit resolution occurs after evidence submission. Source entropy uses finalized
+blocks after freeze, not necessarily blocks after submission. Gateways cannot
+name auditors. Rejection requires corroboration; a third whole-model review may
+resolve an initially uncorroborated case. See [audit design](AUDIT_DESIGN.md).
 
-```bash
-ember-node join \
-  --state-dir /var/lib/ember/node \
-  --coordinator seed.example:19091 \
-  --tls-fingerprint SEED_CERT_SHA256 \
-  --chain ember-qwen2.5-1.5b \
-  --engine transformers --model-path /opt/models/qwen \
-  --scheduler-id ON_CHAIN_SCHEDULER_ACCOUNT \
-  --chain-rpc https://seed.example:26657 \
-  --chain-cli /usr/local/bin/emberchain \
-  --ledger-chain-id ember-testnet \
-  --genesis-sha256 PUBLISHED_GENESIS_SHA256 \
-  --manifest-sha256 PUBLISHED_MANIFEST_SHA256
-```
+## Enrollment and exit
 
-The tunnel is outbound-only, so the executor needs no inbound public port. Signed
-work-frame nonce watermarks persist under the node state directory with mode 0600.
-Registrations expire by height and must be renewed; expired or under-staked nodes
-cannot receive a new hold.
+Since AppVersion 10, registration offers both execution and on-chain audit eligibility by default. `--no-exec` and `--no-audit` select registration-time opt-outs. Eligibility still requires the appropriate evidence and replay capabilities. Registration binds the identity, exact signed profile, layer range and capacity. There is no deregistration or mid-term removal of an enabled role. Registrations lapse after the live 200,000-block TTL; stopping a process does not erase its registration.
 
-## Abuse controls
+Use [Quickstart](QUICKSTART.md) for release checks and enrollment. Keep private
+state and identity keys protected. Expiry, pending liabilities and unbonding are
+separate waits; see [operations](OPERATIONS.md). Stopping an endpoint does not
+cancel on-chain availability commitments.
 
-`emberd --rate-limit` applies a fixed-window quota per authenticated consumer
-identity. Body size, token count, global concurrency, attempt timeout and stage
-tensor size remain bounded. Holds have a chain-height expiry; any account can
-submit `expire_hold`, and chain gateways periodically do so. Account transaction
-nonces, persistent scheduler nonces, request/attempt IDs and append-only receipts
-provide replay fencing across restarts.
+## Pricing and abuse controls
 
-Shard RPC no longer accepts a shared cluster token. Every request is signed by an
-authorized scheduler identity and carries a persistent replay nonce; the stage TLS
-certificate fingerprint and stage signer are bound in its chain-registered profile.
-
-## Verification status
-
-Operators can verify public onboarding by completing the [Quickstart](QUICKSTART.md)
-with a fresh identity, checking a finalized settled hold, and following the exit
-procedure through stake recovery. Release metadata and signed profile artifacts
-are described in [profile releases](PROFILE_RELEASES.md). Contract tests in
-[node/test_network.py](../node/test_network.py) and
-[services/chain/routes_test.go](../services/chain/routes_test.go) cover discovery
-and assignment behavior; they do not establish NAT reachability or independent
-operator ownership. Public endpoint availability must be checked at deployment.
+Effective chain prices and frozen multipliers determine the bounded hold and
+actual-token settlement. See [pricing](PRICING.md). Rate limits, body/token and
+concurrency bounds, nonce fencing and attempt deadlines constrain resource use;
+they do not guarantee public endpoint uptime. Unresolved live holds have a
+5,000-block expiry and gateway recovery submits refunds. Never infer fraud from
+an offline connection alone.

@@ -23,24 +23,14 @@ Agent timestamps are monotonic nanoseconds on that host; gateway timestamps are
 Unix nanoseconds. Compare durations rather than subtracting clocks across hosts.
 No prompt/token text is logged. The flag is off by default.
 
-On the task machine, the unchanged forwarding path delivered 200.00/200.01/200.00
-tok/s. With instrumentation on it delivered 199.99/200.00/199.99 tok/s. Agent
-queue residence averaged 0.035–0.045ms/token and gateway SSE write/flush averaged
-0.025–0.032ms/token. This rules out a fixed per-token 0.5s queue wait or 125ms
-forwarding timer on this path. A queue timeout is an idle wait, not a pacing delay.
-
-No forwarding pacing fix is justified by this result. It does not establish the
-cause of the production slowdown: production engine execution, topology, network,
-and backend reader are not reproduced. The HTTP vLLM/llama.cpp adapters explicitly
-buffer a non-streaming completion; that affects first-token latency and produces
-a burst, not a steady 7–8 token/s forwarding cadence. Transformers uses full-prefix
-`use_cache=False` inference and shard pipelines perform synchronous stage forwards
-per decode step; those are engine execution paths, not SSE pacing. Do not attribute
-the 35B deployment to any of them without its actual configuration and trace.
+The harness measures synthetic forwarding only. It cannot establish model
+throughput or diagnose a deployed engine without its configuration and trace.
+vLLM now supports incremental SSE by default; llama.cpp retains buffering.
+Transformers and sharded execution have separate generation costs. Do not infer
+the live 35B path from historical adapter behavior.
 
 For a slow production request, compare engine inter-arrival time, queue residence,
 and gateway write/flush time. High engine inter-arrival time locates the delay
 upstream of forwarding. High write/flush time identifies downstream backpressure.
 If the backend reader buffers SSE, its fix is incremental event consumption with
-no per-event sleep/batching timer and prompt flushing to its caller. That backend
-is outside this repository and was neither inspected nor changed here.
+no per-event sleep/batching timer and prompt flushing to its caller. A separate backend reader must be inspected in its own source; no behavior of an external application is asserted here.

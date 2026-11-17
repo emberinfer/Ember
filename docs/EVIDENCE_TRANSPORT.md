@@ -99,6 +99,4 @@ retention/garbage collection, range fetching, resumable upload, or per-request d
 quota; provision disk and retain chunks for as long as counterparties need them.
 Tunnel replies apply backpressure instead of a fixed message-count queue, and
 heartbeats continue during continuous token output. Pipeline receipts keep their
-existing transport. This change requires application
-version 4 because manifest validation and verdict binding change consensus
-transaction acceptance; do not mix validator application versions.
+existing transport. This validation was introduced with application version 4. The live chain runs version 12 through the coordinated upgrade ladder. Do not mix incompatible Ledger application versions.

@@ -40,7 +40,7 @@ releases all reservations; see [sharding](SHARDING.md).
 Data-plane work is asynchronous to final settlement. A finalized reservation binds
 chain/model, manifest, Profile digest, consumer nonce, request/attempt IDs, maximum
 cost and expiry height. Receipts bind the reservation and output commitments.
-Validators execute integer Spark transitions, never model inference in consensus.
+Ledger nodes execute integer Spark transitions, never model inference in consensus.
 On ambiguous audit or network timeout: retain bounded dispute / refund per policy;
 never infer fraud from timing alone. Non-stream retries get a new fenced attempt;
 after tokens reach a client, fail visibly rather than silently splice executions.
@@ -52,7 +52,7 @@ after tokens reach a client, fail visibly rather than silently splice executions
 | Consumer | Account signing key; scoped expiring gateway token | Authorizes bounded spend; current bearer tokens are centralized |
 | Node / stage | Ed25519 identity, node_id = SHA256(public key) | Signs capability, commitment, roots, receipt; sees prompt/hidden states |
 | Auditor | Separate identity and stake; registered assignment excludes executor identity | Signed reproducible verdict; sees prompt and opened evidence |
-| Validator | Consensus voting key separated from account/operator keys | Orders deterministic transitions under chosen quorum assumptions |
+| Ledger node | Consensus voting key separated from account/operator keys | Orders deterministic transitions under chosen quorum assumptions |
 | Gateway / relay | TLS transport key, scoped service authorization | Relays bytes; cannot authorize arbitrary spending or weaker evidence |
 | Model publisher | Offline manifest/Profile/genesis signing key | Pins artifacts and rules; signature is provenance, not proof of model quality |
 
@@ -80,7 +80,7 @@ be bounded and disclosed; evidence publication should minimize plaintext access.
 | [Tracker](../services/tracker/), [scheduler](../services/scheduler/) | Discovery cache, path selection and leases | Advertised hardware and common ownership are not remotely attested |
 | [Gateway](../services/gateway/) | Consumer authorization, bounded holds, streaming and audit dispatch | Bearer-to-account mapping remains gateway-custodial |
 | [Auditor](../node/auditor/), [verifier](../services/verifier/), [queue](../services/auditqueue/) | Replay, evidence verification and durable audit jobs | Reference availability and honest placement remain necessary |
-| [Consensus app](../services/chain/), [CLI](../cmd/emberchain/) | CometBFT-ordered integer state transitions | Static genesis validator membership; no proof of independent ownership |
+| [Consensus app](../services/chain/), [CLI](../cmd/emberchain/) | CometBFT-ordered integer state transitions | Initialized dynamic Ledger membership; no proof of independent ownership |
 | [Ledger backends](../services/ledger/) | Consensus client or SQLite development accounting | SQLite is a single authority, not a replicated consensus protocol |
 
 Go hosts the protocol services and deterministic settlement application. Python
@@ -88,8 +88,7 @@ hosts model runtimes and numerical replay; protobuf/gRPC define their typed
 boundary. Engine SPI keeps framework logic independent of a specific inference
 engine. No model inference or floating-point comparison runs inside consensus.
 
-Dynamic validator membership, governance, compact state proofs and snapshots/state
-sync remain deployment/design work. Consensus finality does not establish model
+Dynamic Ledger membership and signed governance actions are implemented. Deployment, light-client verification and recovery still require explicit configuration and review. Consensus finality does not establish model
 correctness. Real multi-device and WAN performance require reproducible measurements;
 contract tests alone cannot establish either. Numerical audit remains probabilistic
 fraud screening with collusion and false-negative risk.

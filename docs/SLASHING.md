@@ -1,64 +1,51 @@
-# Confirmed-cheating slashes
+# Confirmed-offense penalties
 
-State version 3 applies a stake floor and a rolling repeat-offense multiplier to
-confirmed numerical cheating. New genesis defaults are `slash_floor_bps=100`
-(1%) and `slash_repeat_window_blocks=1000`. The basis-point parameter accepts
-1..10000 and the window accepts a positive block count; omitted/zero genesis
-values select the defaults. `slash_multiplier` remains fixed at 20.
+The chain requires `slash_multiplier=20`. Conviction requires corroborated signed
+rejection evidence; availability failure alone cannot slash. Whole-model
+adjudication may use one additional reviewer beyond the second.
 
-For an offender with bonded stake S immediately before settlement and attributed
-request revenue R, consensus computes:
+For current stake S and attributed revenue R, the uncapped per-offense basis is:
 
-```
+```text
 floor = ceil(S * slash_floor_bps / 10000)
-multiplier = 2 ^ min(prior_confirmed_offenses_in_window, 3)
-slash = min(S, max(20 * R, floor) * multiplier)
+ladder = 2 ^ min(prior distinct offense heights inside repeat window, 3)
+basis = min(S, max(20*R, floor) * ladder)
 ```
 
-The ladder is 1x, 2x, 4x, 8x, then 8x for subsequent offenses. Arithmetic uses
-unbounded integers before capping to current bonded stake. Even one positive
-stake unit has a positive floor. A penalty cannot create negative stake or an
-overflowed credit. Transaction application remains atomic if any credit fails.
+The source also imposes a per-node, per-block budget. The first slash fixes the
+block's ladder and limit using stake at block start:
 
-The window is measured at the actual settlement transaction's block height H.
-A prior confirmed settlement P counts exactly when `0 <= H-P < window`;
-an offense exactly one window old has expired. Multiple separate confirmed
-requests in one block count separately. The account identity shares its history
-across models. Only the last three confirmed heights need retention: three
-qualifying predecessors already select the capped multiplier. Each hold's
-`slashes` retains the complete charged record (node, height, revenue, stake
-before, rounded floor, multiplier and amount). `/state` exposes the bounded
-`confirmed_offenses` history; `/hold/<id>` exposes the per-request records.
-Both survive normal state save/reload.
+```text
+limit = max(floor(stake_start * cap_block_bps / 10000),
+            ceil(stake_start * slash_floor_bps / 10000))
+paid_this_offense = min(basis, limit - already_paid_this_block)
+```
 
-A whole-model rejection uses the submitted actual charge as R, preserving the
-existing 20R basis. A pipeline rejection uses the offender's aggregate executed
-credit before fee splitting. Only the fault-node set agreed by two independently
-assigned signed REJECT verdicts is charged. An account executing multiple stages
-receives one floor and one offense per rejected request. Honest stages have no
-offense, no stake change, and no execution credit for a rejected request.
+Multiple offenses in the same block share one history height and ladder step;
+they do not independently advance the ladder. Later payments can be zero after
+the block budget is exhausted. A prior height exactly one repeat window old is
+excluded. Arithmetic uses arbitrary-precision intermediates before bounded
+integer conversion. The source defaults are floor 100 BPS, repeat window 1,000
+blocks and block cap 500 BPS. Query the live parameters rather than assuming
+these defaults are the deployed settings.
 
-Rejected request reservations are refunded in full, except when frozen
-[consumer gray governance](AUDIT_DESIGN.md#consumer-gray-governance) requires
-normal settlement for a gray/pending-review outcome without slashing. A slash
-is transferred from each offender's bonded stake to the payer. No new supply
-is issued. First
-accusations, an independent confirming ACCEPT, service failures, expired holds,
-and accepted execution do not add offenses. Existing pending-exposure checks,
-registration stake locks, unbonding delays and honest exit paths still apply.
-Only successful confirmed-reject settlement records an offense, and a settled
-hold cannot be charged twice.
+`/hold/<id>` exposes charged records; offense history and block budgets persist.
+The whole-model revenue basis is actual charge; pipeline attribution uses the
+agreed fault-node work. Honest unrelated stages are not automatically punished.
+Ordinary whole-model penalties credit the payer. With adjudication, collected
+penalties first pay outstanding adjudication costs into the audit pool; only
+the remainder reaches the payer. MoE Plan B applies its separate honest-work
+payment waterfall and must not be described as always payer-only.
 
-The 1% default targets staging's 50,000-unit stake and small 3-unit request:
-500 units versus the old 60-unit slash (8.33x). At 100,000 stake with 2..8 revenue,
-the floor is 1,000 versus 40..160. Revenue-dominant requests retain their 20R
-minimum before escalation. These are credit distributions, not dollar-valued
-loss or a measured global economic-security guarantee. A fresh identity still
-starts with a new history and must supply stake.
+Safety modes and signed offense grading determine whether a rejection is
+slash-eligible. Gray or pending-review handling can suppress penalties. A timeout,
+unconfirmed accusation or missing reference is not confirmed cheating.
 
-This changes consensus and bumps `AppVersion` from 2 to 3. Version-2 persisted
-states are explicitly refused; they are never silently reinterpreted. Existing
-chains need a coordinated, separately reviewed state migration or a new genesis.
-All validators must run the same version and parameters. The GPU review chains
-for earlier stages retain their version-2 binaries and state. CPU chain tests
-cover the new policy independently of GPU inference.
+On the live chain AppVersion is 12, reached via upgrades from the source base
+constant 11. Do not use historical state-version-3 migration instructions as
+current activation guidance. See [upgrades](UPGRADE.md), [audit design](AUDIT_DESIGN.md)
+and [adjudication](../services/chain/adjudication.md).
+
+Source: `services/chain/slashing.go:30`, `services/chain/slashing.go:112`,
+`services/chain/moe.go:912`, `services/chain/state.go:365`,
+`services/chain/misjudge.go:36`.

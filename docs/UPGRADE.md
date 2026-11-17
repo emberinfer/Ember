@@ -1,159 +1,61 @@
-# Upgrade And Hard Fork Procedure
+# Coordinated application upgrades and recovery
 
-1. Stage the new semver archive, checksums, Ed25519 signature,
-   changelog and model-profile hashes. Verify on two clean checkouts. Release maintainers approve publication after verification.
-2. Record the coordinated halt height, expected old state hash, new chain ID and
-   rollback deadline through the network's authenticated operator coordination process. Stop gateways before
-   validators at the halt height.
-3. Back up validator homes and account keys. Export the finalized whole state and
-   verify it against the old genesis commit.
-4. Query the finalized state and require zero `frozen` or `dispute` holds. Current
-   genesis cannot preserve active holds, pending audits, registrations, evidence,
-   entropy, or subsidy counters safely. A migration attempt with any active hold
-   must fail closed. Stop admission, wait for settlement, cancel payer-owned
-   frozen holds, or wait for height expiry/refund; then re-query and retain proof.
-5. For an application-only compatible upgrade, replace binaries and restart the
-   same chain. For a model/Profile addition or incompatible state rule, create a
-   new genesis and chain ID, preserving reviewed balances/stake and adding the new
-   immutable model hashes. Set issuance parameters so non-migrated counters cannot
-   create duplicate issuance. Node registrations are re-created after launch. A
-   model version is never silently mutated.
-6. Run a new public-only genesis ceremony. Start at least two validators, verify
-   the new genesis hash and first committed
-   app hash, then reopen gateways and nodes.
+The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
 
-Rollback if the new chain cannot commit, state/account totals differ, the new
-profile hash is wrong, or more than one third of voting power reports divergent
-state. Stop the new chain, restore the old stopped snapshot and old binaries, and
-verify the old state hash before reopening traffic. Never run old and new signing
-states concurrently.
+Software release version, source base AppVersion, persisted state version and
+live consensus AppVersion are different values. `services/chain/state.go:22`
+sets base 11; `services/chain/validators.go:436` advances 11 to 12 at the configured
+height. Existing activation manifests are the mechanism; changing documentation
+or replacing a binary alone does not activate consensus rules.
 
-Application version 4 adds frozen request identities and policy, future block-hash
-history, pair streaks and assignment record v1. Loading a version-3 state directly
-fails closed. Use the incompatible-state upgrade procedure above; active holds
-and assignments cannot be silently translated to the new entropy rules. Existing
-client hold lookup IDs remain usable, while each accepted freeze also records its
-canonical consensus request identity. Version-3 input remains unsupported. The reviewed version-2 bridge described below is a separate, manifest-gated path.
+## Plan and activate
 
-The same application-version change also introduces offense-record version 2
-and optional signed `AuditVerdict.offense` grading. Confirmed rejections without
-grading are rejected; registered replay workers supply it. Genesis defaults to
-`misjudge.slash_mode=gray_gate`, repeat limit 3, window 1000 blocks and block cap
-500 basis points. Numerical bands require explicit per-model calibration entries;
-no global numerical threshold is silently installed. Request-frozen tables and
-pending-review states are consensus data. Appeals resolution is not implemented.
+1. Authenticate the release and exact build. For v0.6.0, checksum signatures are
+   not published; see [signing](SIGNING.md) for the available checks and trust gap.
+2. Query chain ID, current state version, height and parameters. Preserve a
+   finalized state snapshot, consensus signing state and all dependent archives.
+3. Validate the matching supported upgrade rung on an isolated copy. Distribute
+   the same `--membership-upgrade` manifest to participants, with matching chain
+   ID and a future activation height. Preserve its hash and full contents.
+4. Coordinate replacement and monitor the exact activation block. Missing an
+   activation height fails closed. Confirm AppHash agreement and reported consensus
+   application version before reopening admission.
+5. Retain the manifest ladder for historical replay and recovery. Never restore
+   one signing identity backward or run two copies concurrently.
 
-The same application version also includes optional per-model audit compensation
-policy, signed verdict prefix citations, version-2 settlement statements and
-frozen audit-work limits. Deployments must publish measured per-model policy
-before enabling compensation. Existing policy-free models retain their previous
-settlement behavior; this is not an automatic benchmark migration. See
-[AUDIT_COMPENSATION](AUDIT_COMPENSATION.md) for parameters, funding limits and
-operator artifacts.
+LoadState accepts supported persisted versions 4 through 12. The ladder contains
+separate version gates; do not infer that every old state can skip directly to
+12. An incompatible migration still needs an explicitly reviewed procedure.
+Active holds, nonces, registrations, assignments, signed artifact bytes and
+accounting rights must not be silently dropped by a new genesis.
 
-Application version 4 adds signed evidence manifests and requires audit verdicts
-to cite their roots. This changes transaction validation and committed state.
-Use the new-genesis procedure above, after draining active holds; do not restart
-an application-version-3 chain with mixed validator binaries. Review the genesis
-`evidence.max_frame_tokens` setting (default 512) and preserve the gateway
-evidence directory until all required evidence has been retained. See
-[Evidence transport](EVIDENCE_TRANSPORT.md).
+## Membership and model changes
 
+Dynamic Ledger membership is implemented, when initialized. An optional v10→v11
+`membership_init` maps the existing live consensus set to operator accounts and
+initial parameters; it does not replace that set with an arbitrary new one.
+See [Ledger membership](VALIDATORS.md). Publication and price governance do not
+automatically require a new ledger chain ID. Signed profile bytes remain immutable;
+new profiles and authorized compute corrections use their respective transactions.
 
-## Manifest-gated version-2 bridge
+AppVersion 10 introduces registration availability and whole-model adjudication.
+AppVersion 11 adds effective token-price overrides and persistence changes.
+AppVersion 12 gates architecture-first expert TopK parsing. The live Kimi correction
+sets F to 208,736,282,112 FLOPs/token without replacing profile bytes or identity.
+See [compute](compute-v11.md) and [governance pricing](v11-pricing.md).
 
-For the reviewed F6 in-place upgrade, `emberchain start --membership-upgrade
-/path/to/membership-upgrade.json` enables deterministic load-time normalization
-of version-2 state through logical stages 2 -> 3 -> 4. Without a manifest,
-version-2 input still fails with `unsupported state version`. Distribute the same
-manifest file to all validators and observers and cross-check its SHA256 before
-activation. The existing file-distribution mechanism is unchanged.
+## Backup and recovery
 
-The bridge preserves height, accounts, balances, stakes, nonces, map identities,
-registrations, terminal payments and signed payload bytes. It installs only the
-reviewed absent-field defaults: slash floor 100 BPS, repeat window 1000 blocks,
-assignment window 3/cooldown 8, audit-work epoch 1000/limit 64 and the existing
-misjudgment defaults. Absent token-fee commitments, compensation policies,
-thresholds, evidence manifests and historical records remain absent. Present
-later-v2 pricing, profiles and settlement shares are preserved without repricing.
-Explicitly present parameter values, including zero values, are not replaced.
+Version-11+ state can reference `<state-file>.archive/` deltas. Commit persists
+archive data before the canonical state file. Copy the archive with the state or
+use a complete exported snapshot; missing archive history fails load. Retain
+account keys, node identities, gateway evidence store and spool, and activation manifests
+with appropriate access controls. Restore first on an isolated host.
 
-The result stays version 4 with no membership until the manifest's future
-activation height. Existing activation then installs membership and reports
-version 5 atomically. A saved pre-activation version-4 state loads normally on
-restart. Migration performs no file write by itself; ordinary block commits save
-the normalized state. Identical input state bytes and manifest produce identical
-state bytes and hash: there is no clock, randomness, transaction replay or
-iteration-dependent serialization. JSON map keys are sorted by Go's encoder.
+If activation produces divergent state or cannot commit, halt affected admission
+and coordinate recovery from a reviewed consistent state and compatible binaries.
+A post-activation downgrade is not a local restart decision. Never sacrifice
+consensus signing high-water marks to restore an older application snapshot.
 
-**Confirmed-offense history starts empty at the upgrade height.** Version 2 did
-not record authentic offense heights; settlement bounds cannot reconstruct them.
-No backfill is fabricated. Repeat-offense multipliers therefore restart within
-the 1000-block window; the configured base slashing rule remains unchanged.
-Historical balances and stakes are never replayed.
-
-Existing holds without a pinned request identity keep their original hold-ID
-audit-selection domain and round proof, assigned auditors and ungraded
-confirmation ladder. No request
-identity, freeze signature or first offense grade is synthesized. Their original
-confirmed-rejection refund/penalty path is retained. New freezes pin the current
-request identity and use the current assignment and graded-verdict rules.
-Policy-free legacy holds retain Amount/Actual accounting; authentic existing
-role pricing remains effective. This bridge preserves in-flight holds through
-normal signed transitions; the drain/new-genesis requirements above continue to
-apply to other incompatible upgrades. Rehearse on isolated copies before any
-coordinated deployment. Direct version-5 downgrade is unsupported.
-Application version 5 adds consensus supply-and-demand parameters, window
-counters and per-profile consumer price snapshots, plus frozen hold multipliers.
-It removes scarcity weighting from role allocation. Loading version-4 persisted
-state fails closed. Use the incompatible-state procedure above after draining
-all active holds; preserve calibrated model tables and reviewed balances, and
-review executor targets and the new epoch/protection settings in genesis.
-All validators and chain-backed gateways must upgrade together. No automatic
-state migration or public network upgrade is performed by this change.
-## Genesis issuance state
-
-Application version 5 adds optional genesis voucher issuance, permanent marked
-sub-balances, calendar issuance counters and governor approval records. See
-[Genesis consumption vouchers](genesis-issuance.md) for configuration and APIs.
-All validators on an issuance chain must run this application version. Version 4
-persisted state is rejected; this feature does not supply an in-place migration.
-
-### AppVersion 11: initialize validator membership
-
-A version-10 chain can use the existing `--membership-upgrade` flag with:
-
-```json
-{
-  "chain_id": "your-chain-id",
-  "activation_height": 12345,
-  "membership_init": {
-    "change_delay_blocks": 5,
-    "change_window_blocks": 10,
-    "readiness_blocks": 20,
-    "max_validators": 10,
-    "operators": {"<64 lowercase hex characters of consensus pubkey>": "<existing operator account id>"},
-    "org_ids": {"<same pubkey hex>": "<organization id>"}
-  }
-}
-```
-
-Provide one operator assignment per live validator (the single entry above is
-only a shape example). Startup checks the chain ID, future activation height,
-canonical 32-byte ed25519 key encoding, existing and unique operator accounts,
-and initial membership limits: delay >= 3, window >= delay + 2, readiness 1–1000,
-maximum validators 3–1000, and assignment count 2 through that maximum.
-`org_ids` is optional; absent or empty organization IDs default to
-`validator-<pubkey hex>`.
-
-At exactly the activation height, the member set is derived from the live
-consensus set in `DecidedLastCommit.Votes`. Every vote address must match exactly
-one assigned key's CometBFT address, with power 10; missing, extra, duplicate,
-or mismatched votes/assignments reject activation without installing membership.
-The manifest only assigns operators, organizations, and parameters; it does not
-supply a replacement consensus set. The registry starts with active validators,
-and the existing F6 admission and set-change rules apply thereafter.
-
-`membership_init` is opt-in: a manifest without it upgrades version 10 to 11
-without initializing membership. Arming a manifest does not alter version-10
-state bytes; initialization occurs only during FinalizeBlock at activation.
+Source: `services/chain/validators.go:361`, `services/chain/state.go:1569`,
+`services/chain/history_archive.go:78`, `services/chain/verified_compute.go:110`.

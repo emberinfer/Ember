@@ -19,13 +19,11 @@ signed profile. Endorsements do not authorize a different layout.
 | --- | --- | --- | --- |
 | Dense transformer (Qwen2 reference) | embedding; complete decoder block; final normalization + lm_head. Layer cuts only between complete blocks. Adjacent blocks may be grouped. | Token IDs enter embedding; BF16 hidden tensor [1, sequence, hidden] crosses block boundaries; head produces ordered top-16 raw logits and the selected token. | Implemented: legacy combined embedding/first blocks and last blocks/head; explicit embedding-only and lm_head-only stages. |
 | Llama-like dense transformers | Same atomic units; RoPE/norm/residual ordering is architecture-specific and must be fixed in the profile. | Hidden tensor, position IDs, mask semantics and cache policy. | Specification only; generic whole-model adapter support is not a partial-stage implementation. |
-| Sparse transformer / MoE (Qwen MoE, Mixtral, DeepSeek families) | Complete block by default. An expert-range cut groups complete expert FFNs [e0,e1) within one named layer. Router and reduction are separate units; shared experts are separate or explicitly included once. | Router input and exact selected expert IDs, routing weights, token permutation, capacity/drop policy and deterministic reduction order. Expert input/output commitments name layer and expert range. | Specification only in this release; no small compatible MoE checkpoint is available in the acceptance environment. |
+| Sparse transformer / MoE (Qwen MoE, Mixtral, DeepSeek families) | Complete block by default. An expert-range cut groups complete expert FFNs [e0,e1) within one named layer. Router and reduction are separate units; shared experts are separate or explicitly included once. | Router input and exact selected expert IDs, routing weights, token permutation, capacity/drop policy and deterministic reduction order. Expert input/output commitments name layer and expert range. | Implemented for the OLMoE layer + expert path; other architecture families require their own compatible executor and signed layout. |
 | Attention / MLP inside a block | Attention (including Q/K/V, mask and rotary policy), residual/norm, MLP and final residual are distinct units. Cuts may occur only at the named architecture-specific sub-operation boundary, never through an implicit residual edge. | Residual stream plus normalized attention/MLP input; attention position/mask state; KV state where incremental execution is enabled. Every live residual edge must be committed. | Specification only. Reference implementation executes complete decoder blocks. |
 | Tensor/head/expert tensor parallelism | Only an explicitly declared tensor slice and collective/reduction contract may be an atomic unit. Arbitrary byte/tensor cuts are forbidden. | Partition indices, global shapes, collective membership/order, pre/post-reduction commitments. | Specification only; no collective executor or settlement claim. |
 
-The reference implementation uses no KV cache: each step recomputes the full
-forced token prefix. A future incremental profile must commit the prior KV root,
-sequence length, cache positions, position/mask policy and resulting KV root.
+The Qwen2 stage implementation supports optional local session KV caching. Its signed request and receipt boundaries remain unchanged; cache misses reconstruct from the complete input. This is not a general authenticated KV migration protocol. A future transferable-cache protocol would need explicit state bindings.
 Cache transfer alone never proves valid execution. Cross-runtime calibration
 must be explicit; an unsupported runtime pair is inconclusive, not slashable.
 
@@ -81,7 +79,7 @@ The reference auditor reconstructs the complete pipeline from signed responses,
 checks token-prefix and hidden-state continuity, and replays the generated token
 prefix on the complete model. Sampled layer activations and top-k raw logits are
 compared under the signed band. Standalone embedding/head units add no fictional
-sampled decoder layer. For specification-only MoE/intra-block profiles, replay
+sampled decoder layer. For additional MoE architectures or intra-block profiles, replay
 must reproduce the router, expert assignment/reduction and every residual edge;
 a whole-layer opening without those details cannot attribute an expert or
 attention/MLP fault.
@@ -110,9 +108,7 @@ registration: e.g. expert-token invocations weighted by signed expert dimensions
 plus separately weighted router/reducer/shared-expert units. Routed expert
 counts must come from committed routing evidence and audited execution, never
 an executor's unverified FLOP claim. Attention/MLP profiles similarly fix positive
-part weights and prohibit counting overlapping residual work twice. These
-metrics are specified here and are not implemented or accepted as consensus
-credits in this release.
+part weights and prohibit counting overlapping residual work twice. The generic examples above are not universal implemented metrics. The concrete OLMoE path has signed MoE layouts, segment receipts and settlement in `services/chain/moe.go`; do not infer support for arbitrary expert architectures.
 
 Expired registrations cannot authorize new holds; stake remains exposed for
 pending holds. Rejected/inconclusive executions refund the consumer; confirmed

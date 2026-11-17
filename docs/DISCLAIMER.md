@@ -17,9 +17,9 @@ Participation as an operator or consumer is at your own risk and subject to your
 own local rules.
 
 The network is open to independent operators contributing inference capacity.
-This does not establish independent validator governance: current testnet
-validators are operated by a single organization, validator admission is static,
-and gateway account custody is centralized. There is no third-party security
+The Ledger set and registrations are queryable on-chain. Distinct identities
+do not establish independent ownership. Ledger membership changes follow on-chain
+admission rules; gateway account custody remains a deployment trust boundary. There is no third-party security
 audit, production SLA, or public mainnet.
 
 Signed evidence provides attribution; numerical audits are probabilistic and do

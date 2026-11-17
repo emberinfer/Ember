@@ -21,3 +21,5 @@ jobs:
         run: bash security/secret-scan.sh
       - name: Sanitization check
         run: bash security/sanitization-check.sh
+      - name: Version consistency check
+        run: bash security/version-check.sh

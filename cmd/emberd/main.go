@@ -119,6 +119,7 @@ func main() {
 	auditTimeout := flags.Duration("audit-timeout", 3*time.Minute, "deadline for each reference replay")
 	maxConcurrent := flags.Int("max-concurrent", 8, "maximum in-flight inference requests")
 	requestTimeout := flags.Duration("request-timeout", 5*time.Minute, "per-attempt inference timeout")
+	contextLimit := flags.Int("context-limit-tokens", 0, "served profile's context window in tokens, from the model config; admission requires input_tokens + max_tokens to fit (0 = unconfigured, legacy flat max_tokens cap)")
 	rateLimit := flags.Int("rate-limit", 60, "maximum requests per identity per minute (0 disables)")
 	httpCert := flags.String("http-tls-cert", "", "optional HTTPS certificate")
 	httpKey := flags.String("http-tls-key", "", "optional HTTPS private key")
@@ -134,7 +135,7 @@ func main() {
 	if *faucetTrustedProxy != "" && net.ParseIP(*faucetTrustedProxy) == nil {
 		log.Fatal("--faucet-trusted-proxy must be one IP address")
 	}
-	if *auditWorkers < 1 || *auditTimeout <= 0 || *maxConcurrent < 1 || *requestTimeout <= 0 || *rateLimit < 0 || *faucetAmount < 0 || *faucetWindow <= 0 || (*httpCert == "") != (*httpKey == "") {
+	if *auditWorkers < 1 || *auditTimeout <= 0 || *maxConcurrent < 1 || *requestTimeout <= 0 || *rateLimit < 0 || *faucetAmount < 0 || *faucetWindow <= 0 || *contextLimit < 0 || (*httpCert == "") != (*httpKey == "") {
 		log.Fatal("invalid concurrency, timeout, or HTTP TLS configuration")
 	}
 	if mode != "all" && mode != "gateway" {
@@ -284,7 +285,7 @@ func main() {
 	}
 	api := &gateway.Gateway{SpeedStats: speedStats, Ledger: book, Tunnel: relay, Profile: "v1", Manifest: make([]byte, 32), Price: 1, Dispute: 0, DemoBootstrap: *demo,
 		Admission: make(chan struct{}, *maxConcurrent), RequestTimeout: *requestTimeout, MaxBodyBytes: 1 << 20,
-		RateLimit: *rateLimit, RateWindow: time.Minute}
+		ContextLimit: *contextLimit, RateLimit: *rateLimit, RateWindow: time.Minute}
 	if chainBook != nil {
 		api.ChainExecExited = chainBook.ExecExitedNodes
 	}

@@ -137,7 +137,7 @@ func (g *Gateway) servePricing(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_ = json.NewEncoder(w).Encode(map[string]any{"model": g.ChainID, "profile": g.Profile, "pricing": p, "context_divisor": core.ContextDivisor, "quote_path": "/v1/quote"})
+		_ = json.NewEncoder(w).Encode(map[string]any{"model": g.ChainID, "profile": g.Profile, "pricing": p, "context_divisor": core.ContextDivisor, "quote_path": "/v1/quote", "default_max_tokens": DefaultMaxTokens, "context_limit_tokens": g.ContextLimit})
 		return
 	}
 	_, ppm, height, err := g.quoteFee(0, 0)
@@ -146,7 +146,7 @@ func (g *Gateway) servePricing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"multiplier_ppm": ppm, "effective_height": height, "model": g.ChainID, "profile": g.Profile, "price_input": g.PriceInput, "price_output": g.Price, "price_context": g.PriceContext, "context_divisor": core.ContextDivisor, "quote_path": "/v1/quote"})
+	_ = json.NewEncoder(w).Encode(map[string]any{"multiplier_ppm": ppm, "effective_height": height, "model": g.ChainID, "profile": g.Profile, "price_input": g.PriceInput, "price_output": g.Price, "price_context": g.PriceContext, "context_divisor": core.ContextDivisor, "quote_path": "/v1/quote", "default_max_tokens": DefaultMaxTokens, "context_limit_tokens": g.ContextLimit})
 }
 
 func (g *Gateway) serveQuote(w http.ResponseWriter, r *http.Request, q request, prompt string) {
@@ -164,6 +164,10 @@ func (g *Gateway) serveQuote(w http.ResponseWriter, r *http.Request, q request, 
 		http.Error(w, err.Error(), 503)
 		return
 	}
+	if err := g.checkContext(n, q.MaxTokens); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	c, ppm, effectiveHeight, err := g.quoteFee(n, uint32(q.MaxTokens))
 	if err != nil {
 		http.Error(w, err.Error(), 400)
@@ -172,5 +176,5 @@ func (g *Gateway) serveQuote(w http.ResponseWriter, r *http.Request, q request, 
 	commitment := &pb.ExecutionCommitment{}
 	_ = proto.Unmarshal(wire, commitment)
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"tokenizer_version": commitment.TokenizerVersion, "model": q.Model, "input_tokens": n, "max_output_tokens": q.MaxTokens, "components": c, "freeze": c.Total, "multiplier_ppm": ppm, "effective_height": effectiveHeight, "context_divisor": core.ContextDivisor})
+	_ = json.NewEncoder(w).Encode(map[string]any{"tokenizer_version": commitment.TokenizerVersion, "model": q.Model, "input_tokens": n, "max_output_tokens": q.MaxTokens, "context_limit_tokens": g.ContextLimit, "components": c, "freeze": c.Total, "multiplier_ppm": ppm, "effective_height": effectiveHeight, "context_divisor": core.ContextDivisor})
 }

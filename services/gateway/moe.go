@@ -219,6 +219,10 @@ func (g *Gateway) serveMoe(w http.ResponseWriter, r *http.Request, q request, pr
 		http.Error(w, "MoE tokenization failed", 503)
 		return
 	}
+	if err := g.checkContext(input, q.MaxTokens); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	bound, _, _, err := g.quoteFee(input, uint32(q.MaxTokens))
 	if err != nil {
 		http.Error(w, err.Error(), 503)

@@ -162,16 +162,18 @@ type Hold struct {
 }
 
 type NodeRegistration struct {
-	NoAudit             bool              `json:"no_audit,omitempty"`
-	NoExec              bool              `json:"no_exec,omitempty"`
-	Caps                *ContributionCaps `json:"caps,omitempty"`
-	PendingCaps         *ContributionCaps `json:"pending_caps,omitempty"`
-	CapsEffectiveHeight int64             `json:"caps_effective_height,omitempty"`
-	LastProofHeight     int64             `json:"last_proof_height,omitempty"`
-	NodeID              string            `json:"node_id"`
-	Profile             []byte            `json:"profile"`
-	RegisteredAt        int64             `json:"registered_at"`
-	ExpiresHeight       int64             `json:"expires_height"`
+	PendingNoExec           bool              `json:"pending_no_exec,omitempty"`
+	ExecExitEffectiveHeight int64             `json:"exec_exit_effective_height,omitempty"`
+	NoAudit                 bool              `json:"no_audit,omitempty"`
+	NoExec                  bool              `json:"no_exec,omitempty"`
+	Caps                    *ContributionCaps `json:"caps,omitempty"`
+	PendingCaps             *ContributionCaps `json:"pending_caps,omitempty"`
+	CapsEffectiveHeight     int64             `json:"caps_effective_height,omitempty"`
+	LastProofHeight         int64             `json:"last_proof_height,omitempty"`
+	NodeID                  string            `json:"node_id"`
+	Profile                 []byte            `json:"profile"`
+	RegisteredAt            int64             `json:"registered_at"`
+	ExpiresHeight           int64             `json:"expires_height"`
 }
 
 type WorkEvidence struct {
@@ -755,6 +757,8 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 			return errors.New("liveness upgrade not active")
 		}
 		return s.reassignAudit(s.Holds[action.HoldID], height)
+	case "request_exec_exit":
+		return s.requestExecExit(signer, height)
 	case "update_caps":
 		return s.updateContributionCaps(signer, action.Caps, height)
 	case "register_node":
@@ -791,6 +795,9 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		}
 		registration := &NodeRegistration{NoAudit: s.Version >= 10 && action.NoAudit, NoExec: s.Version >= 10 && action.NoExec, LastProofHeight: 0, NodeID: signer, Profile: append([]byte(nil), action.Profile...), RegisteredAt: height, ExpiresHeight: action.ExpiresHeight}
 		if prior := s.Nodes[signer]; prior != nil {
+			if s.Version >= 13 {
+				registration.PendingNoExec, registration.ExecExitEffectiveHeight = prior.PendingNoExec, prior.ExecExitEffectiveHeight
+			}
 			registration.Caps = prior.CapsAt(height)
 			registration.PendingCaps, registration.CapsEffectiveHeight = prior.PendingCaps, prior.CapsEffectiveHeight
 		}

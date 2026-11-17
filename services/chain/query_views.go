@@ -44,11 +44,14 @@ func (s *State) QueryAuditRoute(id string) (*AuditRouteView, error) {
 }
 
 type NodeStatusView struct {
-	Registration          *NodeRegistration `json:"registration"`
-	Height                int64             `json:"height"`
-	Active                bool              `json:"active"`
-	ExecutionAllowed      bool              `json:"execution_allowed"`
-	ContributionAvailable bool              `json:"contribution_available"`
+	ExecExitPending         bool              `json:"exec_exit_pending,omitempty"`
+	ExecExitEffectiveHeight int64             `json:"exec_exit_effective_height,omitempty"`
+	ExecExited              bool              `json:"exec_exited,omitempty"`
+	Registration            *NodeRegistration `json:"registration"`
+	Height                  int64             `json:"height"`
+	Active                  bool              `json:"active"`
+	ExecutionAllowed        bool              `json:"execution_allowed"`
+	ContributionAvailable   bool              `json:"contribution_available"`
 }
 
 func (s *State) QueryNodeStatus(id string) *NodeStatusView {
@@ -58,7 +61,12 @@ func (s *State) QueryNodeStatus(id string) *NodeStatusView {
 	}
 	p := &pb.ResourceProfile{}
 	_ = proto.Unmarshal(r.Profile, p)
-	return &NodeStatusView{r, s.Height, s.ActiveProfile(id, s.Height) != nil, s.Version < 10 || s.ExecutionAllowed(id, s.Height), s.ContributionAvailable(id, p.ChainId, s.Height+1, 1)}
+	pending := s.Version >= 13 && r.PendingNoExec
+	effective := int64(0)
+	if pending {
+		effective = r.ExecExitEffectiveHeight
+	}
+	return &NodeStatusView{pending && s.Height < effective, effective, pending && s.Height >= effective, r, s.Height, s.ActiveProfile(id, s.Height) != nil, s.Version < 10 || s.ExecutionAllowed(id, s.Height), s.ContributionAvailable(id, p.ChainId, s.Height+1, 1)}
 }
 
 // ExpiredHolds never includes terminal or archived history.

@@ -12,7 +12,8 @@ func (s *State) ExecutionAllowed(id string, height int64) bool {
 		return false
 	}
 	if s.Version >= 10 {
-		return !s.Nodes[id].NoExec
+		reg := s.Nodes[id]
+		return !reg.NoExec && !(s.Version >= 13 && reg.PendingNoExec && height >= reg.ExecExitEffectiveHeight)
 	}
 	return legacyExecRole(p)
 }

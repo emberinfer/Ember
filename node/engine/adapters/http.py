@@ -115,6 +115,11 @@ class HTTPCompletionEngine(EngineAdapter):
             return json.loads(raw)
         except (socket.timeout, TimeoutError) as exc:
             raise EngineTimeout('HTTP completion timed out') from exc
+        except urllib.error.HTTPError as exc:
+            exc.close()
+            if exc.code == 400:
+                raise EngineProtocolError('HTTP completion validation failed (400)') from exc
+            raise EngineUnavailable('HTTP completion service unavailable') from exc
         except (urllib.error.URLError, OSError) as exc:
             raise EngineUnavailable('HTTP completion service unavailable') from exc
         except (ValueError, UnicodeError) as exc:
@@ -413,6 +418,12 @@ class VLLMEngine(HTTPCompletionEngine):
             response = urllib.request.urlopen(request, timeout=sampling.timeout_seconds)
         except (socket.timeout, TimeoutError) as exc:
             raise EngineTimeout('HTTP completion timed out') from exc
+        except urllib.error.HTTPError as exc:
+            exc.close()
+            if exc.code == 400:
+                raise EngineProtocolError('HTTP completion validation failed (400)') from exc
+            yield from self._flush_text(list(super()._generate_request(prompt, sampling)))
+            return
         except (urllib.error.URLError, OSError) as exc:
             if isinstance(getattr(exc, 'reason', None), (socket.timeout, TimeoutError)):
                 raise EngineTimeout('HTTP completion timed out') from exc
@@ -500,6 +511,11 @@ class VLLMEngine(HTTPCompletionEngine):
                     raise EngineProtocolError('incomplete completion stream')
             except (socket.timeout, TimeoutError) as exc:
                 raise EngineTimeout('HTTP completion timed out') from exc
+            except urllib.error.HTTPError as exc:
+                exc.close()
+                if exc.code == 400:
+                    raise EngineProtocolError('HTTP completion validation failed (400)') from exc
+                raise EngineUnavailable('HTTP completion service unavailable') from exc
             except (urllib.error.URLError, OSError) as exc:
                 raise EngineUnavailable('HTTP completion service unavailable') from exc
             except (ValueError, UnicodeError) as exc:

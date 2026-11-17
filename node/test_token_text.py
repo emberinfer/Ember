@@ -152,7 +152,7 @@ def test_transformers_stubbed(tok, eos):
         assert ''.join(step.text for step in engine.replay('a', 0, ids)) == tok.decode(ids)
 
 
-@pytest.mark.parametrize('mode,streaming', [('ok', False), ('json', True), ('rejected', True), ('other', True)])
+@pytest.mark.parametrize('mode,streaming', [('ok', False), ('json', True), ('stream-unavailable', True), ('other', True)])
 def test_vllm_buffered_flush_and_reset(tok, mode, streaming):
     from test_http_streaming import fixture_server
     full = tok.encode(CASES[0])

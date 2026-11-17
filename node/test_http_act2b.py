@@ -75,7 +75,7 @@ def test_per_token_budget_and_evidence_all_transports(local_model):
     key = Ed25519PrivateKey.generate()
     reference = None
     for mode, streaming in [('ok', False), ('ok', True), ('multi', True),
-                            ('json', True), ('rejected', True), ('other', True)]:
+                            ('json', True), ('stream-unavailable', True), ('other', True)]:
         with fixture_server(mode, .001) as (url, _, _):
             engine = VLLMEngine(url, local_model, streaming=streaming)
             steps = list(engine.generate('hello', 0, 3))

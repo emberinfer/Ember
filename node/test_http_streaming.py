@@ -42,8 +42,8 @@ def fixture_server(mode='ok', interval=.15):
                 self.end_headers()
                 self.wfile.write(raw)
                 return
-            if mode == 'unavailable' or mode == 'rejected' and data['stream']:
-                self.send_error(400)
+            if mode == 'unavailable' or mode in ('rejected', 'stream-unavailable') and data['stream']:
+                self.send_error(400 if mode == 'rejected' else 502)
                 return
             if mode == 'open-timeout':
                 time.sleep(.25)
@@ -147,12 +147,17 @@ class HTTPStreamingTest(unittest.TestCase):
             self.assertEqual([s.text for s in steps], ['H', 'i', '!'])
 
     def test_success_modes(self):
-        for mode in ('multi', 'json', 'rejected', 'other', 'empty', 'finish-only', 'done-only', 'length', 'length-text', 'empty-text'):
+        for mode in ('multi', 'json', 'rejected', 'stream-unavailable', 'other', 'empty', 'finish-only', 'done-only', 'length', 'length-text', 'empty-text'):
             with self.subTest(mode=mode), fixture_server(mode, .001) as (url, seen, _):
                 engine = VLLMEngine(url, 'fixture', streaming=True)
+                if mode == 'rejected':
+                    with self.assertRaises(EngineProtocolError):
+                        list(engine.generate('hello', 0, 3))
+                    self.assertEqual([r['stream'] for r in seen], [True])
+                    continue
                 steps = list(engine.generate('hello', 0, 3))
                 self.assertEqual(engine.thinking_truncated, mode in ('length', 'empty-text'))
-                self.assertEqual([r['stream'] for r in seen], [True, False] if mode in ('rejected', 'other') else [True])
+                self.assertEqual([r['stream'] for r in seen], [True, False] if mode in ('stream-unavailable', 'other') else [True])
                 if mode == 'multi':
                     self.assertEqual([s.text for s in steps], ['H', 'i', '!'])
                 if mode == 'json':

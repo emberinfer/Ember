@@ -119,6 +119,7 @@ func (app *Application) InitChain(_ context.Context, req *abci.InitChainRequest)
 		hash := append([]byte(nil), got...)
 		return &abci.InitChainResponse{AppHash: hash}, nil
 	}
+	state.SetChunkSpoolPath(app.path)
 	app.committed = state
 	hash, err := state.Hash()
 	if err != nil {
@@ -326,6 +327,9 @@ func (app *Application) Commit(context.Context, *abci.CommitRequest) (*abci.Comm
 		if err != nil {
 			return nil, err
 		}
+	}
+	if app.path != "" {
+		app.staged.cleanupChunkSpools()
 	}
 	if app.staged.Version >= 11 && app.path != "" && app.staged.history != nil {
 		app.staged.history.head = archiveKey(app.stagedBytes)

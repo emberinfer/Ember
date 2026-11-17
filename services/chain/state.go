@@ -184,6 +184,7 @@ type WorkEvidence struct {
 }
 
 type State struct {
+	chunkSpoolRoot         string                     // local-only receipt spool; never consensus JSON
 	history                *historyArchive            // transient archive view, never consensus JSON
 	IdempotencyIndex       map[string]string          `json:"idempotency_index,omitempty"`
 	NodeAuditStats         map[string]NodeAuditStats  `json:"node_audit_stats,omitempty"`
@@ -230,6 +231,12 @@ type State struct {
 }
 
 type Action struct {
+	ChunkRoot              []byte                      `json:"chunk_root,omitempty"`
+	ChunkBytes             int                         `json:"chunk_bytes,omitempty"`
+	ChunkTotal             int                         `json:"chunk_total,omitempty"`
+	ChunkHashes            [][]byte                    `json:"chunk_hashes,omitempty"`
+	ChunkIndex             int                         `json:"chunk_index,omitempty"`
+	ReceiptChunk           []byte                      `json:"receipt_chunk,omitempty"`
 	TensorShapes           []core.TensorShape          `json:"tensor_shapes,omitempty"`
 	DeclaredTotalParams    uint64                      `json:"declared_total_params,omitempty"`
 	DeclaredActiveParams   uint64                      `json:"declared_active_params,omitempty"`
@@ -444,6 +451,7 @@ func (s *State) Clone() (*State, error) {
 	}
 	out.finalized = s.finalized
 	out.history = s.history
+	out.chunkSpoolRoot = s.chunkSpoolRoot
 	return &out, nil
 }
 
@@ -723,6 +731,12 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		return s.submitPipeline(signer, action, height)
 	case "freeze_moe":
 		return s.freezeMoe(signer, action, height)
+	case "submit_moe_manifest":
+		return s.submitMoeManifest(signer, action, height)
+	case "submit_moe_chunk":
+		return s.submitMoeChunk(signer, action, height)
+	case "submit_moe_finalize":
+		return s.submitMoeFinalize(signer, action, height)
 	case "submit_moe":
 		return s.submitMoe(signer, action, height)
 	case "transfer":
@@ -975,6 +989,11 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		hold := s.Holds[action.HoldID]
 		if hold == nil || hold.State != "dispute" || hold.Auditor != signer || hold.AuditVerdict != "" {
 			return errors.New("invalid audit transition")
+		}
+		if hold.Moe != nil && hold.Moe.ChunkTotal > 0 {
+			if _, err := s.moeReceipt(hold); err != nil {
+				return err
+			}
 		}
 		outcome, auditRef, evidenceRef, err := verifyAudit(action.Challenge, action.Verdict, hold.ReceiptRef, envPublicID(signer))
 		if err != nil {
@@ -1529,6 +1548,7 @@ func equal(a, b []byte) bool {
 }
 
 func SaveState(path string, state *State) error {
+	state.SetChunkSpoolPath(path)
 	raw, err := state.Bytes()
 	if err != nil {
 		return err
@@ -1537,7 +1557,11 @@ func SaveState(path string, state *State) error {
 		return err
 	}
 	if state.Version >= 11 {
-		return durableWrite(path, raw)
+		if err := durableWrite(path, raw); err != nil {
+			return err
+		}
+		state.cleanupChunkSpools()
+		return nil
 	}
 	return saveStateBytes(path, raw)
 }
@@ -1579,6 +1603,7 @@ func LoadStateWithUpgrade(path string, upgrade *MembershipUpgrade) (*State, erro
 	if err = loadArchive(path, &state, raw); err != nil {
 		return nil, err
 	}
+	state.SetChunkSpoolPath(path)
 	return &state, nil
 }
 

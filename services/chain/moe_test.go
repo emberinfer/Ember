@@ -268,8 +268,8 @@ func (f *moeChainFixture) buildReceipt(t *testing.T) *pb.PipelineExecutionReceip
 				}
 				addSeg(role, &pb.SegmentReceipt{Kind: "expert", Layer: layer, Expert: expert, Frame: frame,
 					StartLayer: layer, EndLayer: layer + 1,
-					InputHash: records[[2]uint32{frame, layer}].InputHash,
-					OutputHash: hash("eout", frame, layer, expert),
+					InputHash:         records[[2]uint32{frame, layer}].InputHash,
+					OutputHash:        hash("eout", frame, layer, expert),
 					RoutingRecordHash: rh, ParamsHash: f.params[layer*4+expert], TokenRows: n})
 			}
 		}
@@ -350,7 +350,11 @@ func (f *moeChainFixture) audit(t *testing.T, auditor actor, nonce uint64, heigh
 	if faultRef != nil {
 		// Owner of the fault segment, from the frozen receipt.
 		receipt := &pb.PipelineExecutionReceipt{}
-		if err := proto.Unmarshal(h.Moe.Receipt, receipt); err != nil {
+		receiptRaw, err := f.s.moeReceipt(h)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := proto.Unmarshal(receiptRaw, receipt); err != nil {
 			t.Fatal(err)
 		}
 		for _, seg := range receipt.Moe.SegmentReceipts {
@@ -514,7 +518,7 @@ func TestMoeChainPlanBReject(t *testing.T) {
 			t.Fatalf("honest node %s balance = %d, want %d", node, got, want)
 		}
 	}
-	payerWant := int64(10_000_000-1_000_000) + (1_000_000-600_000) + 90_000 + plan.LeftoverToPayer
+	payerWant := int64(10_000_000-1_000_000) + (1_000_000 - 600_000) + 90_000 + plan.LeftoverToPayer
 	if got := f.s.Accounts[f.a["payer"].id].Balance; got != payerWant {
 		t.Fatalf("payer balance = %d, want %d", got, payerWant)
 	}

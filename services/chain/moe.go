@@ -76,6 +76,12 @@ type MoePlanBRecord struct {
 }
 
 type MoeHold struct {
+	ChunkRoot          []byte              `json:"chunk_root,omitempty"`
+	ChunkListHash      []byte              `json:"chunk_list_hash,omitempty"`
+	ChunkTotal         int                 `json:"chunk_total,omitempty"`
+	ChunkBytes         int                 `json:"chunk_bytes,omitempty"`
+	ChunkActual        int64               `json:"chunk_actual,omitempty"`
+	ChunkBitmap        []byte              `json:"chunk_bitmap,omitempty"`
 	SchemeHash         []byte              `json:"scheme_hash,omitempty"`
 	Authorizations     []MoeAuthorization  `json:"authorizations"`
 	InputTokens        uint32              `json:"input_tokens"`
@@ -382,6 +388,15 @@ func (s *State) freezeMoe(signer string, a Action, height int64) error {
 }
 
 func (s *State) submitMoe(signer string, a Action, height int64) error {
+	if h := s.Holds[a.HoldID]; h != nil && h.Moe != nil && h.Moe.ChunkTotal > 0 {
+		return errors.New("chunked MoE submission requires finalize")
+	}
+	return s.deriveMoeSubmission(signer, a, height, true)
+}
+
+// deriveMoeSubmission is the single validation/settlement derivation for both
+// transports. Only retention of the raw receipt differs.
+func (s *State) deriveMoeSubmission(signer string, a Action, height int64, retainReceipt bool) error {
 	h := s.Holds[a.HoldID]
 	if h == nil || h.Moe == nil || h.State != "frozen" || height >= h.ExpireHeight ||
 		!s.Coordinators[signer] || a.Actual <= 0 || a.Actual > h.Amount {
@@ -511,7 +526,9 @@ func (s *State) submitMoe(signer string, a Action, height int64) error {
 	h.SettleHeight = height + s.Parameters.DisputeBlocks
 	h.AuditInputTokens = receipt.InputTokens
 	h.AuditOutputTokens = receipt.OutputTokens
-	h.Moe.Receipt = append([]byte(nil), a.Receipt...)
+	if retainReceipt {
+		h.Moe.Receipt = append([]byte(nil), a.Receipt...)
+	}
 	h.Moe.Credits = credits
 	h.Moe.SegmentDues = dues
 	h.Moe.Candidates = candidates
@@ -696,7 +713,11 @@ func (s *State) moeSegmentTolerance(h *Hold, ref *pb.SegmentRef, bandKey string)
 // come from the frozen segment receipts, never from the verdict itself.
 func (s *State) moeFaultSegments(h *Hold, v *pb.AuditVerdict) ([]string, []string, error) {
 	receipt := &pb.PipelineExecutionReceipt{}
-	if proto.Unmarshal(h.Moe.Receipt, receipt) != nil {
+	raw, err := s.moeReceipt(h)
+	if err != nil {
+		return nil, nil, err
+	}
+	if proto.Unmarshal(raw, receipt) != nil || receipt.Moe == nil {
 		return nil, nil, errors.New("invalid frozen MoE receipt")
 	}
 	owners := map[string]string{}
@@ -770,6 +791,11 @@ func (s *State) validateMoeFaults(h *Hold, raw []byte) error {
 }
 
 func (s *State) settleMoe(h *Hold, outcome string, height int64) error {
+	if h.Moe.ChunkTotal > 0 {
+		if _, err := s.moeReceipt(h); err != nil {
+			return err
+		}
+	}
 	manifest, _, _, err := s.moeModel(h.ModelID, h.Moe.SchemeHash)
 	if err != nil {
 		return err

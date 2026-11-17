@@ -1,0 +1,146 @@
+{
+  "access": {
+    "faucet": "http://13.140.242.11:39095/testnet/faucet",
+    "gateway": "http://13.140.242.11:39090",
+    "note": "Dedicated relay ports; public seed TLS is pinned and covers the advertised address. The relay verifies backend TLS. HTTP RPC/faucet carry valueless test credit. Gateway consumers need an operator-issued bearer token.",
+    "rpc": "http://13.140.242.11:39657",
+    "scheduler_id": "8b608c779fa64855714e7c81559acf866699a4b129f8481136ed109962ab0c0a",
+    "seed": "13.140.242.11:39091",
+    "tls_fingerprint": "f55c4c10cf3c5b1bad74a9fb5310eceb1c6ffb77bfed139c3dd2e93f9de53642"
+  },
+  "coverage": {
+    "by_producer": {
+      "0901b15ab0ebccc8ba2719bb9b1074ac3aa9729c9c3f095945b7ae9fcc13fe17": {
+        "auditor_multiplier_ppm": 1000000,
+        "auditors": 3,
+        "executor_multiplier_ppm": 1000000,
+        "executors": 6,
+        "height": 37944,
+        "profile": "ember-qwen2.5-1.5b-s22-cpu-v1",
+        "runtime": "transformers/4.45.2|torch=2.5.1",
+        "target_auditors": 3,
+        "target_executors": 2
+      },
+      "153959e60c2cc0c8828788755d0a50f14c1836deac62a86c56dfaa0eb6feab56": {
+        "auditor_multiplier_ppm": 1333333,
+        "auditors": 2,
+        "executor_multiplier_ppm": 1000000,
+        "executors": 6,
+        "height": 37944,
+        "profile": "ember-qwen2.5-1.5b-s22-cpu-v1",
+        "runtime": "transformers/4.45.2|torch=2.5.1+cpu",
+        "target_auditors": 3,
+        "target_executors": 2
+      },
+      "422a082bc111597d98bdecbcd2ea02f7f09c6199ebdda42b3cf0ab651e9b7ef5": {
+        "auditor_multiplier_ppm": 1333333,
+        "auditors": 2,
+        "executor_multiplier_ppm": 1000000,
+        "executors": 6,
+        "height": 37944,
+        "profile": "ember-qwen2.5-1.5b-s22-cpu-v1",
+        "runtime": "transformers/4.45.2|torch=2.5.1+cpu",
+        "target_auditors": 3,
+        "target_executors": 2
+      },
+      "6828a61a1e19138079378fa1bc5afab32e48a55d722b048eaafb86eee011054e": {
+        "auditor_multiplier_ppm": 1000000,
+        "auditors": 3,
+        "executor_multiplier_ppm": 1000000,
+        "executors": 6,
+        "height": 37944,
+        "profile": "ember-qwen2.5-1.5b-s22-cpu-v1",
+        "runtime": "transformers/4.45.2|torch=2.5.1",
+        "target_auditors": 3,
+        "target_executors": 2
+      },
+      "82686b090401a88de80cdb4f7d5308f4e55bdcb1650dd953f5e47c74dc06b73b": {
+        "auditor_multiplier_ppm": 1666666,
+        "auditors": 1,
+        "executor_multiplier_ppm": 1000000,
+        "executors": 6,
+        "height": 37944,
+        "profile": "ember-qwen2.5-1.5b-s22-cpu-v1",
+        "runtime": "transformers/4.45.2|torch=2.5.1+cpu",
+        "target_auditors": 3,
+        "target_executors": 2
+      },
+      "a116d25f839e838b38b895d9385ff4ae3f7d47d84d7aa9c5ec010dbeb27adb1a": {
+        "auditor_multiplier_ppm": 1000000,
+        "auditors": 3,
+        "executor_multiplier_ppm": 1000000,
+        "executors": 6,
+        "height": 37944,
+        "profile": "ember-qwen2.5-1.5b-s22-cpu-v1",
+        "runtime": "transformers/4.45.2|torch=2.5.1",
+        "target_auditors": 3,
+        "target_executors": 2
+      },
+      "e6016353f318a9755cf469b8894ae54f4ab888c02ff5948b1df2e73e24094e19": {
+        "auditor_multiplier_ppm": 1000000,
+        "auditors": 3,
+        "executor_multiplier_ppm": 1000000,
+        "executors": 6,
+        "height": 37944,
+        "profile": "ember-qwen2.5-1.5b-s22-cpu-v1",
+        "runtime": "transformers/4.45.2|torch=2.5.1",
+        "target_auditors": 3,
+        "target_executors": 2
+      },
+      "e6f8f7232d63e2b74a799d8ade932fd60323f96f88784115cc3bc6a582c9e019": {
+        "auditor_multiplier_ppm": 1666666,
+        "auditors": 1,
+        "executor_multiplier_ppm": 1000000,
+        "executors": 6,
+        "height": 37944,
+        "profile": "ember-qwen2.5-1.5b-s22-cpu-v1",
+        "runtime": "transformers/4.45.2|torch=2.5.1+cpu",
+        "target_auditors": 3,
+        "target_executors": 2
+      }
+    },
+    "note": "Finalized snapshot; use /coverage through the published chain RPC for current values."
+  },
+  "current_profile": {
+    "genesis_sha256": "eb1ec84d9c9fa382f59b559b4bac418fa014d10ea4597bb5ec00afb6f712bf23",
+    "id": "ember-qwen2.5-1.5b-s22-cpu-v1",
+    "manifest_sha256": "4ec83c765b49ecd178eb1a2f7a6c9db5cf9d13285bb58ee0bc671643edc05061",
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "model_revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "weights": "operator-supplied, verified against the on-chain manifest hash"
+  },
+  "description": "Open-source implementation of the Ember protocol: a decentralized inference network with verified execution and on-chain Spark accounting.",
+  "ledger": {
+    "application": "emberchain",
+    "chain_id": "ember-s23-staging",
+    "engine": "CometBFT"
+  },
+  "links": {
+    "github": "https://github.com/emberinfer/Ember",
+    "quickstart": "https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md"
+  },
+  "name": "Ember",
+  "pricing": {
+    "activation": "active on the public testnet ledger; finalized release snapshot below, current values via chain query",
+    "auditor_weight": 15,
+    "consumer_weight": 5,
+    "coverage_query": "/coverage/<node-account-id>",
+    "executor_weight": 80,
+    "multiplier_cap_ppm": 2000000,
+    "target_auditors": 3,
+    "target_executors": 2
+  },
+  "public_testnet": "active",
+  "release": {
+    "base_url": "https://github.com/emberinfer/Ember/releases/download/v0.22.0",
+    "signing_public_key_sha256_der": "35091a3aadf80815b47494439db6a0ee13f5a78eecc5bc516772dddefdd6a092",
+    "version": "0.22.0"
+  },
+  "schema_version": 1,
+  "spark": {
+    "mainnet": "not launched",
+    "role": "network accounting unit",
+    "testnet": "valueless test credit - no price, no exchange, no returns"
+  },
+  "status": "public-testnet-live"
+}

@@ -1,0 +1,92 @@
+{
+  "cpu_profile": {
+    "device": "cpu",
+    "dtype": "bfloat16"
+  },
+  "genesis": {
+    "audit_params": {
+      "canary_percent": 1,
+      "dispute_seconds": "60",
+      "exposure_divisor": 5,
+      "floor_percent": 2,
+      "inline_percent": 3,
+      "mature_node_percent": 5,
+      "min_stake_multiplier": 50,
+      "new_node_percent": 30,
+      "numeric_tolerance": 0.001,
+      "slash_multiplier": 20
+    },
+    "chain_id": "ember-qwen2.5-1.5b",
+    "dtype": "bfloat16",
+    "execution_profile_ver": "transformers-qwen2.5-v1",
+    "model_manifest_root": "hqX7Jru2oxBzT5dITkNBSf2aPcotoDTQASuugx/US2A=",
+    "price_input": "1",
+    "price_output": "1",
+    "quant": "none",
+    "signature": "2GHaTETbCilh55f044Z1UuGbBHF3H7oYcsJG9BPk05RLNoYI9qAXkX8Q3YVphUMScyndwURj1pkPrABrTPZBDA==",
+    "signer": "FRh+93ar2HNplJdKYWfmPTIpffp73Xo4VBHuz92FY1k=",
+    "tokenizer_hash": "wDghF+oynN8JcEETL21zWSS2l5JNb2/DlFcT6WzodTk=",
+    "tolerance_table_ref": "cpu-bf16-initial-uncalibrated"
+  },
+  "governance_unresolved": {
+    "credit_scope": null,
+    "future_launch_model": null,
+    "ledger_route": null
+  },
+  "gpu_profile": {
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "max_process_gib": 8,
+    "min_available_gib": 16
+  },
+  "manifest": {
+    "artifacts": [
+      {
+        "name": "config.json",
+        "sha256": "mNL/jMR0iNCKKws6z065nvIQd5tCvUhgX2uONqzb9nA=",
+        "size": "660"
+      },
+      {
+        "name": "generation_config.json",
+        "sha256": "5ViEeotEAmFvEnN5ewFRBNwmb+S1IAVvyoiCO6j46+Y=",
+        "size": "242"
+      },
+      {
+        "name": "merges.txt",
+        "sha256": "WZurVAdQiHdLFzP96GXVvXR8vMelR8W8EmEOh04m9eM=",
+        "size": "1671839"
+      },
+      {
+        "name": "model.safetensors",
+        "sha256": "3ZJKEbTCIPOFtR/6Ui2up8nz2FDjGxYrtWYd9IPG0+4=",
+        "size": "3087467144"
+      },
+      {
+        "name": "tokenizer.json",
+        "sha256": "wDghF+oynN8JcEETL21zWSS2l5JNb2/DlFcT6WzodTk=",
+        "size": "7031645"
+      },
+      {
+        "name": "tokenizer_config.json",
+        "sha256": "W11PZdCs07LVajW1bTdKNsvByPpc87P+u7+r8i81lYM=",
+        "size": "7305"
+      },
+      {
+        "name": "vocab.json",
+        "sha256": "yhDX6fs+0YV13R4neiV5wW0QjjLydDloSvoOELFECRA=",
+        "size": "2776833"
+      }
+    ],
+    "chain_id": "ember-qwen2.5-1.5b",
+    "config_hash": "mNL/jMR0iNCKKws6z065nvIQd5tCvUhgX2uONqzb9nA=",
+    "graph_hash": "kUFGZWTV/N58pxwYIwPLfoh1TarEu40PFK/dzqnCwpc=",
+    "license": "Apache-2.0",
+    "signature": "h1YwB2EN4hs2OMJMogH6Tn3nY0iTBeIpQ2h0DcWncPkjNEFhMhfPMl82FJzBSDQ/qGGufmofDoQXvbtJgcHcBQ==",
+    "signer": "FRh+93ar2HNplJdKYWfmPTIpffp73Xo4VBHuz92FY1k="
+  },
+  "sampled_layers": [
+    0,
+    14,
+    27
+  ]
+}

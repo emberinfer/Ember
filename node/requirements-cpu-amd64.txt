@@ -1,0 +1,4 @@
+# CPU profile family, x86_64. Never resolve the CUDA build from PyPI.
+--index-url https://download.pytorch.org/whl/cpu
+--extra-index-url https://pypi.org/simple
+torch==2.5.1+cpu

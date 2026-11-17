@@ -1,0 +1,23 @@
+# Repository policy: master is the only long-lived branch. Work-line
+# branches are deleted from the remote once their content lands in a
+# snapshot; do not let them accumulate.
+name: Public repository checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  public-tree:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Scan secrets and public documentation
+        run: bash security/secret-scan.sh
+      - name: Sanitization check
+        run: bash security/sanitization-check.sh

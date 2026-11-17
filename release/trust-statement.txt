@@ -1,0 +1,17 @@
+Ember Release Trust Statement v1
+
+Project: Ember (github.com/emberinfer/Ember)
+Root key fingerprint (SHA-256 of the DER-encoded Ed25519 public key):
+8f93347f50a04c2d3b420ebde2d7cd73fc792386b18c20e5a0f60f6d47706e09
+
+This root key endorses the following release signing key for signing
+the SHA256SUMS file of official Ember releases:
+Release key fingerprint (SHA-256 of the DER-encoded Ed25519 public key):
+35091a3aadf80815b47494439db6a0ee13f5a78eecc5bc516772dddefdd6a092
+
+Effective: 2026-11-11
+Scope: Ember release checksum signing only.
+Rotation: a release-key rotation is valid only when announced in a new
+trust statement signed by this root key, listing both the old and the
+new release key fingerprints. Root rotation requires a statement
+signed by this root and published through the project repository.

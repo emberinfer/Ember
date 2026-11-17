@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const AppVersion uint64 = 11
+const AppVersion uint64 = 13
 
 type Parameters struct {
 	Adjudication           AdjudicationParameters  `json:"adjudication"`
@@ -1566,7 +1566,7 @@ func LoadStateWithUpgrade(path string, upgrade *MembershipUpgrade) (*State, erro
 	if state.Version == 2 && upgrade != nil {
 		return MigrateV2State(raw, *upgrade)
 	}
-	if state.Version != AppVersion && state.Version != 12 && state.Version != 10 && state.Version != 9 && state.Version != 8 && state.Version != 7 && state.Version != 6 && state.Version != 5 && state.Version != 4 {
+	if state.Version != 13 && state.Version != 12 && state.Version != 11 && state.Version != 10 && state.Version != 9 && state.Version != 8 && state.Version != 7 && state.Version != 6 && state.Version != 5 && state.Version != 4 {
 		return nil, errors.New("unsupported state version")
 	}
 	if err = loadArchive(path, &state, raw); err != nil {

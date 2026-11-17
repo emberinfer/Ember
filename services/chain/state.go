@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const AppVersion uint64 = 13
+const AppVersion uint64 = 11
 
 type Parameters struct {
 	Adjudication           AdjudicationParameters  `json:"adjudication"`

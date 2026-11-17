@@ -95,6 +95,11 @@ func TestParamMissedAndConsumed(t *testing.T) {
 }
 
 func TestParamLoadVersions(t *testing.T) {
+	// RC ruling: new chains remain at v11; loading and activating v13 stays supported.
+	initial, _ := testState(t)
+	if initial.Version != 11 {
+		t.Fatalf("new state version %d, want 11", initial.Version)
+	}
 	for version := uint64(4); version <= 13; version++ {
 		s, _ := testState(t)
 		s.Version = version

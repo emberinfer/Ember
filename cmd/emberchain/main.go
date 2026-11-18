@@ -542,11 +542,16 @@ func start(args []string) error {
 	peers := f.String("peers", "", "persistent peers")
 	upgradePath := f.String("membership-upgrade", "", "reviewed version-4 membership activation manifest")
 	metricsAddr := f.String("metrics", "", "optional Prometheus listen host:port")
+	debugSignal := f.Bool("debug-goroutine-signal", false, "dump goroutines to <home>/debug on SIGUSR1")
 	if err := f.Parse(args); err != nil {
 		return err
 	}
 	if *home == "" || *p2pAddr == "" || *rpcAddr == "" {
 		return errors.New("--home, --p2p and --rpc required")
+	}
+	if *debugSignal {
+		stopDebug := startGoroutineSignal(*home)
+		defer stopDebug()
 	}
 	cfg := cmtcfg.DefaultConfig().SetRoot(*home)
 	applyWhitelistedConfigFile(cfg, *home)

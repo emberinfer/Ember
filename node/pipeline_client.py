@@ -1,6 +1,5 @@
 """Identity-less dynamic pipeline assembly client for the coordinator."""
 from collections import OrderedDict
-import hashlib
 import json
 import sys
 import time
@@ -12,8 +11,9 @@ from ember_core import node_id, verify, digest, sign
 from sharding import profile_span
 from ember_pb2 import PipelineExecutionReceipt, ResourceProfile, StageLatencyWitness
 from engine import Step
-from evidence import canonical, encode_step, opening
+from evidence import encode_step, opening
 from shard_rpc import StageClient, bytes_tensor, read_scheduler_key
+from pipeline_spool import JobSpool
 
 
 def load_profile(raw):
@@ -56,6 +56,11 @@ class JobCache:
 
 def run_job(job, cache=None):
     cache = cache or JobCache()
+    with JobSpool() as spool:
+        return _run_job(job, cache, spool)
+
+
+def _run_job(job, cache, spool):
     if job['model_path'] not in cache.tokenizers:
         cache.tokenizers[job['model_path']] = AutoTokenizer.from_pretrained(
             job['model_path'], local_files_only=True, trust_remote_code=False)
@@ -65,7 +70,6 @@ def run_job(job, cache=None):
         raise ValueError('pinned tokenizer version unavailable')
     stages = []
     scheduler_key = cache.key(job['scheduler_key_file'])
-    witnesses=[]
     witness_key=cache.key(job['witness_key_file']) if job.get('witness_key_file') else None
     for expected_index, item in enumerate(job['stages']):
         profiles = [load_profile(raw) for raw in item['profiles']]
@@ -95,9 +99,6 @@ def run_job(job, cache=None):
 
     ids = tokenizer(job['prompt'], return_tensors='pt').input_ids[0].tolist()
     input_tokens = len(ids)
-    steps = []
-    invocations = []
-    failovers = []
     preferred = [0] * len(stages)
     started = time.monotonic()
     try:
@@ -131,9 +132,9 @@ def run_job(job, cache=None):
                         if witness_key is not None:
                             witness=StageLatencyWitness(stage_receipt_ref=digest(response.receipt),
                                 started_mono_ns=observed_start,completed_mono_ns=observed_end)
-                            sign(witness,witness_key);witnesses.append(witness)
+                            sign(witness,witness_key);spool.witness(witness)
                         preferred[stage_index] = candidate_index
-                        invocations.append({
+                        spool.append('invocations', {
                             'request': client.last_request.SerializeToString(
                                 deterministic=True).hex(),
                             'response': response.SerializeToString(
@@ -142,12 +143,17 @@ def run_job(job, cache=None):
                                 deterministic=True).hex(),
                             'stage_ms': elapsed,
                         })
+                        spool.receipt(response.receipt)
+                        score_kind = ('logprobs' if client.last_request.dynamic_range else 'raw-logits')
+                        client.last_request = None
+                        if stage_index > 0:
+                            del hidden
                         activations.update(response.activations)
                         break
                     except (grpc.RpcError, OSError, ValueError) as exc:
                         emit({'type': 'stage_failed'})
                         last_error = exc
-                        failovers.append({'step': step_index, 'stage': stage_index,
+                        spool.append('failovers', {'step': step_index, 'stage': stage_index,
                             'node_id': profile.node_id, 'error': str(exc)})
                 else:
                     raise RuntimeError(f'stage {stage_index} unavailable: {last_error}')
@@ -157,8 +163,9 @@ def run_job(job, cache=None):
             text = '' if response.token_id == tokenizer.eos_token_id else tokenizer.decode(
                 [response.token_id])
             value = Step(response.token_id, text, topk, activations,
-                         'logprobs' if client.last_request.dynamic_range else 'raw-logits')
-            steps.append(value)
+                         score_kind)
+            spool.step(encode_step(value), opening(value))
+            del value
             emit({'type': 'token', 'text': text, 'token': response.token_id})
             ids.append(response.token_id)
             if response.token_id == tokenizer.eos_token_id:
@@ -168,22 +175,15 @@ def run_job(job, cache=None):
         raise
 
     receipt = PipelineExecutionReceipt(request_id=job['request_id'],
-        output_commitment=hashlib.sha256(canonical([encode_step(step) for step in steps])).digest(),
-        input_tokens=input_tokens, output_tokens=len(steps),
+        output_commitment=spool.root(),
+        input_tokens=input_tokens, output_tokens=spool.counts['openings'],
         elapsed_ms=max(1, int((time.monotonic() - started) * 1000)))
-    receipt.latency_witnesses.extend(witnesses)
-    for invocation in invocations:
-        from ember_pb2 import ShardForwardResponse
-        receipt.stage_receipts.add().CopyFrom(ShardForwardResponse.FromString(
-            bytes.fromhex(invocation['response'])).receipt)
     # Profiles can rotate indefinitely in a resident process. Retain only the
     # most recently used channels, and evict only after all job calls finish.
     while len(cache.clients) > 64:
         _, stale = cache.clients.popitem(last=False)
         stale.close()
-    emit({'type': 'result', 'receipt': receipt.SerializeToString(
-            deterministic=True).hex(), 'openings': [opening(step) for step in steps],
-          'invocations': invocations, 'failovers': failovers})
+    spool.emit_result(receipt, sys.stdout)
 
 
 def serve():

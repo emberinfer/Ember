@@ -100,13 +100,6 @@
    },
    {
     "relay": "relay1 (Contabo, DE)",
-    "serving": "ember-qwen2.5-1.5b-split-v1",
-    "url": "http://relay.emberinfer.org:39101",
-    "profiles": ["ember-qwen2.5-1.5b-unified-v1"],
-    "node_tunnel": {"endpoint": "relay.emberinfer.org:39099", "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d"}
-   },
-   {
-    "relay": "relay1 (Contabo, DE)",
     "serving": "ember-qwen2.5-1.5b-unified-v1 (pipeline form)",
     "url": "http://relay.emberinfer.org:39113",
     "profiles": ["ember-qwen2.5-1.5b-unified-v1"],

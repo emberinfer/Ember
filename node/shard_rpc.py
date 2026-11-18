@@ -392,7 +392,9 @@ class StageClient:
     def __init__(self, target, scheduler_key, spec=None, profile=None, executed_range=None):
         address, fingerprint = target.rsplit('@', 1)
         options = (('grpc.max_send_message_length', MAX_TENSOR_BYTES),
-                   ('grpc.max_receive_message_length', MAX_TENSOR_BYTES))
+                   ('grpc.max_receive_message_length', MAX_TENSOR_BYTES),
+                   ('grpc.http2.bdp_probe', 0),
+                   ('grpc.keepalive_timeout_ms', 300000))
         self.address,self.fingerprint,self.options = address,fingerprint,options
         self.channel = None
         self.stub = None
@@ -644,7 +646,9 @@ def serve(args):
                               spec.has_embedding, spec.has_lm_head, args.device)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1), options=(
         ('grpc.max_receive_message_length', MAX_TENSOR_BYTES),
-        ('grpc.max_send_message_length', MAX_TENSOR_BYTES)))
+        ('grpc.max_send_message_length', MAX_TENSOR_BYTES),
+        ('grpc.http2.bdp_probe', 0),
+        ('grpc.keepalive_timeout_ms', 300000)))
     add_ShardPipelineServicer_to_server(
         StageService(engine, args.authorized_scheduler, spec, key, genesis, manifest,
                      Path(args.state_dir) / 'scheduler-nonces.json'

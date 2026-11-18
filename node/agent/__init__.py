@@ -190,7 +190,7 @@ class Agent:
                     send('unavailable', b'contribution cap or qualification; no work accepted')
                     return
             if frame.kind in ('audit', 'audit_commit'):
-                from auditor.worker import execute
+                from .audit_engine import execute
                 send('audit_result', execute(self, frame, job))
                 return
             prompt, seed = job['prompt'], job['seed']

@@ -1399,7 +1399,7 @@ func generateCert(args []string) {
 // auditAttemptBudget includes hashing, transfer, commit and replay under one
 // context. Missing step metadata falls back to one step per MiB of evidence.
 func auditAttemptBudget(floor time.Duration, size int64, steps int) time.Duration {
-	const capBudget = 6 * time.Hour
+	const capBudget = 12 * time.Hour
 	if size < 0 {
 		size = 0
 	}
@@ -1407,7 +1407,7 @@ func auditAttemptBudget(floor time.Duration, size int64, steps int) time.Duratio
 		steps = int((size + (1 << 20) - 1) / (1 << 20))
 	}
 	// Clamp before duration arithmetic, including malformed/huge metadata.
-	seconds := float64(size)/300_000 + float64(steps)*25 + 900
+	seconds := float64(size)/120_000 + float64(steps)*25 + 900
 	if seconds >= capBudget.Seconds() || floor >= capBudget {
 		return capBudget
 	}

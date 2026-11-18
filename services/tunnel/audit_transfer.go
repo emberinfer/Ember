@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -84,15 +85,15 @@ func (s *Server) AuditReader(ctx context.Context, node, request, attempt string,
 			pieceCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 			last = s.run(pieceCtx, node, request, fmt.Sprintf("%s-%s-%d", attempt, suffix, retry), kind, data, func(f *pb.TunnelFrame) error {
 				ackPayload := f.Payload
-				if kind == "audit_begin" && !bytes.Equal(ackPayload, expected) {
-					// Reserved optional begin ACK. Old peers return only the root.
-					var extended struct {
-						SHA256           string `json:"sha256"`
-						ContiguousChunks int    `json:"contiguous_chunks"`
-					}
-					if json.Unmarshal(ackPayload, &extended) == nil && extended.SHA256 == hex.EncodeToString(expected) && extended.ContiguousChunks >= 0 && int64(extended.ContiguousChunks) <= chunks {
-						resume = extended.ContiguousChunks
-						ackPayload = expected
+				if kind == "audit_begin" {
+					resume = 0
+					if len(ackPayload) == 36 && bytes.Equal(ackPayload[:32], expected) {
+						n := binary.BigEndian.Uint32(ackPayload[32:])
+						if int64(n) > chunks {
+							return errors.New("invalid audit resume watermark")
+						}
+						resume = int(n)
+						ackPayload = ackPayload[:32]
 					}
 				}
 				if f.Kind != "audit_chunk_ack" || !bytes.Equal(ackPayload, expected) {
@@ -151,7 +152,7 @@ func (s *Server) AuditReader(ctx context.Context, node, request, attempt string,
 		timings = append(timings, time.Since(pieceStart).Seconds())
 		if (index+1)%200 == 0 || int64(index+1) == chunks {
 			sort.Float64s(timings)
-			log.Printf("AUDIT_TRANSFER event=progress hold=%s attempt=%s chunk=%d chunks=%d bytes=%d elapsed_s=%.3f piece_p50_s=%.3f piece_p95_s=%.3f piece_max_s=%.3f", request, attempt, index+1, chunks, offset+length, time.Since(started).Seconds(), timings[len(timings)/2], timings[(len(timings)-1)*95/100], timings[len(timings)-1])
+			log.Printf("AUDIT_TRANSFER event=progress hold=%s attempt=%s resume_chunk=%d chunk=%d chunks=%d bytes=%d elapsed_s=%.3f piece_p50_s=%.3f piece_p95_s=%.3f piece_max_s=%.3f", request, attempt, resume, index+1, chunks, offset+length, time.Since(started).Seconds(), timings[len(timings)/2], timings[(len(timings)-1)*95/100], timings[len(timings)-1])
 			timings = timings[:0]
 		}
 	}

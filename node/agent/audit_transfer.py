@@ -56,7 +56,7 @@ class AuditTransfer:
                 self.file = tempfile.NamedTemporaryFile(prefix='ember-audit-', delete=False)
                 self.manifest, self.request = m, frame.request_id
             self.updated = now
-            return bytes.fromhex(m['sha256'])
+            return bytes.fromhex(m['sha256']) + len(self.hashes).to_bytes(4, 'big')
         if self.file is None or frame.request_id != self.request:
             raise ValueError('audit transfer not begun')
         chunk = EvidenceChunk.FromString(frame.payload)

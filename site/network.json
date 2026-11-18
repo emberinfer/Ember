@@ -14,53 +14,117 @@
   "version": "0.7.0"
  },
   "access": {
+  "private_gateways": [
+    {
+      "id": "private-684-whole-15",
+      "profiles": [
+        "ember-qwen2.5-1.5b-unified-v1"
+      ],
+      "node_tunnel": {
+        "local_endpoint": "127.0.0.1:49101",
+        "local_tls_fingerprint": "bfa4bffc9f66b76ee429beceebad1c6ffb5e253d936938b9012bde64ec62550e",
+        "scope": "same-host-684"
+      }
+    },
+    {
+      "id": "private-684-whole-35",
+      "profiles": [
+        "ember-qwen3.6-35b-a3b-fp8-unified-v1"
+      ],
+      "node_tunnel": {
+        "local_endpoint": "127.0.0.1:49103",
+        "local_tls_fingerprint": "bfa4bffc9f66b76ee429beceebad1c6ffb5e253d936938b9012bde64ec62550e",
+        "scope": "same-host-684"
+      }
+    },
+    {
+      "id": "private-684-pipeline-15",
+      "profiles": [
+        "ember-qwen2.5-1.5b-unified-v1"
+      ],
+      "node_tunnel": {
+        "local_endpoint": "127.0.0.1:49105",
+        "local_tls_fingerprint": "bfa4bffc9f66b76ee429beceebad1c6ffb5e253d936938b9012bde64ec62550e",
+        "scope": "same-host-684"
+      }
+    },
+    {
+      "id": "private-684-moe",
+      "profiles": [
+        "ember-olmoe-1b-7b-moe-v1"
+      ],
+      "node_tunnel": {
+        "local_endpoint": "127.0.0.1:49107",
+        "local_tls_fingerprint": "bfa4bffc9f66b76ee429beceebad1c6ffb5e253d936938b9012bde64ec62550e",
+        "scope": "same-host-684"
+      }
+    }
+  ],
   "faucet": "http://relay.emberinfer.org:39095/testnet/faucet",
   "gateway": "http://relay.emberinfer.org:39090",
   "gateways": [
    {
     "relay": "relay1 (Contabo, DE)",
     "serving": "main gateway",
-    "url": "http://relay.emberinfer.org:39090"
+    "url": "http://relay.emberinfer.org:39090",
+    "profiles": ["ember-qwen2.5-1.5b-s22-cpu-v1"],
+    "node_tunnel": {"endpoint": "relay.emberinfer.org:39091", "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d"}
    },
    {
     "relay": "relay1 (Contabo, DE)",
     "serving": "ember-qwen2.5-1.5b-unified-v1",
-    "url": "http://relay.emberinfer.org:39110"
+    "url": "http://relay.emberinfer.org:39110",
+    "profiles": ["ember-qwen2.5-1.5b-unified-v1"],
+    "node_tunnel": {"endpoint": "relay.emberinfer.org:39103", "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d"}
    },
    {
     "relay": "relay1 (Contabo, DE)",
     "serving": "ember-qwen3.6-35b-a3b-fp8-unified-v1",
-    "url": "http://relay.emberinfer.org:39107"
+    "url": "http://relay.emberinfer.org:39107",
+    "profiles": ["ember-qwen3.6-35b-a3b-fp8-unified-v1"],
+    "node_tunnel": {"endpoint": "relay.emberinfer.org:39106", "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d"}
    },
    {
     "relay": "relay1 (Contabo, DE)",
     "serving": "ember-qwen2.5-1.5b-gpu-v1",
-    "url": "http://relay.emberinfer.org:39092"
+    "url": "http://relay.emberinfer.org:39092",
+    "profiles": ["ember-qwen2.5-1.5b-gpu-v1"],
+    "node_tunnel": {"endpoint": "relay.emberinfer.org:39093", "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d"}
    },
    {
     "relay": "relay1 (Contabo, DE)",
     "serving": "ember-qwen3.6-35b-a3b-fp8-v1",
-    "url": "http://relay.emberinfer.org:39097"
+    "url": "http://relay.emberinfer.org:39097",
+    "profiles": ["ember-qwen3.6-35b-a3b-fp8-v1"],
+    "node_tunnel": {"endpoint": "relay.emberinfer.org:39094", "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d"}
    },
    {
     "relay": "relay1 (Contabo, DE)",
     "serving": "ember-qwen2.5-1.5b-split-v1",
-    "url": "http://relay.emberinfer.org:39101"
+    "url": "http://relay.emberinfer.org:39101",
+    "profiles": ["ember-qwen2.5-1.5b-unified-v1"],
+    "node_tunnel": {"endpoint": "relay.emberinfer.org:39099", "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d"}
    },
    {
     "relay": "relay1 (Contabo, DE)",
     "serving": "ember-qwen2.5-1.5b-unified-v1 (pipeline form)",
-    "url": "http://relay.emberinfer.org:39113"
+    "url": "http://relay.emberinfer.org:39113",
+    "profiles": ["ember-qwen2.5-1.5b-unified-v1"],
+    "node_tunnel": {"endpoint": "relay.emberinfer.org:39112", "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d"}
    },
    {
     "relay": "relay2 (Contabo, Seattle)",
     "serving": "ember-qwen2.5-1.5b-unified-v1",
-    "url": "https://relay2.emberinfer.org:39443"
+    "url": "https://relay2.emberinfer.org:39443",
+    "profiles": ["ember-qwen2.5-1.5b-unified-v1"],
+    "node_tunnel": {"endpoint": "relay2.emberinfer.org:39103", "tls_fingerprint": "585f70342249cab7a15c597b670dce47551faa4348b61b066aac656b196b6b60"}
    },
    {
     "relay": "relay2 (Contabo, Seattle)",
     "serving": "ember-qwen3.6-35b-a3b-fp8-unified-v1",
-    "url": "https://relay2.emberinfer.org:39444"
+    "url": "https://relay2.emberinfer.org:39444",
+    "profiles": ["ember-qwen3.6-35b-a3b-fp8-unified-v1"],
+    "node_tunnel": {"endpoint": "relay2.emberinfer.org:39106", "tls_fingerprint": "585f70342249cab7a15c597b670dce47551faa4348b61b066aac656b196b6b60"}
    }
   ],
   "note": "Dedicated relay ports on two machines (relay1 Contabo DE, relay2 Contabo Seattle); public seed TLS is pinned per relay and covers the advertised address (relay1 fingerprint in tls_fingerprint, relay2 in tls_fingerprint_relay2). The relays verify backend TLS. HTTP RPC/faucet carry valueless test credit. Gateway consumers need an operator-issued bearer <redacted> Additional gateways on a third machine serve the website backend over private tunnels and have no public ingress.",

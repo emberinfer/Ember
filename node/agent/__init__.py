@@ -1,5 +1,6 @@
 """Outbound gRPC tunnel with retry and attempt-scoped replies."""
 import hashlib
+import copy
 import json
 import os
 from pathlib import Path
@@ -28,6 +29,10 @@ class Agent:
         self.authorized_schedulers = set(authorized_schedulers or ())
         self.scheduler_nonce_path = Path(scheduler_nonce_path) if scheduler_nonce_path else None
         self.scheduler_nonces = self._load_scheduler_nonces()
+        from .multihome import Claims
+        self.claims = Claims()
+        self.scheduler_lock = threading.Lock()
+        self.execution_lock = threading.Lock()
         self.ready = False
         self.started_at = time.monotonic()
         self.completed_requests = 0
@@ -61,6 +66,8 @@ class Agent:
     def serve(self, address, stop=None, channel_factory=None, authenticate=None):
         while stop is None or not stop.is_set():
             self.ready = False
+            if getattr(self, 'session_status', None):
+                self.session_status(False)
             outgoing = queue.Queue()
             disconnected = threading.Event()
             outgoing.put(TunnelFrame(node_id=self.node_id, kind='join' if authenticate else 'hello'))
@@ -71,6 +78,7 @@ class Agent:
                 while not disconnected.is_set() and (stop is None or not stop.is_set()):
                     if self.ready and time.monotonic() - last_heartbeat >= 30:
                         last_heartbeat = time.monotonic()
+                        print(f'HEARTBEAT node={self.node_id} peer={address}', flush=True)
                         yield TunnelFrame(node_id=self.node_id, kind='heartbeat',
                             payload=self.profile().SerializeToString(deterministic=True))
                     try:
@@ -89,22 +97,37 @@ class Agent:
             try:
                 with (channel_factory(address) if channel_factory else grpc.insecure_channel(address)) as channel:
                     self.evidence_stub = NodeTunnelStub(channel)
+                    # A worker retains this exact connection's stub even if
+                    # its parent session reconnects before FetchEvidence ends.
+                    connection = copy.copy(self)
+                    connection.audit_transfer = AuditTransfer()
                     for frame in self.evidence_stub.Connect(messages()):
                         if authenticate and frame.kind == 'challenge':
                             outgoing.put(authenticate(frame))
                         elif frame.kind == 'ready':
                             self.ready = True
-                            print(f'JOIN READY node={self.node_id}', flush=True)
+                            print(f'JOIN READY node={self.node_id} peer={address}', flush=True)
+                            if getattr(self, 'session_status', None):
+                                self.session_status(True)
                         elif frame.kind in ('run', 'audit', 'tokenize', 'audit_begin', 'audit_chunk', 'audit_commit'):
-                            self._run(frame, outgoing)
-            except (grpc.RpcError, OSError) as exc:
+                            # Refresh authenticated runtime fields, not stub.
+                            for name in ('engine', 'contribution', 'chain_args', 'genesis_bytes', 'check_trust', 'content_policy'):
+                                if hasattr(self, name):
+                                    setattr(connection, name, getattr(self, name))
+                            connection._run(frame, outgoing)
+            except Exception as exc:
                 reason = exc.code().name if isinstance(exc, grpc.RpcError) else str(exc)
-                print(f'TUNNEL disconnected: {reason}', flush=True)
+                print(f'TUNNEL disconnected peer={address} reconnecting: {reason}', flush=True)
                 if stop is not None and stop.is_set():
                     break
                 time.sleep(0.5)
             finally:
+                self.ready = False
+                if getattr(self, 'session_status', None):
+                    self.session_status(False)
                 disconnected.set()
+                if 'connection' in locals():
+                    connection.audit_transfer.close()
                 self.audit_transfer.close()
                 if self._forward_traces is not None:
                     for request_id in list(self._forward_traces):
@@ -124,15 +147,17 @@ class Agent:
             outgoing.put(TunnelFrame(node_id=self.node_id, request_id=frame.request_id,
                                      attempt_id=frame.attempt_id, kind=kind, payload=payload))
         acquired = False
+        executing = False
         try:
             if self.authorized_schedulers:
                 verify(frame)
                 scheduler = node_id(frame.signer)
-                previous = self.scheduler_nonces.get(scheduler, 0)
-                if scheduler not in self.authorized_schedulers or frame.nonce <= previous:
-                    raise ValueError('unauthorized or replayed scheduler frame')
-                self.scheduler_nonces[scheduler] = frame.nonce
-                self._save_scheduler_nonces()
+                with self.scheduler_lock:
+                    previous = self.scheduler_nonces.get(scheduler, 0)
+                    if scheduler not in self.authorized_schedulers or frame.nonce <= previous:
+                        raise ValueError('unauthorized or replayed scheduler frame')
+                    self.scheduler_nonces[scheduler] = frame.nonce
+                    self._save_scheduler_nonces()
             if getattr(self, "check_trust", None):
                 self.check_trust()
             args = getattr(self, 'chain_args', None)
@@ -145,6 +170,14 @@ class Agent:
                 ack = self.audit_transfer.accept(frame)
                 send('audit_chunk_ack', ack)
                 return
+            if frame.kind in ('run', 'audit', 'audit_commit'):
+                kind = 'audit' if frame.kind in ('audit', 'audit_commit') else 'execution'
+                if not self.claims.claim(kind, frame.request_id):
+                    send('unavailable', b'duplicate task: already claimed in this process')
+                    return
+            if frame.kind in ('run', 'tokenize'):
+                self.execution_lock.acquire()
+                executing = True
             if frame.kind == 'audit_commit':
                 payload = self.audit_transfer.finish(frame)
             else:
@@ -243,5 +276,7 @@ class Agent:
             self.failed_requests += 1
             send('error', str(exc).encode())
         finally:
+            if executing:
+                self.execution_lock.release()
             if acquired:
                 self.contribution.release()

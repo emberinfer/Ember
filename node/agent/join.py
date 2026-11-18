@@ -7,6 +7,10 @@ import os
 from pathlib import Path
 import subprocess
 import time
+import copy
+import threading
+
+from .multihome import Claims, Registration, Sessions, coordinators
 
 import grpc
 from cryptography.hazmat.primitives import serialization
@@ -69,6 +73,46 @@ def identity(state):
 
 
 def join(args):
+    peers = coordinators(args.coordinator, args.tls_fingerprint)
+    # Create the identity before threads start (exclusive key creation).
+    identity(args.state_dir)
+    shared = dict(claims=Claims(), registration=Registration(),
+                  initialization=Registration(), runtime={},
+                  sessions=Sessions([address for address, _ in peers]))
+    shared['nonce_lock'] = threading.Lock()
+    shared['execution_lock'] = threading.Lock()
+    shared['renewal'] = Registration()
+    for address, _ in peers:
+        shared['sessions'].update(address, False)
+    shared['nonces'] = None
+    if len(peers) == 1:
+        opts = copy.copy(args)
+        opts.coordinator, opts.tls_fingerprint = peers[0]
+        return _join_single(opts, shared)
+    threads = []
+    def run(opts):
+        while True:
+            try:
+                _join_single(opts, shared)
+            except Exception as exc:
+                print(f'MULTIHOME session failed peer={opts.coordinator}: {exc}', flush=True)
+                shared['sessions'].update(opts.coordinator, False)
+                time.sleep(1)
+    for index, (address, pin) in enumerate(peers):
+        opts = copy.copy(args)
+        opts.coordinator, opts.tls_fingerprint = address, pin
+        # Only one process health listener and liveness sender.
+        if index:
+            opts.health_listen = ''
+            opts.liveness_enabled = False
+        thread = threading.Thread(target=run, args=(opts,), daemon=True)
+        threads.append(thread)
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+
+def _join_single(args, shared):
     if getattr(args, 'liveness_threshold', 300) <= 0 or not math.isfinite(getattr(args, 'liveness_poll', 10)) or getattr(args, 'liveness_poll', 10) <= 0:
         raise ValueError('liveness threshold and poll must be positive and finite')
     generation_timeout = getattr(args, 'generation_timeout', 300)
@@ -82,6 +126,14 @@ def join(args):
     agent = Agent(ident, MockEngine(), key=key,
                   authorized_schedulers=getattr(args, 'scheduler_id', ()),
                   scheduler_nonce_path=Path(args.state_dir) / 'scheduler-nonces.json')
+    with shared['nonce_lock']:
+        if shared['nonces'] is None:
+            shared['nonces'] = agent.scheduler_nonces
+        agent.scheduler_nonces = shared['nonces']
+    agent.scheduler_lock = shared['nonce_lock']
+    agent.claims = shared['claims']
+    agent.execution_lock = shared['execution_lock']
+    agent.session_status = lambda ready: shared['sessions'].update(address, ready)
     start_health_server(agent, getattr(args, 'health_listen', ''))
     loaded_anchor = None
     def authenticate(frame):
@@ -116,8 +168,8 @@ def join(args):
                     raise ValueError('ledger chain ID mismatch')
                 check_model_trust(current, args.chain, getattr(args, 'trust_policy', None))
             agent.check_trust = refresh_trust
-        if args.engine == 'transformers':
-            if loaded_anchor is None:
+        def initialize_runtime():
+            if args.engine == 'transformers':
                 root = Path(args.model_path).expanduser() if args.model_path else Path.home() / 'models/Qwen2.5-1.5B-Instruct'
                 for artifact in manifest.artifacts:
                     try:
@@ -126,8 +178,7 @@ def join(args):
                         fetch_sources(artifact, root, manifest.sources) if manifest.sources else fetch(artifact, root)
                 agent.engine = load_engine('transformers', model_path=str(root), device=args.device,
                                            tamper=getattr(args, 'tamper', False))
-        elif args.engine == 'pipeline':
-            if loaded_anchor is None:
+            elif args.engine == 'pipeline':
                 if not manifest.shards or not args.stage or not args.scheduler_key_file:
                     raise ValueError('pipeline manifest, stages and scheduler key are required')
                 root = Path(args.model_path).expanduser() if args.model_path else Path.home() / 'models/Qwen2.5-1.5B-Instruct'
@@ -138,8 +189,7 @@ def join(args):
                 agent.engine = load_engine('pipeline', model_path=str(root), stages=args.stage,
                                            scheduler_key_file=args.scheduler_key_file,
                                            manifest=manifest)
-        elif args.engine in ('llamacpp', 'vllm'):
-            if loaded_anchor is None:
+            elif args.engine in ('llamacpp', 'vllm'):
                 if manifest.sources:
                     root = (Path(args.model_path).expanduser() if args.model_path else
                             Path(args.state_dir) / 'weights' / args.chain)
@@ -152,18 +202,23 @@ def join(args):
                     model=args.engine_model, server_version=args.engine_version,
                     api_key=os.environ.get('EMBER_ENGINE_API_KEY'),
                     eos_token_ids=_model_eos_token_ids(getattr(args, 'model_path', None)))
-        elif manifest.artifacts:
-            raise ValueError('mock engine cannot claim a real-weight chain')
-        if manifest.artifacts:
-            caps = agent.engine.capabilities()
-            if 'full' in caps.evidence_levels:
-                require_full_evidence(agent.engine)
-            elif not (caps.score_kind == 'logprobs' and 'topk-logprobs' in caps.evidence_levels and caps.max_top_k >= 16):
-                raise ValueError('engine cannot produce full or logprob audit evidence')
-        agent.engine.generation_timeout_seconds = generation_timeout
-        if loaded_anchor is None:
+            elif manifest.artifacts:
+                raise ValueError('mock engine cannot claim a real-weight chain')
+            if manifest.artifacts:
+                caps = agent.engine.capabilities()
+                if 'full' in caps.evidence_levels:
+                    require_full_evidence(agent.engine)
+                elif not (caps.score_kind == 'logprobs' and 'topk-logprobs' in caps.evidence_levels and caps.max_top_k >= 16):
+                    raise ValueError('engine cannot produce full or logprob audit evidence')
+            agent.engine.generation_timeout_seconds = generation_timeout
             from .contribution import configure
             agent.contribution = configure(args, agent.engine, args.chain)
+            shared['runtime'].update(engine=agent.engine, contribution=agent.contribution, anchor=anchor)
+        shared['initialization'].ensure(initialize_runtime)
+        runtime = shared['runtime']
+        if runtime['anchor'] != anchor:
+            raise ValueError('gateway genesis/manifest differs from process anchor')
+        agent.engine, agent.contribution = runtime['engine'], runtime['contribution']
         loaded_anchor = anchor
         answers = data['questions']  # Fixed benchmark: echo questions, not an inference proof.
         observed = hashlib.sha256(b''.join(a.encode() + b'\x00' for a in answers)).digest()
@@ -208,8 +263,11 @@ def join(args):
         signed_profile = profile()
         if getattr(args, 'chain_rpc', None):
             try:
-                register_on_chain(args, state=Path(args.state_dir), ident=ident,
-                                  profile=signed_profile)
+                signed_profile = shared['registration'].ensure(lambda: register_profile(
+                    args, Path(args.state_dir), ident, signed_profile),
+                    valid=lambda p: p.expires_unix > int(time.time()) + 30)
+                shared['renewal'].ensure(lambda: start_registration_renewal(
+                    args, Path(args.state_dir), ident, profile, shared['registration']))
             except Exception as exc:
                 # A failed registration refresh must not kill the node: any
                 # earlier registration stays active on-chain, and the next
@@ -228,6 +286,32 @@ def join(args):
         threading.Thread(target=send_liveness, args=(args, Path(args.state_dir), ident),
                          daemon=True).start()
     agent.serve(address, channel_factory=channel_factory, authenticate=authenticate)
+
+
+def register_profile(args, state, ident, profile):
+    register_on_chain(args, state, ident, profile)
+    return profile
+
+
+def renew_registration_once(args, state, ident, profile, registration):
+    current = _chain_json(args.chain_cli, args.chain_rpc, '/node/' + ident) or {}
+    height = _chain_height(args.chain_rpc)
+    if (int(current.get('expires_height', 0)) <= height + 2 or
+            getattr(registration.result, 'expires_unix', float('inf')) <= time.time() + 30):
+        registration.invalidate()
+        registration.ensure(lambda: register_profile(args, state, ident, profile()))
+        print(f'REGISTER renewed node={ident} height={height}', flush=True)
+
+
+def start_registration_renewal(args, state, ident, profile, registration):
+    def watch():
+        while True:
+            time.sleep(10)
+            try:
+                renew_registration_once(args, state, ident, profile, registration)
+            except Exception as exc:
+                print(f'REGISTER renewal retry deferred: {exc}', flush=True)
+    threading.Thread(target=watch, daemon=True, name='registration-renewal').start()
 
 
 def _chain_json(cli, rpc, path):

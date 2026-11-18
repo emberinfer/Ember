@@ -9,6 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
+	"sort"
 	"time"
 
 	pb "ember/proto"
@@ -33,7 +35,22 @@ func (s *Server) audit(ctx context.Context, node, request, attempt string, paylo
 
 // AuditReader keeps the existing manifest, chunk boundaries, hashes and retries,
 // but reads evidence from a seekable disk spool rather than a whole-job slice.
-func (s *Server) AuditReader(ctx context.Context, node, request, attempt string, payload io.ReadSeeker, size int64, receive func(*pb.TunnelFrame) error) error {
+func (s *Server) AuditReader(ctx context.Context, node, request, attempt string, payload io.ReadSeeker, size int64, receive func(*pb.TunnelFrame) error) (result error) {
+	started := time.Now()
+	chunks := (size + auditChunkBytes - 1) / auditChunkBytes
+	index, offset, phase := -1, int64(0), "prepare"
+	log.Printf("AUDIT_TRANSFER event=attempt_start hold=%s attempt=%s bytes=%d chunks=%d", request, attempt, size, chunks)
+	defer func() {
+		if result != nil {
+			cause := "remote_or_io"
+			if ctx.Err() != nil {
+				cause = "parent_deadline_or_cancel"
+			} else if errors.Is(result, context.DeadlineExceeded) {
+				cause = "chunk_deadline"
+			}
+			log.Printf("AUDIT_TRANSFER event=failed hold=%s attempt=%s phase=%s chunk=%d offset=%d elapsed_s=%.3f cause=%s error=%q", request, attempt, phase, index, offset, time.Since(started).Seconds(), cause, result)
+		}
+	}()
 	if _, err := payload.Seek(0, io.SeekStart); err != nil {
 		return err
 	}
@@ -42,6 +59,8 @@ func (s *Server) AuditReader(ctx context.Context, node, request, attempt string,
 		if err != nil {
 			return err
 		}
+		phase = "waiting_result"
+		log.Printf("AUDIT_TRANSFER event=waiting_result hold=%s attempt=%s mode=inline elapsed_s=%.3f", request, attempt, time.Since(started).Seconds())
 		return s.run(ctx, node, request, attempt, "audit", raw, receive)
 	}
 	h := sha256.New()
@@ -56,19 +75,42 @@ func (s *Server) AuditReader(ctx context.Context, node, request, attempt string,
 	if err != nil {
 		return err
 	}
+	resume := 0
 	ack := func(kind, suffix string, data, expected []byte) error {
 		var last error
 		for retry := 0; retry < 3; retry++ {
 			// A missing ack retransmits only this piece, with a fresh signed nonce and
 			// attempt ID. The receiver accepts an identical duplicate idempotently.
-			pieceCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			pieceCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 			last = s.run(pieceCtx, node, request, fmt.Sprintf("%s-%s-%d", attempt, suffix, retry), kind, data, func(f *pb.TunnelFrame) error {
-				if f.Kind != "audit_chunk_ack" || !bytes.Equal(f.Payload, expected) {
+				ackPayload := f.Payload
+				if kind == "audit_begin" && !bytes.Equal(ackPayload, expected) {
+					// Reserved optional begin ACK. Old peers return only the root.
+					var extended struct {
+						SHA256           string `json:"sha256"`
+						ContiguousChunks int    `json:"contiguous_chunks"`
+					}
+					if json.Unmarshal(ackPayload, &extended) == nil && extended.SHA256 == hex.EncodeToString(expected) && extended.ContiguousChunks >= 0 && int64(extended.ContiguousChunks) <= chunks {
+						resume = extended.ContiguousChunks
+						ackPayload = expected
+					}
+				}
+				if f.Kind != "audit_chunk_ack" || !bytes.Equal(ackPayload, expected) {
 					return errors.New("invalid audit chunk acknowledgement")
 				}
 				return nil
 			})
+			childErr := pieceCtx.Err()
 			cancel()
+			if last != nil {
+				cause := "remote_or_io"
+				if ctx.Err() != nil {
+					cause = "parent_deadline_or_cancel"
+				} else if childErr == context.DeadlineExceeded {
+					cause = "chunk_deadline"
+				}
+				log.Printf("AUDIT_TRANSFER event=piece_failed hold=%s attempt=%s kind=%s chunk=%d offset=%d retry=%d cause=%s elapsed_s=%.3f", request, attempt, kind, index, offset, retry+1, cause, time.Since(started).Seconds())
+			}
 			if last == nil {
 				return nil
 			}
@@ -78,10 +120,18 @@ func (s *Server) AuditReader(ctx context.Context, node, request, attempt string,
 		}
 		return last
 	}
+	phase = "begin"
 	if err = ack("audit_begin", "begin", manifest, root); err != nil {
 		return err
 	}
-	for index, offset := 0, int64(0); offset < size; index, offset = index+1, offset+auditChunkBytes {
+	log.Printf("AUDIT_TRANSFER event=begin_ack hold=%s attempt=%s resume_chunk=%d", request, attempt, resume)
+	if _, err = payload.Seek(int64(resume)*auditChunkBytes, io.SeekStart); err != nil {
+		return err
+	}
+	phase = "transfer"
+	var timings []float64
+	for index, offset = resume, int64(resume)*auditChunkBytes; offset < size; index, offset = index+1, offset+auditChunkBytes {
+		pieceStart := time.Now()
 		length := int64(auditChunkBytes)
 		if size-offset < length {
 			length = size - offset
@@ -98,6 +148,14 @@ func (s *Server) AuditReader(ctx context.Context, node, request, attempt string,
 		if err = ack("audit_chunk", fmt.Sprint(index), wire, hash[:]); err != nil {
 			return err
 		}
+		timings = append(timings, time.Since(pieceStart).Seconds())
+		if (index+1)%200 == 0 || int64(index+1) == chunks {
+			sort.Float64s(timings)
+			log.Printf("AUDIT_TRANSFER event=progress hold=%s attempt=%s chunk=%d chunks=%d bytes=%d elapsed_s=%.3f piece_p50_s=%.3f piece_p95_s=%.3f piece_max_s=%.3f", request, attempt, index+1, chunks, offset+length, time.Since(started).Seconds(), timings[len(timings)/2], timings[(len(timings)-1)*95/100], timings[len(timings)-1])
+			timings = timings[:0]
+		}
 	}
+	phase = "waiting_result"
+	log.Printf("AUDIT_TRANSFER event=transfer_done_waiting_result hold=%s attempt=%s bytes=%d chunks=%d elapsed_s=%.3f", request, attempt, size, chunks, time.Since(started).Seconds())
 	return s.run(ctx, node, request, attempt+"-commit", "audit_commit", manifest, receive)
 }

@@ -871,7 +871,15 @@ func main() {
 			if routeErr != nil {
 				return
 			}
-			ctx, cancel := context.WithTimeout(context.Background(), *auditTimeout)
+			// Count metadata invocations conservatively (all stages). The disk
+			// array index avoids decoding tensor-bearing invocations.
+			steps := len(job.Invocations)
+			if auditSource != nil {
+				steps = len(auditSource.Arrays["invocations"])
+			}
+			budget := auditAttemptBudget(*auditTimeout, packageStat.Size(), steps)
+			log.Printf("AUDIT_BUDGET hold=%s bytes=%d metadata_steps=%d deadline_s=%.3f", id, packageStat.Size(), steps, budget.Seconds())
+			ctx, cancel := context.WithTimeout(context.Background(), budget)
 			defer cancel()
 			routeErr = relay.AuditReader(ctx, hold.Auditor, id, fmt.Sprintf("audit-%s-%d", id, time.Now().UnixNano()), packageFile, packageStat.Size(), func(f *pb.TunnelFrame) error {
 				if f.Kind == "error" {
@@ -1386,4 +1394,26 @@ func generateCert(args []string) {
 	}
 	h := sha256.Sum256(der)
 	fmt.Printf("tls-fingerprint=%x\n", h)
+}
+
+// auditAttemptBudget includes hashing, transfer, commit and replay under one
+// context. Missing step metadata falls back to one step per MiB of evidence.
+func auditAttemptBudget(floor time.Duration, size int64, steps int) time.Duration {
+	const capBudget = 6 * time.Hour
+	if size < 0 {
+		size = 0
+	}
+	if steps <= 0 {
+		steps = int((size + (1 << 20) - 1) / (1 << 20))
+	}
+	// Clamp before duration arithmetic, including malformed/huge metadata.
+	seconds := float64(size)/300_000 + float64(steps)*25 + 900
+	if seconds >= capBudget.Seconds() || floor >= capBudget {
+		return capBudget
+	}
+	budget := time.Duration(seconds * float64(time.Second))
+	if floor > budget {
+		budget = floor
+	}
+	return budget
 }

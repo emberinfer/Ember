@@ -25,7 +25,9 @@ class AuditTransfer:
 
     def close(self):
         if self.file is not None:
+            path = self.file.name
             self.file.close()
+            os.unlink(path)
         self.file = None
         self.manifest = None
         self.request = None
@@ -50,9 +52,8 @@ class AuditTransfer:
             m = self._manifest(frame.payload)
             if self.manifest != m or self.request != frame.request_id:
                 self.close()
-                # Anonymous mode-0600 temporary storage; respects TMPDIR. One
-                # active transfer per auditor, matching gateway busy admission.
-                self.file = tempfile.TemporaryFile(prefix='ember-audit-')
+                # Named mode-0600 storage; close() removes abandoned transfers.
+                self.file = tempfile.NamedTemporaryFile(prefix='ember-audit-', delete=False)
                 self.manifest, self.request = m, frame.request_id
             self.updated = now
             return bytes.fromhex(m['sha256'])
@@ -80,26 +81,23 @@ class AuditTransfer:
         if (self.file is None or m != self.manifest or self.request != frame.request_id
                 or len(self.hashes) != m['chunks']):
             raise ValueError('incomplete audit transfer')
-        path = None
         try:
             self.file.seek(0)
             digest = hashlib.sha256()
             size = 0
-            # Named mode-0600 handoff; caller owns unlink after JSON parsing.
-            with tempfile.NamedTemporaryFile(prefix='ember-audit-job-', delete=False) as output:
-                path = output.name
-                while True:
-                    block = self.file.read(CHUNK_BYTES)
-                    if not block:
-                        break
-                    size += len(block)
-                    digest.update(block)
-                    output.write(block)
+            while True:
+                block = self.file.read(CHUNK_BYTES)
+                if not block:
+                    break
+                size += len(block)
+                digest.update(block)
             if size != m['size'] or digest.hexdigest() != m['sha256']:
                 raise ValueError('audit transfer integrity mismatch')
-            result, path = path, None
-            return result
+            # Transfer ownership without a second disk copy. Caller unlinks
+            # after parsing; failures and abandoned transfers stay owned here.
+            path = self.file.name
+            self.file.close()
+            self.file = None
+            return path
         finally:
-            if path is not None:
-                os.unlink(path)
             self.close()

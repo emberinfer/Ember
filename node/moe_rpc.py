@@ -289,6 +289,16 @@ class MoeAttentionService(ShardPipelineServicer):
             context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(exc))
 
 
+class _DispatchState:
+    def __init__(self):
+        self.lock = threading.RLock()
+        self.last_nonce = 0
+
+
+_dispatch_states_lock = threading.Lock()
+_dispatch_states = {}
+
+
 class _BaseClient:
     def __init__(self, target, scheduler_key, profile=None):
         address, fingerprint = target.rsplit('@', 1)
@@ -300,13 +310,28 @@ class _BaseClient:
         self.profile = profile
         self._nonce_lock = threading.Lock()
         self._last_nonce = 0
+        from cryptography.hazmat.primitives import serialization
+        scheduler = scheduler_key.public_key().public_bytes(
+            serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+        # Share ordering across client objects for the same scheduler/target.
+        with _dispatch_states_lock:
+            self._dispatch_state = _dispatch_states.setdefault(
+                (address, fingerprint, scheduler), _DispatchState())
 
     def _signed(self, request):
-        with self._nonce_lock:
-            request.nonce = max(time.time_ns(), self._last_nonce + 1)
+        with self._dispatch_state.lock, self._nonce_lock:
+            request.nonce = max(time.time_ns(), self._last_nonce + 1,
+                                self._dispatch_state.last_nonce + 1)
             self._last_nonce = request.nonce
+            self._dispatch_state.last_nonce = request.nonce
         sign(request, self.scheduler_key)
         return request
+
+    def _forward(self, request, timeout):
+        # A synchronous response confirms receiver authentication/persistence
+        # before another nonce for this scheduler/target may be dispatched.
+        with self._dispatch_state.lock:
+            return self.stub.Forward(self._signed(request), timeout=timeout)
 
     def close(self):
         self.channel.close()
@@ -321,7 +346,7 @@ class MoeExpertClient(_BaseClient):
             hidden_shape=shape, moe_call_kind='expert', moe_layer=layer,
             moe_expert=expert, moe_frame=frame,
             moe_routing_record_hash=routing_hash, moe_input_hash=input_hash)
-        response = self.stub.Forward(self._signed(request), timeout=timeout)
+        response = self._forward(request, timeout)
         receipt = response.segment_receipt
         verify(receipt)
         if (receipt.kind != 'expert' or receipt.layer != layer or
@@ -339,7 +364,7 @@ class MoeExpertClient(_BaseClient):
     def seal(self, request_id, frame, timeout=60):
         request = ShardForwardRequest(request_id=request_id, step=frame,
                                       moe_call_kind='seal', moe_frame=frame)
-        response = self.stub.Forward(self._signed(request), timeout=timeout)
+        response = self._forward(request, timeout)
         if len(response.frame_receipts) != 1:
             raise ValueError('expert seal returned no frame receipt')
         receipt = response.frame_receipts[0]
@@ -447,7 +472,7 @@ class MoeAttentionClient(_BaseClient):
             raw, shape = rows_bytes(hidden)
             request.hidden_bf16 = raw
             request.hidden_shape.extend(shape)
-        response = self.stub.Forward(self._signed(request), timeout=timeout)
+        response = self._forward(request, timeout)
         verify_attention_response(response, request_id, frame, stage_profile)
         return response
 

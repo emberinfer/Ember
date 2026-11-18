@@ -162,3 +162,11 @@ Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 ## License
 
 [Apache-2.0](LICENSE); see [NOTICE](NOTICE). Model weights have separate licenses.
+
+## ACT-2e MoE launcher reference
+
+[`ops/act2e/moe_service.py`](ops/act2e/moe_service.py) mirrors the ODSI
+ACT-2e launcher. The installed fleet launcher at
+`/root/work/act2e-nodes/moe_service.py` differs at one line: its gRPC send
+and receive limits are 320 MiB, while this reference retains ODSI's 64 MiB.
+This source reference is not a production installation or rollout.

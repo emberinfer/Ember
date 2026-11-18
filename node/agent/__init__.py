@@ -179,10 +179,15 @@ class Agent:
                 self.execution_lock.acquire()
                 executing = True
             if frame.kind == 'audit_commit':
-                payload = self.audit_transfer.finish(frame)
+                payload_path = self.audit_transfer.finish(frame)
+                try:
+                    with open(payload_path, encoding='utf-8') as payload_file:
+                        job = json.load(payload_file)
+                finally:
+                    os.unlink(payload_path)
             else:
                 payload = frame.payload
-            job = json.loads(payload)
+                job = json.loads(payload)
             contribution = getattr(self, 'contribution', None)
             if contribution is not None and frame.kind != 'tokenize':
                 acquired = contribution.acquire()

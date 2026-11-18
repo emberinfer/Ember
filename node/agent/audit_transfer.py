@@ -6,6 +6,7 @@ and commit verifies both length and the complete SHA-256 before JSON parsing.
 """
 import hashlib
 import json
+import os
 import tempfile
 import time
 
@@ -79,13 +80,26 @@ class AuditTransfer:
         if (self.file is None or m != self.manifest or self.request != frame.request_id
                 or len(self.hashes) != m['chunks']):
             raise ValueError('incomplete audit transfer')
+        path = None
         try:
             self.file.seek(0)
-            # The existing replay API consumes a whole JSON job. Transport is
-            # bounded per frame; replay still needs memory proportional to job.
-            raw = self.file.read()
-            if len(raw) != m['size'] or hashlib.sha256(raw).hexdigest() != m['sha256']:
+            digest = hashlib.sha256()
+            size = 0
+            # Named mode-0600 handoff; caller owns unlink after JSON parsing.
+            with tempfile.NamedTemporaryFile(prefix='ember-audit-job-', delete=False) as output:
+                path = output.name
+                while True:
+                    block = self.file.read(CHUNK_BYTES)
+                    if not block:
+                        break
+                    size += len(block)
+                    digest.update(block)
+                    output.write(block)
+            if size != m['size'] or digest.hexdigest() != m['sha256']:
                 raise ValueError('audit transfer integrity mismatch')
-            return raw
+            result, path = path, None
+            return result
         finally:
+            if path is not None:
+                os.unlink(path)
             self.close()

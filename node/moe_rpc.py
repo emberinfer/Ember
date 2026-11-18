@@ -8,6 +8,7 @@ experts) and the activation boundary hashes. At the end of a frame the
 attention service seals the frame: it signs its own NodeFrameReceipt and
 collects one from every expert node it called (moe_call_kind "seal").
 """
+from dataclasses import dataclass, field
 import json
 import os
 import threading
@@ -165,6 +166,16 @@ class MoeExpertService(ShardPipelineServicer):
             context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(exc))
 
 
+@dataclass
+class FrameContext:
+    request_id: str
+    frame: int
+    expert_receipts: list = field(default_factory=list)
+    pending_rows: dict = field(default_factory=dict)
+    a_att: dict = field(default_factory=dict)
+    routing: dict = field(default_factory=dict)
+
+
 class MoeAttentionService(ShardPipelineServicer):
     """Serves one backbone stage; fans out to expert clients per frame."""
 
@@ -178,34 +189,39 @@ class MoeAttentionService(ShardPipelineServicer):
         self.expert_router = expert_router
         self.auth = _SchedulerAuth(authorized_schedulers, nonce_path)
         stage.expert_call = self._expert_call
-        self._request_id = None
-        self._frame = 0
-        self._frame_expert_receipts = []
-        self._pending_rows = {}
+        self._execution_lock = threading.Lock()
+        self._next_frame = {}
 
     def _expert_client(self, layer, expert):
         if callable(self.expert_router):
             return self.expert_router(layer, expert)
         return self.expert_router.get((layer, expert))
 
-    def _expert_call(self, layer, expert, rows):
+    def _expert_call(self, frame_context, layer, expert, rows):
         client = self._expert_client(layer, expert)
         if client is None:
             raise RuntimeError(f'no expert client for {layer}/{expert}')
-        record = self.stage.pending_routing
+        record = frame_context.routing
         input_hash = activation_hash(self.signer.root, layer,
-                                     self.stage.last_a_att[layer])
-        proto = RoutingRecord(frame=self._frame, layer=layer,
+                                     frame_context.a_att[layer])
+        proto = RoutingRecord(frame=frame_context.frame, layer=layer,
                               positions=record['positions'],
                               experts=record['experts'], input_hash=input_hash)
         routing_hash = moe_core.routing_record_hash(proto)
-        out, receipt = client.call_expert(self._request_id, self._frame, layer,
+        out, receipt = client.call_expert(frame_context.request_id, frame_context.frame, layer,
                                           expert, rows, routing_hash, input_hash)
-        self._frame_expert_receipts.append(receipt)
-        self._pending_rows[(layer, expert)] = (rows, out)
+        frame_context.expert_receipts.append(receipt)
+        frame_context.pending_rows[(layer, expert)] = (rows, out)
         return out
 
     def Forward(self, request, context):
+        # Transitional per-stage fence: retain until independent isolation proof.
+        with self._execution_lock:
+            if hasattr(context, 'is_active') and not context.is_active():
+                context.abort(grpc.StatusCode.CANCELLED, 'request cancelled before execution')
+            return self._forward_locked(request, context)
+
+    def _forward_locked(self, request, context):
         try:
             self.auth.check(request)
             if request.moe_call_kind != 'attention':
@@ -213,10 +229,9 @@ class MoeAttentionService(ShardPipelineServicer):
             if (request.executed_start_layer != self.stage.start or
                     request.executed_end_layer != self.stage.end):
                 raise ValueError('executed span differs from served stage')
-            self._request_id = request.request_id
-            self._frame = request.moe_frame
-            self._frame_expert_receipts = []
-            self._pending_rows = {}
+            if request.moe_frame != self._next_frame.get(request.request_id, 0):
+                raise ValueError('unexpected or duplicate request frame')
+            frame_context = FrameContext(request.request_id, request.moe_frame)
             if request.input_ids:
                 input_ids, hidden = list(request.input_ids), None
             else:
@@ -226,7 +241,7 @@ class MoeAttentionService(ShardPipelineServicer):
                 input_ids = None
             out, records, a_att, logits, input_rows = self.stage.forward_frame(
                 request.request_id, request.moe_frame,
-                input_ids=input_ids, hidden=hidden)
+                input_ids=input_ids, hidden=hidden, frame_context=frame_context)
             root = self.signer.root
             record_protos = []
             for record in records:
@@ -254,18 +269,19 @@ class MoeAttentionService(ShardPipelineServicer):
             activations = {}
             for layer, tensor in a_att.items():
                 activations[str(layer)] = rows_bytes(tensor)[0]
-            for (layer, expert), (rin, rout) in self._pending_rows.items():
+            for (layer, expert), (rin, rout) in frame_context.pending_rows.items():
                 activations[f'expin:{layer}:{expert}'] = rows_bytes(rin)[0]
                 activations[f'expout:{layer}:{expert}'] = rows_bytes(rout)[0]
             response = ShardForwardResponse(
                 hidden_bf16=raw, hidden_shape=shape, routing_records=record_protos,
-                segment_receipt=receipt, expert_receipts=self._frame_expert_receipts,
+                segment_receipt=receipt, expert_receipts=frame_context.expert_receipts,
                 frame_receipts=frame_receipts, activations=activations)
             if logits is not None:
                 top = torch.topk(logits, 16)
                 response.token_id = int(top.indices[0])
                 response.topk_ids.extend(int(x) for x in top.indices.tolist())
                 response.topk_logits.extend(float(x) for x in top.values.tolist())
+            self._next_frame[request.request_id] = request.moe_frame + 1
             return response
         except PermissionError as exc:
             context.abort(grpc.StatusCode.UNAUTHENTICATED, str(exc))

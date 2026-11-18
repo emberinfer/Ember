@@ -11,6 +11,7 @@ dtype.
 """
 import json
 import math
+import threading
 from pathlib import Path
 
 import torch
@@ -171,8 +172,7 @@ class AttentionStage:
         self.has_head = end == layout.num_layers
         self._load()
         self._kv = {}  # request_id -> {layer: (k, v)}, plus 'pos'
-        self.last_a_att = {}   # layer -> (S, hidden) tensor, latest frame
-        self.last_records = []  # routing record dicts, latest frame
+        self._kv_lock = threading.RLock()
 
     def _load(self):
         w, dev, dt = self.weights, self.device, self.dtype
@@ -261,7 +261,24 @@ class AttentionStage:
         out = out.transpose(0, 1).reshape(S, self.hidden)
         return F.linear(out, entry['o'])
 
-    def forward_frame(self, request_id, frame, input_ids=None, hidden=None):
+    def forward_frame(self, request_id, frame, input_ids=None, hidden=None,
+                      frame_context=None):
+        # Protect KV advancement even for direct engine callers. On failure,
+        # discard partial updates; tensors are replaced, never mutated in place.
+        with self._kv_lock:
+            previous = dict(self._kv.get(request_id, {}))
+            try:
+                return self._forward_frame(request_id, frame, input_ids, hidden,
+                                           frame_context)
+            except BaseException:
+                if previous:
+                    self._kv[request_id] = previous
+                else:
+                    self._kv.pop(request_id, None)
+                raise
+
+    def _forward_frame(self, request_id, frame, input_ids=None, hidden=None,
+                       frame_context=None):
         """Process one frame. Returns (out_rows, records, a_att_map, logits,
         input_rows).
 
@@ -281,14 +298,14 @@ class AttentionStage:
                 x = hidden.to(device=self.device, dtype=self.dtype)
             input_rows = x
             S = x.shape[0]
-            self.last_a_att = {}
-            self.last_records = []
+            a_att_map = {}
+            records = []
             for offset, entry in enumerate(self.layers):
                 layer = self.start + offset
                 h = x + self._attention(entry, _rms_norm(x, entry['in_norm'], self.eps),
                                         request_id, layer)
                 a_att = _rms_norm(h, entry['post_norm'], self.eps)
-                self.last_a_att[layer] = a_att
+                a_att_map[layer] = a_att
                 logits_r = F.linear(a_att.float(), entry['gate'].float())
                 probs = torch.softmax(logits_r, dim=-1)
                 top_w, top_i = probs.topk(self.top_k, dim=-1)
@@ -296,21 +313,26 @@ class AttentionStage:
                     top_w = top_w / top_w.sum(dim=-1, keepdim=True)
                 # Exposed for the service layer: expert receipts bind the
                 # routing record of the layer currently fanning out.
-                self.pending_routing = {
+                routing = {
                     'layer': layer,
                     'experts': top_i.flatten().tolist(),
                     'positions': S,
                 }
+                if frame_context is not None:
+                    frame_context.routing = routing
+                    frame_context.a_att = a_att_map
                 combined = torch.zeros_like(a_att)
                 # Fan out per distinct expert, preserving row order.
                 for expert in sorted(set(top_i.flatten().tolist())):
                     mask = top_i == expert  # (S, k)
                     rows_idx = mask.any(dim=-1).nonzero(as_tuple=True)[0]
                     rows = a_att[rows_idx]
-                    out_rows = self.expert_call(layer, expert, rows)
+                    out_rows = (self.expert_call(frame_context, layer, expert, rows)
+                                if frame_context is not None else
+                                self.expert_call(layer, expert, rows))
                     slot_weights = (top_w * mask).sum(dim=-1)[rows_idx]
                     combined[rows_idx] += out_rows * slot_weights.to(out_rows.dtype)[:, None]
-                self.last_records.append({
+                records.append({
                     'layer': layer,
                     'experts': top_i.flatten().tolist(),
                     'positions': S,
@@ -320,7 +342,8 @@ class AttentionStage:
             if self.has_head:
                 last = _rms_norm(x[-1:], self.final_norm, self.eps)
                 logits = F.linear(last.float(), self.head.float())[0]
-            return x, self.last_records, self.last_a_att, logits, input_rows
+            return x, records, a_att_map, logits, input_rows
 
     def drop_request(self, request_id):
-        self._kv.pop(request_id, None)
+        with self._kv_lock:
+            self._kv.pop(request_id, None)

@@ -313,7 +313,66 @@ def _chain_tx(args, key_path, nonce, action):
                    check=True, timeout=60)
 
 
+def _registration_retry_delay(attempt, exc):
+    delay = min(30, 2 ** min(attempt, 5))
+    print(f'REGISTER retry in {delay}s: {exc}', flush=True)
+    time.sleep(delay)
+
+
+class _RegistrationExpired(Exception):
+    pass
+
+
+def _registration_tx(args, key_path, ident, nonce, action):
+    """Resolve uncertain broadcasts before replaying an unchanged action.
+
+    The account alone is insufficient: liveness uses the same nonce stream.
+    Confirm the exact signed profile and expiry from the committed node view.
+    Query failures leave the outcome unknown and never authorize a broadcast.
+    """
+    pending = False
+    attempt = 0
+    while True:
+        try:
+            if pending:
+                if action['type'] == 'stake':
+                    account = _chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)
+                    if int(account['stake']) >= action['_target_stake']:
+                        return
+                else:
+                    registration = _chain_json(args.chain_cli, args.chain_rpc, '/node/' + ident) or {}
+                    if (registration.get('profile') == action['profile'] and
+                            int(registration.get('expires_height', 0)) == action['expires_height']):
+                        print('REGISTER confirmed on chain after uncertain broadcast', flush=True)
+                        return
+                account = _chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)
+                nonce = int(account['nonce'])
+                if action['type'] == 'register_node' and _chain_height(args.chain_rpc) >= action['expires_height']:
+                    raise _RegistrationExpired('registration action expired before confirmation')
+                pending = False
+            pending = True
+            wire_action = {k: v for k, v in action.items() if k != '_target_stake'}
+            _chain_tx(args, key_path, nonce + 1, wire_action)
+            return
+        except _RegistrationExpired:
+            raise
+        except Exception as exc:
+            _registration_retry_delay(attempt, exc)
+            attempt += 1
+
+
 def register_on_chain(args, state, ident, profile):
+    """Keep both standalone and stage registration threads alive until success."""
+    attempt = 0
+    while True:
+        try:
+            return _register_on_chain(args, state, ident, profile)
+        except Exception as exc:
+            _registration_retry_delay(attempt, exc)
+            attempt += 1
+
+
+def _register_on_chain(args, state, ident, profile):
     if not args.chain_cli or not args.ledger_chain_id:
         raise ValueError('chain registration requires --chain-cli and --ledger-chain-id')
     key_path = state / 'identity.key'
@@ -332,9 +391,10 @@ def register_on_chain(args, state, ident, profile):
     nonce = int(account['nonce'])
     stake = int(account['stake'])
     if stake < minimum:
-        _chain_tx(args, key_path, nonce + 1,
-                  {'type': 'stake', 'amount': minimum - stake})
-        nonce += 1
+        _registration_tx(args, key_path, ident, nonce,
+                         {'type': 'stake', 'amount': minimum - stake,
+                          '_target_stake': minimum})
+        nonce = int(_chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)['nonce'])
     chain_state = _chain_state_targeted(args.chain_cli, args.chain_rpc, profile.chain_id, ident)
     prior = chain_state.get('nodes', {}).get(ident)
     for _ in range(30):
@@ -355,20 +415,7 @@ def register_on_chain(args, state, ident, profile):
               **({'caps': {'profiles': args._contribution_policy['profiles'],
                             'global': args._contribution_policy['global']}}
                  if hasattr(args, '_contribution_policy') else {})}
-    # The liveness thread signs proofs from the same account; a proof landing
-    # between the nonce read above and this submission would stale the nonce.
-    # Re-read the account and retry instead of failing the registration.
-    for attempt in range(4):
-        try:
-            _chain_tx(args, key_path, nonce + 1, action)
-            return
-        except Exception:
-            if attempt == 3:
-                raise
-            time.sleep(1)
-            account = _chain_json(args.chain_cli, args.chain_rpc,
-                                  '/account/' + ident)
-            nonce = int(account['nonce'])
+    _registration_tx(args, key_path, ident, nonce, action)
 
 
 def liveness_due(height, last_proof, window, threshold=300, minimum=60):

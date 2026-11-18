@@ -10,6 +10,7 @@ sys.path[:0] = [str(Path(__file__).resolve().parents[1] / 'proto'),
                 str(Path(__file__).resolve().parent)]
 
 import grpc
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 import moe_rpc
 
 
@@ -17,7 +18,8 @@ class MoeMessageLimitTests(unittest.TestCase):
     def test_client_options_and_tensor_bound(self):
         with patch.object(moe_rpc, 'pinned_channel') as channel, \
                 patch.object(moe_rpc, 'ShardPipelineStub'):
-            client = moe_rpc._BaseClient('127.0.0.1:1@fingerprint', object())
+            client = moe_rpc._BaseClient('127.0.0.1:1@fingerprint',
+                                         Ed25519PrivateKey.generate())
             options = dict(channel.call_args.args[2])
             self.assertEqual(options, {
                 'grpc.max_send_message_length': 335_544_320,

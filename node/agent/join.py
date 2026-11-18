@@ -227,7 +227,7 @@ def _join_single(args, shared):
             p = ResourceProfile(node_id=ident, chain_id=args.chain, gpu=agent.engine.device,
                 memory_bytes=os.sysconf('SC_PHYS_PAGES') * os.sysconf('SC_PAGE_SIZE'),
                 engine_ver=args.engine + '-v1', benchmark_result_ref=observed,
-                expires_unix=int(time.time()) + 120, manifest_root=genesis.model_manifest_root,
+                expires_unix=int(time.time()) + 240, manifest_root=genesis.model_manifest_root,
                 execution_profile_ver=genesis.execution_profile_ver,
                 requested_device=runtime.get('requested_device', ''),
                 actual_device=runtime.get('actual_device', agent.engine.device),

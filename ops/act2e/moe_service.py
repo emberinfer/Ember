@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 import sys
-ROOT=Path(os.environ.get('EMBER_MOE_TREE','/root/work/ODSI-act2a'))
+ROOT=Path(os.environ.get('EMBER_MOE_TREE',Path(__file__).resolve().parent.parent.parent))
 sys.path[:0]=[str(ROOT/p) for p in ('proto','core-py','node')]
 import grpc
 import torch

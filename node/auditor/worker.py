@@ -71,7 +71,7 @@ def execute(agent, frame, job):
     # The durable gateway driver owns retries; replay only finalized assignments.
     if hold.get('auditor') != agent.node_id or hold['state'] != 'dispute':
         raise ValueError('not the finalized assigned auditor')
-    state = {'accounts': {agent.node_id: query('/account/' + agent.node_id)}}
+    state = {}
     if job.get("kind") == "pipeline" and job.get("drawn_stage") is not None:
         return execute_range(agent, frame, job, state, hold)
     state.update(parameters=query('/parameters'), nodes={}, models={})
@@ -207,7 +207,8 @@ def execute(agent, frame, job):
     action = dict(type='audit', hold_id=frame.request_id,
         challenge=base64.b64encode(challenge.SerializeToString(deterministic=True)).decode(),
         verdict=base64.b64encode(signed.SerializeToString(deterministic=True)).decode())
-    result = audit_envelopes(agent, hold, signed, action, state['accounts'][agent.node_id]['nonce'])
+    nonce = query('/account/' + agent.node_id)['nonce']
+    result = audit_envelopes(agent, hold, signed, action, nonce)
     result.update(verdict=verdict, distance=distance if math.isfinite(distance) else 1e30,
                   grade=result_grade)
     return json.dumps(result).encode()
@@ -260,9 +261,40 @@ def execute_range(agent, frame, job, state, hold):
         verdict=base64.b64encode(signed.SerializeToString(deterministic=True)).decode())
     envelope = dict(chain_id=agent.chain_args.ledger_chain_id,
         public_key=base64.b64encode(bytes(signed.signer)).decode(),
-        nonce=state['accounts'][agent.node_id]['nonce'] + 1, action=action, signature=None)
+        nonce=_fresh_audit_nonce(agent) + 1, action=action, signature=None)
     raw = json.dumps(envelope, separators=(',', ':'), ensure_ascii=False).encode()
     envelope['signature'] = base64.b64encode(agent.key.sign(b'ember/chain-tx/v1\x00' + raw)).decode()
     return json.dumps(dict(envelope=base64.b64encode(json.dumps(envelope,
         separators=(',', ':')).encode()).decode(), verdict=verdict,
         distance=distance if math.isfinite(distance) else 1e30, grade='pipeline-range-v2')).encode()
+
+
+def _fresh_audit_nonce(agent):
+    from agent.join import _chain_json
+    args = agent.chain_args
+    return _chain_json(args.chain_cli, args.chain_rpc, '/account/' + agent.node_id)['nonce']
+
+
+def cache_verdict(payload):
+    """Keep immutable result/action bytes, never a signed outer envelope."""
+    result = json.loads(payload)
+    templates = []
+    for name in ('pre_envelope', 'envelope'):
+        if name in result:
+            envelope = json.loads(base64.b64decode(result.pop(name)))
+            envelope.pop('signature')
+            envelope.pop('nonce')
+            templates.append((name, json.dumps(envelope, separators=(',', ':')).encode()))
+    return json.dumps(result, separators=(',', ':')).encode(), tuple(templates)
+
+
+def resend_verdict(agent, cached):
+    from auditor.binding import signed_envelope
+    summary, templates = cached
+    result = json.loads(summary)
+    nonce = _fresh_audit_nonce(agent)
+    for offset, (name, raw) in enumerate(templates, 1):
+        envelope = json.loads(raw)
+        result[name] = signed_envelope(agent, envelope['action'], nonce + offset,
+                                      base64.b64decode(envelope['public_key']))
+    return json.dumps(result).encode()

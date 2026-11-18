@@ -1,6 +1,8 @@
 """Outbound gRPC tunnel with retry and attempt-scoped replies."""
 import hashlib
 import copy
+import logging
+from collections import OrderedDict
 import json
 import os
 from pathlib import Path
@@ -26,6 +28,9 @@ class Agent:
         self.key = key or Ed25519PrivateKey.generate()
         self.sessions = {}
         self.audit_transfer = AuditTransfer()
+        self.audit_verdicts = OrderedDict()
+        self.audit_verdicts_lock = threading.Lock()
+        self.audit_commits = set()
         self.authorized_schedulers = set(authorized_schedulers or ())
         self.scheduler_nonce_path = Path(scheduler_nonce_path) if scheduler_nonce_path else None
         self.scheduler_nonces = self._load_scheduler_nonces()
@@ -135,6 +140,13 @@ class Agent:
                         if trace is not None:
                             trace.finish('disconnected')
 
+    @staticmethod
+    def _log_audit_result(request_id, payload):
+        result = json.loads(payload)
+        summary = {k: v for k, v in result.items() if k not in ('envelope', 'pre_envelope')}
+        logging.getLogger(__name__).warning('audit_result request_id=%s summary=%s',
+                                          request_id, json.dumps(summary, sort_keys=True))
+
     def _run(self, frame, outgoing):
         trace = None
         if self._forward_traces is not None and frame.kind == 'run':
@@ -170,6 +182,15 @@ class Agent:
                 ack = self.audit_transfer.accept(frame)
                 send('audit_chunk_ack', ack)
                 return
+            if frame.kind == 'audit_commit':
+                with self.audit_verdicts_lock:
+                    cached = self.audit_verdicts.get(frame.request_id)
+                if cached is not None:
+                    from auditor.worker import resend_verdict
+                    result = resend_verdict(self, cached)
+                    send('audit_result', result)
+                    self._log_audit_result(frame.request_id, result)
+                    return
             if frame.kind in ('run', 'audit', 'audit_commit'):
                 kind = 'audit' if frame.kind in ('audit', 'audit_commit') else 'execution'
                 if not self.claims.claim(kind, frame.request_id):
@@ -178,6 +199,12 @@ class Agent:
             if frame.kind in ('run', 'tokenize'):
                 self.execution_lock.acquire()
                 executing = True
+            if frame.kind == 'audit_commit':
+                with self.audit_verdicts_lock:
+                    if frame.request_id in self.audit_commits:
+                        send('unavailable', b'duplicate task: already claimed in this process')
+                        return
+                    self.audit_commits.add(frame.request_id)
             if frame.kind == 'audit_commit':
                 payload_path = self.audit_transfer.finish(frame)
                 try:
@@ -196,7 +223,16 @@ class Agent:
                     return
             if frame.kind in ('audit', 'audit_commit'):
                 from .audit_engine import execute
-                send('audit_result', execute(self, frame, job))
+                result = execute(self, frame, job)
+                if frame.kind == 'audit_commit':
+                    from auditor.worker import cache_verdict
+                    cached = cache_verdict(result)
+                    with self.audit_verdicts_lock:
+                        self.audit_verdicts[frame.request_id] = cached
+                        while len(self.audit_verdicts) > 16:
+                            self.audit_verdicts.popitem(last=False)
+                send('audit_result', result)
+                self._log_audit_result(frame.request_id, result)
                 return
             prompt, seed = job['prompt'], job['seed']
             from reasoning import prepare

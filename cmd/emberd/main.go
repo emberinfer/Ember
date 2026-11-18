@@ -886,7 +886,7 @@ func main() {
 					return errors.New(string(f.Payload))
 				}
 				if f.Kind != "audit_result" {
-					return errors.New("unexpected audit reply")
+					return fmt.Errorf("unexpected audit reply kind=%q", f.Kind)
 				}
 				var result struct {
 					Envelope    string `json:"envelope"`

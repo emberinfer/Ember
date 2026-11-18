@@ -12,12 +12,63 @@ import json
 import os
 from pathlib import Path
 import sys
+import threading
+import time
+import resource
 
 ROOT = Path(os.environ.get('EMBER_MOE_TREE', Path(__file__).resolve().parent.parent))
 sys.path[:0] = [str(ROOT / p) for p in ('proto', 'core-py', 'node')]
 
 
+def lifecycle_marker(event, **fields):
+    # An allowlisted schema: never log request IDs, exception text, or inputs.
+    payload = {'channel': 'moe_executor_lifecycle', 'event': event,
+               'pid': os.getpid(), 'monotonic_ns': time.monotonic_ns()}
+    payload.update(fields)
+    try:
+        print(json.dumps(payload, sort_keys=True), file=sys.stderr, flush=True)
+    except (OSError, ValueError):
+        pass  # Diagnostics must not change protocol behavior.
+
+
+def resource_sample():
+    sample = {'rss_peak_bytes': resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024}
+    for base, usage, events in (
+            ('/sys/fs/cgroup', 'memory.current', 'memory.events'),
+            ('/sys/fs/cgroup/memory', 'memory.usage_in_bytes', 'memory.oom_control')):
+        try:
+            memory = int((Path(base) / usage).read_text())
+            counters = dict(line.split() for line in (Path(base) / events).read_text().splitlines())
+            sample.update(cgroup_path=base, memory_current=memory,
+                          oom_kill=int(counters['oom_kill']))
+            break
+        except (OSError, ValueError, KeyError):
+            continue
+    return sample
+
+
+def run_executor(entry=None):
+    stop = threading.Event()
+    def periodic():
+        while not stop.wait(1.0):
+            lifecycle_marker('resource', **resource_sample())
+    sampler = threading.Thread(target=periodic, name='moe-resource-sampler', daemon=True)
+    lifecycle_marker('start', **resource_sample())
+    sampler.start()
+    try:
+        (entry or main)()
+    except BaseException as exc:
+        lifecycle_marker('error', error_type=type(exc).__name__, **resource_sample())
+        raise
+    else:
+        lifecycle_marker('done', **resource_sample())
+    finally:
+        stop.set()
+        sampler.join(timeout=2)
+
+
 def main():
+    lifecycle_marker('phase', phase='read_input')
     q = json.load(sys.stdin)
     stream = os.environ.get('EMBER_MOE_STREAM', '1') != '0'
     real_stdout = sys.stdout
@@ -47,10 +98,12 @@ def main():
             state['previous'] = decoded
             state['emitted'] += 1
 
+        lifecycle_marker('phase', phase='generate')
         if stream:
             receipt, evidence = assembler.generate(q['request_id'], q['prompt'], q['max_tokens'], on_token=emit_tokens)
         else:
             receipt, evidence = assembler.generate(q['request_id'], q['prompt'], q['max_tokens'])
+        lifecycle_marker('phase', phase='save_evidence')
         directory = Path(q['evidence_root']) / q['request_id']
         assembler.save_evidence(directory, receipt, evidence, q['prompt'], tokenizer(q['prompt']).input_ids)
     if stream:
@@ -68,4 +121,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    run_executor()

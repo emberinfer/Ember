@@ -2,6 +2,8 @@ package gateway
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -13,24 +15,88 @@ import (
 	"time"
 )
 
-// Protocol result lines include all invocation tensors and grow with generation
-// length. ReadBytes preserves framing without Scanner's fixed token ceiling.
+// eventReader bounds line framing memory independently of result length. Large
+// lines and all result frames live on the configured working-directory disk.
 type eventReader struct {
-	r    *bufio.Reader
-	line []byte
-	err  error
+	r       *bufio.Reader
+	line    []byte
+	err     error
+	file    *os.File
+	workDir string
+	spool   bool
 }
 
-func newEventReader(r io.Reader) *eventReader { return &eventReader{r: bufio.NewReader(r)} }
+func newEventReader(r io.Reader, dir ...string) *eventReader {
+	workDir := "."
+	if len(dir) > 0 && dir[0] != "" {
+		workDir = dir[0]
+	}
+	return &eventReader{r: bufio.NewReaderSize(r, 64<<10), workDir: workDir, spool: len(dir) > 0}
+}
+func (r *eventReader) Close() {
+	if r.file != nil {
+		name := r.file.Name()
+		r.file.Close()
+		os.Remove(name)
+		r.file = nil
+	}
+}
 func (r *eventReader) Scan() bool {
+	r.Close()
+	if !r.spool {
+		if r.err != nil {
+			return false
+		}
+		r.line, r.err = r.r.ReadBytes('\n')
+		if r.err == io.EOF && len(r.line) > 0 {
+			r.err = io.ErrUnexpectedEOF
+		}
+		return r.err == nil
+	}
+	r.line = nil
 	if r.err != nil {
 		return false
 	}
-	r.line, r.err = r.r.ReadBytes('\n')
-	if r.err == io.EOF && len(r.line) > 0 {
-		r.err = io.ErrUnexpectedEOF
+	for {
+		chunk, err := r.r.ReadSlice('\n')
+		if r.file == nil && (err == bufio.ErrBufferFull) {
+			r.file, r.err = createPipelineTemp(r.workDir, ".pipeline-result-*")
+			if r.err != nil {
+				return false
+			}
+		}
+		if r.file != nil {
+			if _, r.err = r.file.Write(chunk); r.err != nil {
+				return false
+			}
+		} else {
+			r.line = append(r.line, chunk...)
+		}
+		if err == bufio.ErrBufferFull {
+			continue
+		}
+		if err == io.EOF && (len(chunk) > 0 || r.file != nil) {
+			err = io.ErrUnexpectedEOF
+		}
+		r.err = err
+		if err != nil {
+			return false
+		}
+		if r.file == nil {
+			var event struct {
+				Type string `json:"type"`
+			}
+			if json.Unmarshal(r.line, &event) == nil && event.Type == "result" {
+				r.file, r.err = createPipelineTemp(r.workDir, ".pipeline-result-*")
+				if r.err != nil {
+					return false
+				}
+				_, r.err = io.Copy(r.file, bytes.NewReader(r.line))
+				r.line = nil
+			}
+		}
+		return r.err == nil
 	}
-	return r.err == nil
 }
 func (r *eventReader) Bytes() []byte { return r.line }
 func (r *eventReader) Err() error {
@@ -110,4 +176,18 @@ func persistExecutorFailure(workDir, id, kind string, stderr string) string {
 		return "unavailable"
 	}
 	return f.Name()
+}
+
+func createPipelineTemp(dir, pattern string) (*os.File, error) {
+	f, err := os.CreateTemp(dir, pattern)
+	if err != nil {
+		return nil, err
+	}
+	// Unlink immediately: evidence retention is an explicit copy into the durable
+	// audit queue, and a killed gateway must not leave multi-GB scratch files.
+	if err = os.Remove(f.Name()); err != nil {
+		f.Close()
+		return nil, err
+	}
+	return f, nil
 }

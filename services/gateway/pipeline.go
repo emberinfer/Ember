@@ -15,6 +15,7 @@ import (
 
 	core "ember/core-go"
 	pb "ember/proto"
+	"ember/services/jsonspool"
 	"ember/services/ledger"
 	"ember/services/scheduler"
 	"ember/services/verifier"
@@ -34,6 +35,8 @@ type PipelineConfig struct {
 }
 
 type PipelineExecution struct {
+	// Source remains valid through both callbacks; retainers must copy to durable storage.
+	Source      *jsonspool.Object
 	Receipt     *pb.PipelineExecutionReceipt
 	Invocations []verifier.PipelineInvocation
 	Openings    json.RawMessage
@@ -248,10 +251,28 @@ func (g *Gateway) servePipeline(w http.ResponseWriter, r *http.Request, q reques
 	tokenCount := 0
 	var stageStarted time.Time
 	var consumerStages []ledger.ConsumerStageObservation
-	scanner := newEventReader(stdout)
+	scanner := newEventReader(stdout, g.Pipeline.WorkDir)
+	defer scanner.Close()
+	var resultSource *jsonspool.Object
+	defer func() {
+		if resultSource != nil {
+			f := resultSource.File
+			f.Close()
+			os.Remove(f.Name())
+		}
+	}()
 	for scanner.Scan() {
 		var event pipelineEvent
-		if err = json.Unmarshal(scanner.Bytes(), &event); err != nil {
+		var source *jsonspool.Object
+		if scanner.file != nil {
+			source, err = jsonspool.Index(scanner.file)
+			if err == nil {
+				event, err = decodeSpoolEvent(source)
+			}
+		} else {
+			err = json.Unmarshal(scanner.Bytes(), &event)
+		}
+		if err != nil {
 			break
 		}
 		if result != nil {
@@ -294,6 +315,8 @@ func (g *Gateway) servePipeline(w http.ResponseWriter, r *http.Request, q reques
 				}
 			}
 		case "result":
+			resultSource = source
+			scanner.file = nil // transfer lifetime through the audit callbacks
 			copy := event
 			result = &copy
 		default:
@@ -343,25 +366,23 @@ func (g *Gateway) servePipeline(w http.ResponseWriter, r *http.Request, q reques
 	consumerElapsed := time.Since(consumerStarted)
 	var execution PipelineExecution
 	if err == nil {
-		receiptBytes, decodeErr := hex.DecodeString(result.Receipt)
-		if decodeErr != nil {
-			err = decodeErr
-		} else {
-			execution.Receipt = &pb.PipelineExecutionReceipt{}
-			err = proto.Unmarshal(receiptBytes, execution.Receipt)
+		execution.Source = resultSource
+		receiptHex := result.Receipt
+		if err == nil {
+			var raw []byte
+			raw, err = hex.DecodeString(receiptHex)
+			if err == nil {
+				execution.Receipt = &pb.PipelineExecutionReceipt{}
+				err = proto.Unmarshal(raw, execution.Receipt)
+			}
 		}
-		execution.Openings, execution.Failovers = result.Openings, result.Failovers
 		execution.Prompt, execution.Seed, execution.TTFT = prompt, q.Seed, ttft
-		for _, invocation := range result.Invocations {
-			requestWire, requestErr := hex.DecodeString(invocation.Request)
-			responseWire, responseErr := hex.DecodeString(invocation.Response)
-			profileWire, profileErr := hex.DecodeString(invocation.Profile)
-			if requestErr != nil || responseErr != nil || profileErr != nil {
-				err = errors.New("invalid pipeline invocation encoding")
+		// Validate encodings before receipt/token-count checks, as the slice path did.
+		for i := 0; i < execution.InvocationCount(); i++ {
+			if _, invErr := execution.ReadInvocation(i); invErr != nil {
+				err = invErr
 				break
 			}
-			execution.Invocations = append(execution.Invocations, verifier.PipelineInvocation{
-				Request: requestWire, Response: responseWire, Profile: profileWire, StageMS: invocation.StageMS})
 		}
 	}
 	if err == nil && (execution.Receipt.RequestId != holdID || int(execution.Receipt.OutputTokens) != tokenCount || tokenCount > q.MaxTokens) {
@@ -371,8 +392,8 @@ func (g *Gateway) servePipeline(w http.ResponseWriter, r *http.Request, q reques
 		err = errors.New("pipeline input token count mismatch")
 	}
 	if err == nil {
-		_, err = verifier.VerifyPipelineExecution(execution.Receipt, execution.Invocations,
-			q.Model, g.Manifest, g.Profile, g.TotalLayers)
+		_, err = core.VerifyPipelineExecutionStream(execution.Receipt, execution.InvocationCount(), execution.ReadInvocation,
+			q.Model, g.Manifest, g.Profile, g.TotalLayers, g.Pipeline.WorkDir)
 	}
 	if err == nil && g.BeforePipelineSubmit != nil {
 		err = g.BeforePipelineSubmit(&execution, prompt, q.Seed)
@@ -408,7 +429,7 @@ func (g *Gateway) servePipeline(w http.ResponseWriter, r *http.Request, q reques
 		return
 	}
 	atomic.AddUint64(&g.succeeded, 1)
-	log.Printf("PIPELINE REQUEST id=%s tokens=%d failovers=%s", requestID, tokenCount, execution.Failovers)
+	log.Printf("PIPELINE REQUEST id=%s tokens=%d failovers=%d", requestID, tokenCount, len(execution.Source.Arrays["failovers"]))
 	if q.Stream {
 		fmt.Fprint(w, "data: [DONE]\n\n")
 		return
@@ -430,7 +451,11 @@ func (g *Gateway) recordPipelineSpeed(e *PipelineExecution, now time.Time) {
 		duration time.Duration
 	}
 	samples := map[key]aggregate{}
-	for _, inv := range e.Invocations {
+	for i := 0; i < e.InvocationCount(); i++ {
+		inv, err := e.ReadInvocation(i)
+		if err != nil {
+			continue
+		}
 		p := &pb.ResourceProfile{}
 		if proto.Unmarshal(inv.Profile, p) != nil || inv.StageMS <= 0 {
 			continue

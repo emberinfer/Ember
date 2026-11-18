@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"time"
 
 	pb "ember/proto"
@@ -27,12 +28,31 @@ type auditManifest struct {
 }
 
 func (s *Server) audit(ctx context.Context, node, request, attempt string, payload []byte, receive func(*pb.TunnelFrame) error) error {
-	// Preserve the existing small-job wire protocol.
-	if len(payload) <= auditChunkBytes {
-		return s.run(ctx, node, request, attempt, "audit", payload, receive)
+	return s.AuditReader(ctx, node, request, attempt, bytes.NewReader(payload), int64(len(payload)), receive)
+}
+
+// AuditReader keeps the existing manifest, chunk boundaries, hashes and retries,
+// but reads evidence from a seekable disk spool rather than a whole-job slice.
+func (s *Server) AuditReader(ctx context.Context, node, request, attempt string, payload io.ReadSeeker, size int64, receive func(*pb.TunnelFrame) error) error {
+	if _, err := payload.Seek(0, io.SeekStart); err != nil {
+		return err
 	}
-	root := sha256.Sum256(payload)
-	manifest, err := json.Marshal(auditManifest{1, hex.EncodeToString(root[:]), len(payload), (len(payload) + auditChunkBytes - 1) / auditChunkBytes})
+	if size <= auditChunkBytes {
+		raw, err := io.ReadAll(io.LimitReader(payload, auditChunkBytes+1))
+		if err != nil {
+			return err
+		}
+		return s.run(ctx, node, request, attempt, "audit", raw, receive)
+	}
+	h := sha256.New()
+	if _, err := io.Copy(h, payload); err != nil {
+		return err
+	}
+	root := h.Sum(nil)
+	if _, err := payload.Seek(0, io.SeekStart); err != nil {
+		return err
+	}
+	manifest, err := json.Marshal(auditManifest{1, hex.EncodeToString(root), int(size), int((size + auditChunkBytes - 1) / auditChunkBytes)})
 	if err != nil {
 		return err
 	}
@@ -58,16 +78,19 @@ func (s *Server) audit(ctx context.Context, node, request, attempt string, paylo
 		}
 		return last
 	}
-	if err = ack("audit_begin", "begin", manifest, root[:]); err != nil {
+	if err = ack("audit_begin", "begin", manifest, root); err != nil {
 		return err
 	}
-	for index, offset := 0, 0; offset < len(payload); index, offset = index+1, offset+auditChunkBytes {
-		end := offset + auditChunkBytes
-		if end > len(payload) {
-			end = len(payload)
+	for index, offset := 0, int64(0); offset < size; index, offset = index+1, offset+auditChunkBytes {
+		length := int64(auditChunkBytes)
+		if size-offset < length {
+			length = size - offset
 		}
-		data := payload[offset:end]
-		wire, e := proto.Marshal(&pb.EvidenceChunk{ManifestRoot: root[:], Index: uint32(index), Data: data})
+		data := make([]byte, int(length))
+		if _, err = io.ReadFull(payload, data); err != nil {
+			return err
+		}
+		wire, e := proto.Marshal(&pb.EvidenceChunk{ManifestRoot: root, Index: uint32(index), Data: data})
 		if e != nil {
 			return e
 		}

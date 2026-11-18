@@ -3,6 +3,7 @@ package gateway
 import (
 	"bytes"
 	"context"
+	"ember/services/jsonspool"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -96,7 +97,7 @@ func startPipeline(ctx context.Context, c PipelineConfig, raw []byte, stderr io.
 			pool.slots <- nil
 			return legacyPipeline(ctx, c, raw, stderr)
 		}
-		scan := newEventReader(out)
+		scan := newEventReader(out, c.WorkDir)
 		d = &pipelineDaemon{cmd, in, scan}
 	}
 	reader, writer := io.Pipe()
@@ -124,6 +125,7 @@ func startPipeline(ctx context.Context, c PipelineConfig, raw []byte, stderr io.
 			<-watcherDone
 			healthy = healthy && ctx.Err() == nil
 			if !healthy {
+				d.scan.Close()
 				_ = d.cmd.Process.Kill()
 				_ = d.in.Close()
 				_ = waitExecutor(d.cmd)
@@ -137,6 +139,22 @@ func startPipeline(ctx context.Context, c PipelineConfig, raw []byte, stderr io.
 			return
 		}
 		for d.scan.Scan() {
+			if d.scan.file != nil {
+				source, e := jsonspool.Index(d.scan.file)
+				if e != nil {
+					jobErr = e
+					return
+				}
+				var kind string
+				if jobErr = source.Decode("type", &kind); jobErr != nil {
+					return
+				}
+				if _, jobErr = io.Copy(writer, source.Reader(jsonspool.Span{Start: 0, End: func() int64 { st, _ := d.scan.file.Stat(); return st.Size() }()})); jobErr != nil {
+					return
+				}
+				d.scan.Close()
+				continue
+			}
 			line := append([]byte{}, d.scan.Bytes()...)
 			var end struct {
 				Type  string `json:"type"`

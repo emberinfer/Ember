@@ -19,6 +19,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"math/big"
 	"net"
@@ -41,6 +42,7 @@ import (
 	"ember/services/evidence"
 	"ember/services/faucet"
 	"ember/services/gateway"
+	"ember/services/jsonspool"
 	"ember/services/ledger"
 	"ember/services/scheduler"
 	"ember/services/tracker"
@@ -633,11 +635,34 @@ func main() {
 			}{hex.EncodeToString(invocation.Request), hex.EncodeToString(invocation.Response),
 				hex.EncodeToString(invocation.Profile), invocation.StageMS})
 		}
+		if execution.Source != nil {
+			if _, ok := execution.Source.Fields["openings"]; ok {
+				job.Openings = json.RawMessage("null")
+			}
+			if _, ok := execution.Source.Fields["failovers"]; ok {
+				job.Failovers = json.RawMessage("null")
+			}
+			// A single metadata placeholder is replaced by the disk array.
+			if execution.InvocationCount() > 0 {
+				job.Invocations = append(job.Invocations, struct {
+					Request  string  `json:"request"`
+					Response string  `json:"response"`
+					Profile  string  `json:"profile"`
+					StageMS  float64 `json:"stage_ms"`
+				}{})
+			}
+		}
 		raw, err := json.Marshal(job)
 		if err != nil {
 			return err
 		}
-		return spool.Put(execution.Receipt.RequestId, raw)
+		return spool.PutStream(execution.Receipt.RequestId, func(w io.Writer) error {
+			if execution.Source == nil {
+				_, err := w.Write(raw)
+				return err
+			}
+			return gateway.WritePipelineAudit(w, raw, execution.Source)
+		})
 	}
 	var routeMu sync.Mutex
 	auditorBusy := map[string]bool{}
@@ -653,7 +678,32 @@ func main() {
 			}
 			return
 		}
-		raw, err := spool.Get(id)
+		evidenceFile, err := spool.OpenJob(id)
+		if err != nil {
+			log.Printf("AUDIT SPOOL READ %s: %v", id, err)
+			return
+		}
+		defer evidenceFile.Close()
+		indexed, err := jsonspool.Index(evidenceFile)
+		if err != nil {
+			log.Printf("AUDIT SPOOL DECODE %s: %v", id, err)
+			return
+		}
+		var kind string
+		if err = indexed.Decode("kind", &kind); err != nil {
+			return
+		}
+		var auditSource *jsonspool.Object
+		var raw []byte
+		if kind == "pipeline" {
+			auditSource = indexed
+			raw, err = indexed.Metadata("openings", "invocations", "failovers")
+		} else {
+			_, err = evidenceFile.Seek(0, io.SeekStart)
+			if err == nil {
+				raw, err = io.ReadAll(evidenceFile)
+			}
+		}
 		if err != nil {
 			log.Printf("AUDIT SPOOL READ %s: %v", id, err)
 			return
@@ -662,6 +712,54 @@ func main() {
 		if err = json.Unmarshal(raw, &job); err != nil {
 			log.Printf("AUDIT SPOOL DECODE %s: %v", id, err)
 			return
+		}
+		if auditSource != nil {
+			if _, ok := auditSource.Fields["openings"]; ok {
+				job.Openings = json.RawMessage("null")
+			}
+			if _, ok := auditSource.Fields["failovers"]; ok {
+				job.Failovers = json.RawMessage("null")
+			}
+			if len(auditSource.Arrays["invocations"]) > 0 {
+				job.Invocations = append(job.Invocations, struct {
+					Request  string  `json:"request"`
+					Response string  `json:"response"`
+					Profile  string  `json:"profile"`
+					StageMS  float64 `json:"stage_ms"`
+				}{})
+			}
+		}
+		if auditSource != nil {
+			raw, err = json.Marshal(job)
+			if err != nil {
+				return
+			}
+		}
+		// Build a transient package only when an auditor actually consumes it.
+		// Durable evidence stays in the original queue across retries/recovery.
+		packageJob := func(metadata []byte) (*os.File, error) {
+			f, e := os.CreateTemp(".", ".pipeline-audit-*")
+			if e != nil {
+				return nil, e
+			}
+			if e = os.Remove(f.Name()); e != nil {
+				f.Close()
+				return nil, e
+			}
+			if auditSource != nil {
+				e = gateway.WritePipelineAudit(f, metadata, auditSource)
+			} else {
+				_, e = f.Write(metadata)
+			}
+			if e == nil {
+				_, e = f.Seek(0, io.SeekStart)
+			}
+			if e != nil {
+				f.Close()
+				os.Remove(f.Name())
+				return nil, e
+			}
+			return f, nil
 		}
 		if chainBook != nil {
 			unaudited, resolveErr := chainBook.ResolveAudit(id)
@@ -762,10 +860,20 @@ func main() {
 			auditorBusy[hold.Auditor] = true
 			routeMu.Unlock()
 			defer func() { routeMu.Lock(); delete(auditorBusy, hold.Auditor); routeMu.Unlock() }()
+			var envelope, preEnvelope []byte
+			packageFile, routeErr := packageJob(routed)
+			if routeErr != nil {
+				log.Printf("AUDIT JOB %s: %v", id, routeErr)
+				return
+			}
+			defer func() { packageFile.Close(); os.Remove(packageFile.Name()) }()
+			packageStat, routeErr := packageFile.Stat()
+			if routeErr != nil {
+				return
+			}
 			ctx, cancel := context.WithTimeout(context.Background(), *auditTimeout)
 			defer cancel()
-			var envelope, preEnvelope []byte
-			routeErr = relay.Audit(ctx, hold.Auditor, id, fmt.Sprintf("audit-%s-%d", id, time.Now().UnixNano()), routed, func(f *pb.TunnelFrame) error {
+			routeErr = relay.AuditReader(ctx, hold.Auditor, id, fmt.Sprintf("audit-%s-%d", id, time.Now().UnixNano()), packageFile, packageStat.Size(), func(f *pb.TunnelFrame) error {
 				if f.Kind == "error" {
 					return errors.New(string(f.Payload))
 				}
@@ -857,9 +965,26 @@ func main() {
 			log.Printf("AUDIT DRAW ERROR %s %v", id, err)
 			return
 		}
+		packageFile, err := packageJob(raw)
+		if err != nil {
+			log.Printf("AUDIT JOB WRITE %s: %v", id, err)
+			return
+		}
+		defer func() { packageFile.Close(); os.Remove(packageFile.Name()) }()
 		if *auditJobDir != "" {
-			if err := os.WriteFile(fmt.Sprintf("%s/%s.json", *auditJobDir, id), raw, 0600); err != nil {
-				log.Printf("AUDIT JOB WRITE %s: %v", id, err)
+			dst, e := os.OpenFile(fmt.Sprintf("%s/%s.json", *auditJobDir, id), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+			if e == nil {
+				_, e = io.Copy(dst, packageFile)
+				closeErr := dst.Close()
+				if e == nil {
+					e = closeErr
+				}
+			}
+			if e == nil {
+				_, e = packageFile.Seek(0, io.SeekStart)
+			}
+			if e != nil {
+				log.Printf("AUDIT JOB WRITE %s: %v", id, e)
 				return
 			}
 		}
@@ -870,7 +995,7 @@ func main() {
 		command.Cancel = func() error { return syscall.Kill(-command.Process.Pid, syscall.SIGKILL) }
 		command.WaitDelay = 5 * time.Second
 		command.Env = replaceEnv(os.Environ(), "PYTHONPATH", *auditorPythonPath)
-		command.Stdin = bytes.NewReader(raw)
+		command.Stdin = packageFile
 		var stderr bytes.Buffer
 		command.Stderr = &stderr
 		result, err := command.Output()
@@ -907,6 +1032,15 @@ func main() {
 			return
 		}
 		evidenceRef := sha256.Sum256(job.Openings)
+		if auditSource != nil {
+			h := sha256.New()
+			if span, ok := auditSource.Fields["openings"]; ok {
+				if err = jsonspool.Compact(h, auditSource.Reader(span)); err != nil {
+					return
+				}
+			}
+			copy(evidenceRef[:], h.Sum(nil))
+		}
 		signedVerdict := &pb.AuditVerdict{ChallengeRef: challengeRef, AuditorId: "local-reference", Distances: []float64{verdict.Distance}, Verdict: verdict.Verdict, EvidenceRef: evidenceRef[:], AuditPolicyRef: policyRef, FaultNodeIds: verdict.FaultNodeIDs, Offense: verdict.Offense}
 		if job.EvidenceManifest != nil {
 			signedVerdict.EvidenceRef = job.EvidenceManifest.MerkleRoot

@@ -2,6 +2,7 @@ package auditqueue
 
 import (
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -35,6 +36,11 @@ func (q *Queue) path(id string) (string, error) {
 }
 
 func (q *Queue) Put(id string, data []byte) error {
+	return q.PutStream(id, func(w io.Writer) error { _, err := w.Write(data); return err })
+}
+
+// PutStream retains the atomic rename/fsync and idempotent Put semantics.
+func (q *Queue) PutStream(id string, write func(io.Writer) error) error {
 	target, err := q.path(id)
 	if err != nil {
 		return err
@@ -51,7 +57,7 @@ func (q *Queue) Put(id string, data []byte) error {
 	tmp := f.Name()
 	defer os.Remove(tmp)
 	if err = f.Chmod(0600); err == nil {
-		_, err = f.Write(data)
+		err = write(f)
 	}
 	if err == nil {
 		err = f.Sync()
@@ -106,4 +112,13 @@ func (q *Queue) Done(id string) error {
 		return nil
 	}
 	return err
+}
+
+// OpenJob lets evidence consumers avoid materializing durable audit packages.
+func (q *Queue) OpenJob(id string) (*os.File, error) {
+	path, err := q.path(id)
+	if err != nil {
+		return nil, err
+	}
+	return os.Open(path)
 }

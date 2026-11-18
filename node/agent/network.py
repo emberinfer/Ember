@@ -6,9 +6,41 @@ import os
 from pathlib import Path
 import re
 import shlex
+import sys
 
 
-def node_config(document, model_path, profiles):
+def gateway_coordinators(access, profile, *, same_host_684=False):
+    selected = []
+    matched = False
+    for private, gateways in ((False, access.get('gateways', [])),
+                              (True, access.get('private_gateways', []))):
+        for gateway in gateways:
+            if 'profiles' not in gateway:
+                raise ValueError('gateway directory lacks exact profile membership')
+            if profile not in gateway['profiles']:
+                continue
+            matched = True
+            ident = str(gateway.get('id', gateway.get('url')))
+            if private and not same_host_684:
+                print(f'MULTIHOME excluded={ident} reason=private gateway requires same-host-684 context', file=sys.stderr)
+                continue
+            tunnel = gateway.get('node_tunnel', {})
+            entry = dict(endpoint=tunnel.get('local_endpoint' if private else 'endpoint'),
+                         tls_fingerprint=tunnel.get('local_tls_fingerprint' if private else 'tls_fingerprint'))
+            if not entry['endpoint'] or not entry['tls_fingerprint']:
+                raise ValueError('gateway node ingress missing: ' + ident)
+            selected.append(entry)
+    if not matched:
+        raise ValueError('no node gateways for profile: ' + profile)
+    from .multihome import coordinators
+    if selected:
+        coordinators(selected)
+    else:
+        print(f'MULTIHOME profile={profile} connected=0/0 missing=[] reason=no public gateway; same-host-684 required', file=sys.stderr)
+    return selected
+
+
+def node_config(document, model_path, profiles, *, same_host_684=False):
     if document.get('schema_version') != 1:
         raise ValueError('unsupported network-parameters schema')
     access, ledger, profile = (document[k] for k in ('access', 'ledger', 'current_profile'))
@@ -30,6 +62,8 @@ def node_config(document, model_path, profiles):
     ident = fields['EMBER_MODEL_CHAIN']
     if not re.fullmatch(r'ember-[a-zA-Z0-9_.-]+', ident):
         raise ValueError('invalid profile identity')
+    selected = gateway_coordinators(access, fields['EMBER_MODEL_CHAIN'], same_host_684=same_host_684)
+    fields['EMBER_COORDINATOR'] = json.dumps(selected, separators=(',', ':'))
     for name, key in [('genesis.pb', 'EMBER_GENESIS_SHA256'), ('manifest.pb', 'EMBER_MANIFEST_SHA256')]:
         if hashlib.sha256((Path(profiles)/ident/name).read_bytes()).hexdigest() != fields[key].lower():
             raise ValueError('network artifact differs from bundled profile: ' + name)
@@ -44,8 +78,9 @@ def main(args=None):
     parser.add_argument('--model-path', required=True)
     parser.add_argument('--config', required=True)
     parser.add_argument('--profiles', default=str(Path(__file__).resolve().parents[4]/'profiles'))
+    parser.add_argument('--same-host-684', action='store_true', help='explicitly attest client runs on gateway host 684')
     opts = parser.parse_args(args)
-    content = node_config(json.loads(Path(opts.network_parameters).read_text()), opts.model_path, opts.profiles)
+    content = node_config(json.loads(Path(opts.network_parameters).read_text()), opts.model_path, opts.profiles, same_host_684=opts.same_host_684)
     target = Path(opts.config)
     target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     # Never overwrite an operator's existing configuration implicitly.

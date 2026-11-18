@@ -22,7 +22,9 @@ from ember_core import moe as moe_core
 from ember_pb2 import (MoeExecutionData, PipelineExecutionReceipt)
 from engine import Step
 from evidence import canonical, encode_step
-from moe_rpc import MoeAttentionClient, ReceiptSigner
+from moe_rpc import (MoeAttentionClient, ReceiptSigner, verify_attention_response,
+                     verify_frame_segments, verify_segment_profile,
+                     verify_bound_signature, require_binding)
 from shard_rpc import bytes_tensor
 
 
@@ -78,6 +80,12 @@ class MoeAssembler:
                     response = client.call_stage(
                         request_id, frame, profile, hidden=hidden)
                     evidence['stage_in'][(frame, stage_idx)] = ('hidden', hidden)
+                verify_attention_response(response, request_id, frame, profile)
+                for expert_receipt in response.expert_receipts:
+                    expert_client = self.expert_node_clients.get(expert_receipt.node_id)
+                    require_binding(expert_client is not None and
+                                    expert_client.profile is not None, 'expert node')
+                    verify_segment_profile(expert_receipt, expert_client.profile)
                 hidden = bytes_tensor(response.hidden_bf16,
                                       response.hidden_shape, 'cpu')
                 hidden = hidden.reshape(hidden.shape[1], hidden.shape[2])
@@ -102,7 +110,11 @@ class MoeAssembler:
                 client = self.expert_node_clients.get(node_id)
                 if client is None:
                     raise RuntimeError(f'no seal client for expert node {node_id}')
-                frame_receipts.append(client.seal(request_id, frame))
+                seal = client.seal(request_id, frame)
+                verify_frame_segments(seal, request_id, frame, node_id,
+                                      [r for r in seg_receipts
+                                       if r.frame == frame and r.node_id == node_id])
+                frame_receipts.append(seal)
             produces = frame >= prefill_frames - 1
             if produces:
                 token = int(response.token_id)
@@ -131,6 +143,7 @@ class MoeAssembler:
 
     def save_evidence(self, directory, receipt, evidence, prompt, input_ids):
         """Persist the segment evidence bundle the auditor consumes."""
+        verify_execution_bindings(ReceiptSigner.execution(receipt))
         directory = Path(directory)
         directory.mkdir(parents=True, exist_ok=True)
         index = {'request_id': receipt.request_id, 'prompt': prompt,
@@ -159,3 +172,35 @@ class MoeAssembler:
                 index['stage_in'][','.join(str(p) for p in key)] = {'ids': value[1]}
         (directory / 'index.json').write_text(json.dumps(index))
         return directory
+
+
+def verify_execution_bindings(receipt):
+    """Offline final-bundle validation; no evidence is persisted before this."""
+    groups = {}
+    records = {(r.frame, r.layer): r for r in receipt.moe.routing_records}
+    for segment in receipt.moe.segment_receipts:
+        verify_bound_signature(segment)
+        require_binding(segment.request_id == receipt.request_id, 'segment request_id')
+        groups.setdefault((segment.node_id, segment.frame), []).append(segment)
+        if segment.kind == 'expert':
+            record = records.get((segment.frame, segment.layer))
+            require_binding(record is not None and segment.expert in record.experts,
+                            'segment frame/layer/expert')
+            require_binding(segment.routing_record_hash == moe_core.routing_record_hash(record),
+                            'segment routing_record_hash')
+            require_binding(segment.input_hash == record.input_hash, 'segment input_hash')
+        elif segment.kind == 'attention':
+            subset = [r for r in receipt.moe.routing_records if
+                      r.frame == segment.frame and
+                      segment.start_layer <= r.layer < segment.end_layer]
+            require_binding(segment.routing_record_hash == moe_core.routing_set_hash(subset),
+                            'attention routing set')
+        else:
+            require_binding(False, 'segment kind')
+    seen = set()
+    for seal in receipt.moe.frame_receipts:
+        key = (seal.node_id, seal.frame)
+        require_binding(key in groups and key not in seen, 'seal set')
+        seen.add(key)
+        verify_frame_segments(seal, receipt.request_id, seal.frame, seal.node_id, groups[key])
+    require_binding(seen == set(groups), 'missing seal')

@@ -349,6 +349,91 @@ class MoeExpertClient(_BaseClient):
         return receipt
 
 
+def verify_bound_signature(receipt):
+    try:
+        verify(receipt)
+    except Exception as exc:
+        raise ValueError('signature invalid') from exc
+    if receipt.node_id != node_id(receipt.signer):
+        raise ValueError('signature valid but binding mismatch: node')
+
+
+def require_binding(condition, field):
+    if not condition:
+        raise ValueError('signature valid but bound to the wrong request: ' + field)
+
+
+def verify_frame_segments(seal, request_id, frame, node, segments):
+    verify_bound_signature(seal)
+    require_binding(seal.request_id == request_id, 'seal request_id')
+    require_binding(seal.frame == frame, 'seal frame')
+    require_binding(seal.node_id == node, 'seal node')
+    hashes = [moe_core.segment_receipt_hash(r) for r in segments]
+    require_binding(seal.segment_count == len(hashes), 'seal segment_count')
+    require_binding(seal.segments_root == moe_core.frame_root(hashes), 'seal segments_root')
+
+
+def verify_attention_response(response, request_id, frame, stage_profile):
+    receipt = response.segment_receipt
+    verify_bound_signature(receipt)
+    require_binding(receipt.request_id == request_id, 'attention request_id')
+    require_binding(receipt.frame == frame, 'attention frame')
+    require_binding(receipt.node_id == stage_profile.node_id, 'attention node')
+    require_binding(receipt.kind == 'attention' and
+                    receipt.layer == stage_profile.shard_start_layer and
+                    receipt.start_layer == stage_profile.shard_start_layer and
+                    receipt.end_layer == stage_profile.shard_end_layer and
+                    receipt.params_hash == stage_profile.shard_parameters_hash,
+                    'attention span/params/kind')
+    verify_segment_profile(receipt, stage_profile)
+    require_binding(len(response.hidden_shape) == 3, 'hidden shape')
+    require_binding(receipt.output_hash == moe_core.activation_hash(
+        receipt.manifest_root, receipt.end_layer,
+        response.hidden_bf16, list(response.hidden_shape)), 'attention output_hash')
+    records = {r.layer: r for r in response.routing_records}
+    require_binding(len(records) == len(response.routing_records) and
+                    set(records) == set(range(receipt.start_layer, receipt.end_layer)),
+                    'routing layers')
+    for record in response.routing_records:
+        require_binding(record.frame == frame, 'routing frame')
+        require_binding(record.positions > 0 and
+                        len(record.experts) % record.positions == 0, 'routing shape')
+        raw = response.activations.get(str(record.layer))
+        require_binding(raw is not None and record.input_hash == moe_core.activation_hash(
+            receipt.manifest_root, record.layer, raw,
+            [1, record.positions, response.hidden_shape[2]]), 'routing input_hash')
+    require_binding(receipt.routing_record_hash ==
+                    moe_core.routing_set_hash(response.routing_records), 'routing set')
+    seen = set()
+    for expert in response.expert_receipts:
+        verify_bound_signature(expert)
+        require_binding(expert.request_id == request_id, 'expert request_id')
+        require_binding(expert.frame == frame, 'expert frame')
+        record = records.get(expert.layer)
+        require_binding(record is not None and expert.kind == 'expert', 'expert layer/kind')
+        require_binding(expert.expert in record.experts and
+                        (expert.layer, expert.expert) not in seen, 'expert selection')
+        seen.add((expert.layer, expert.expert))
+        require_binding(expert.routing_record_hash == moe_core.routing_record_hash(record),
+                        'expert routing_record_hash')
+        require_binding(expert.input_hash == record.input_hash, 'expert input_hash')
+        require_binding(expert.start_layer == expert.layer and
+                        expert.end_layer == expert.layer + 1, 'expert span')
+        width = len(record.experts) // record.positions
+        row_count = sum(expert.expert in record.experts[i:i + width]
+                        for i in range(0, len(record.experts), width))
+        require_binding(expert.token_rows == row_count, 'expert token_rows')
+        raw = response.activations.get(f'expout:{expert.layer}:{expert.expert}')
+        require_binding(raw is not None and expert.output_hash == moe_core.activation_hash(
+            receipt.manifest_root, expert.layer, raw,
+            [1, row_count, response.hidden_shape[2]]), 'expert output_hash')
+    expected = {(r.layer, e) for r in records.values() for e in r.experts}
+    require_binding(seen == expected, 'expert segment set')
+    require_binding(len(response.frame_receipts) == 1, 'attention seal set')
+    verify_frame_segments(response.frame_receipts[0], request_id, frame,
+                          receipt.node_id, [receipt])
+
+
 class MoeAttentionClient(_BaseClient):
     def call_stage(self, request_id, frame, stage_profile, input_ids=None,
                    hidden=None, timeout=300):
@@ -363,19 +448,7 @@ class MoeAttentionClient(_BaseClient):
             request.hidden_bf16 = raw
             request.hidden_shape.extend(shape)
         response = self.stub.Forward(self._signed(request), timeout=timeout)
-        receipt = response.segment_receipt
-        verify(receipt)
-        if (receipt.kind != 'attention' or receipt.frame != frame or
-                receipt.start_layer != stage_profile.shard_start_layer or
-                receipt.end_layer != stage_profile.shard_end_layer or
-                receipt.params_hash != stage_profile.shard_parameters_hash):
-            raise ValueError('attention receipt binding mismatch')
-        if self.profile is not None:
-            verify_segment_profile(receipt, self.profile)
-        for expert_receipt in response.expert_receipts:
-            verify(expert_receipt)
-        for frame_receipt in response.frame_receipts:
-            verify(frame_receipt)
+        verify_attention_response(response, request_id, frame, stage_profile)
         return response
 
 

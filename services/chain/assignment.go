@@ -98,11 +98,25 @@ func (s *State) assignmentSeed(h *Hold) ([]byte, [][]byte, error) {
 	if err != nil || len(requestBytes) != sha256.Size {
 		return nil, nil, errors.New("invalid frozen request identity")
 	}
+	if s.Version >= 14 && h.Pipeline != nil && h.Pipeline.Spot != nil && h.Pipeline.Spot.ReplaceAfter > 0 {
+		block := s.blockHash(h.Pipeline.Spot.ReplaceAfter + 1)
+		if len(block) != 32 {
+			return nil, nil, errors.New("substitute entropy not finalized")
+		}
+		hash := sha256.New()
+		hash.Write(requestBytes)
+		hash.Write(block)
+		return hash.Sum(nil), [][]byte{append([]byte(nil), block...)}, nil
+	}
 	hash := sha256.New()
 	hash.Write(requestBytes)
 	blocks := make([][]byte, policy.MBlocks)
 	for i := range blocks {
-		block := s.blockHash(h.FreezeHeight + int64(i) + 1)
+		anchor := h.FreezeHeight
+		if s.Version >= 14 && h.Pipeline != nil && h.SubmitHeight > anchor {
+			anchor = h.SubmitHeight
+		}
+		block := s.blockHash(anchor + int64(i) + 1)
 		if len(block) != sha256.Size {
 			return nil, nil, errors.New("future assignment entropy not finalized")
 		}

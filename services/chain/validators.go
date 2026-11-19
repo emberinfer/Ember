@@ -396,7 +396,7 @@ func (app *Application) ConfigureMembershipUpgrade(u MembershipUpgrade) error {
 		app.upgradeFromVersion = app.committed.Version
 		return nil
 	}
-	if app.committed.Version == 6 || app.committed.Version == 7 || app.committed.Version == 8 || app.committed.Version == 9 || app.committed.Version == 10 || app.committed.Version == 11 || app.committed.Version == 12 {
+	if app.committed.Version == 6 || app.committed.Version == 7 || app.committed.Version == 8 || app.committed.Version == 9 || app.committed.Version == 10 || app.committed.Version == 11 || app.committed.Version == 12 || app.committed.Version == 13 {
 		raw, _ := json.Marshal(u)
 		var cp MembershipUpgrade
 		_ = json.Unmarshal(raw, &cp)
@@ -434,6 +434,16 @@ func (app *Application) activateMembershipTrial(s *State, height int64) error {
 }
 
 func (app *Application) activateMembership(s *State, req *abci.FinalizeBlockRequest) error {
+	if s.Version == 13 {
+		if app.upgrade == nil || app.upgradeFromVersion != 13 || req.Height < app.upgrade.ActivationHeight {
+			return nil
+		}
+		if req.Height != app.upgrade.ActivationHeight {
+			return errors.New("v14 activation height missed")
+		}
+		s.Version = 14
+		return nil
+	}
 	if s.Version == 12 {
 		if app.upgrade == nil || app.upgradeFromVersion != 12 || req.Height < app.upgrade.ActivationHeight {
 			return nil

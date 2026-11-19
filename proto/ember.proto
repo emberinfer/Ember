@@ -91,6 +91,8 @@ message SourceLocator {
  string revision = 2; // full lowercase Git commit, never a floating ref
 }
 message ModelManifest {
+  uint64 spot_step_count = 20; // v14 signed profile step count; zero uses atomic embedding/layer/head units
+
  repeated SourceLocator sources = 16;
   repeated LayoutScheme schemes = 17;
   bytes canonical_config = 18; // canonical Go JSON encoding of config_bytes
@@ -335,7 +337,16 @@ message OffenseGrade {
   string tokenizer_version = 6;
   uint32 recomputed_input_tokens = 7;
 }
+message SpotStepResult {
+  uint64 step = 1;
+  string outcome = 2;
+  double first_divergence_distance = 3;
+}
+
 message AuditVerdict {
+  repeated SpotStepResult per_step = 14;
+  double verdict_distance = 15;
+  string verdict_kind = 16;
   bytes challenge_ref = 1;
   string auditor_id = 2;
   repeated double distances = 3;

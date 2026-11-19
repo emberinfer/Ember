@@ -184,12 +184,13 @@ type WorkEvidence struct {
 }
 
 type State struct {
-	chunkSpoolRoot         string                     // local-only receipt spool; never consensus JSON
-	history                *historyArchive            // transient archive view, never consensus JSON
-	IdempotencyIndex       map[string]string          `json:"idempotency_index,omitempty"`
-	NodeAuditStats         map[string]NodeAuditStats  `json:"node_audit_stats,omitempty"`
-	AuditPool              map[string]map[int64]int64 `json:"audit_pool,omitempty"`
-	AuditPoolDistributions []AuditPoolDistribution    `json:"audit_pool_distributions,omitempty"`
+	Availability           map[string]*AvailabilityRecord `json:"availability,omitempty"`
+	chunkSpoolRoot         string                         // local-only receipt spool; never consensus JSON
+	history                *historyArchive                // transient archive view, never consensus JSON
+	IdempotencyIndex       map[string]string              `json:"idempotency_index,omitempty"`
+	NodeAuditStats         map[string]NodeAuditStats      `json:"node_audit_stats,omitempty"`
+	AuditPool              map[string]map[int64]int64     `json:"audit_pool,omitempty"`
+	AuditPoolDistributions []AuditPoolDistribution        `json:"audit_pool_distributions,omitempty"`
 	inferenceDebit         int64
 	GenesisSubsidy         *SubsidyPool                      `json:"genesis_subsidy,omitempty"`
 	BlockTime              int64                             `json:"block_time,omitempty"`
@@ -231,6 +232,8 @@ type State struct {
 }
 
 type Action struct {
+	CommitmentRoot         []byte                      `json:"commitment_root,omitempty"`
+	Spool                  *SpoolAttestation           `json:"spool,omitempty"`
 	ChunkRoot              []byte                      `json:"chunk_root,omitempty"`
 	ChunkBytes             int                         `json:"chunk_bytes,omitempty"`
 	ChunkTotal             int                         `json:"chunk_total,omitempty"`
@@ -509,7 +512,31 @@ func DecodeAndVerifyVersion(raw []byte, version uint64) (Envelope, string, error
 		limit = 1 << 24
 	}
 	var env Envelope
-	if len(raw) == 0 || len(raw) > limit || json.Unmarshal(raw, &env) != nil || len(env.PublicKey) != ed25519.PublicKeySize || len(env.Signature) != ed25519.SignatureSize {
+	if len(raw) == 0 || len(raw) > limit {
+		return env, "", errors.New("invalid transaction envelope")
+	}
+	var decodeErr error
+	if version < 14 {
+		// These keys were unknown and ignored before v14, including arbitrary JSON
+		// values. Shadow them as raw JSON to preserve legacy signature normalization.
+		type oldAction Action
+		var legacy struct {
+			ChainID   string `json:"chain_id"`
+			PublicKey []byte `json:"public_key"`
+			Nonce     uint64 `json:"nonce"`
+			Action    struct {
+				oldAction
+				CommitmentRoot json.RawMessage `json:"commitment_root"`
+				Spool          json.RawMessage `json:"spool"`
+			} `json:"action"`
+			Signature []byte `json:"signature"`
+		}
+		decodeErr = json.Unmarshal(raw, &legacy)
+		env = Envelope{ChainID: legacy.ChainID, PublicKey: legacy.PublicKey, Nonce: legacy.Nonce, Action: Action(legacy.Action.oldAction), Signature: legacy.Signature}
+	} else {
+		decodeErr = json.Unmarshal(raw, &env)
+	}
+	if len(raw) == 0 || len(raw) > limit || decodeErr != nil || len(env.PublicKey) != ed25519.PublicKeySize || len(env.Signature) != ed25519.SignatureSize {
 		return env, "", errors.New("invalid transaction envelope")
 	}
 	signed, err := signingBytes(env)
@@ -965,6 +992,11 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 			return errors.New("invalid audit sampling governance")
 		}
 		s.Parameters.AuditSampling = *action.AuditSampling
+	case "spot_received", "spot_unopened", "spot_counterproof":
+		if s.Version < 14 {
+			return errors.New("unknown transaction type")
+		}
+		return s.spotAction(signer, action, height)
 	case "resolve_audit", "assign_audit":
 		hold := s.Holds[action.HoldID]
 		if hold == nil || hold.State != "dispute" || hold.Auditor != "" || hold.AuditVerdict != "" || height <= hold.SubmitHeight {
@@ -985,6 +1017,9 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 			hold.AuditAssignedHeight = height
 		}
 		hold.Auditor, hold.AuditProof, hold.AuditRound = auditor, hex.EncodeToString(proof), 1
+		if s.Version >= 14 && hold.Pipeline != nil {
+			return s.startSpot(hold, height)
+		}
 	case "audit":
 		hold := s.Holds[action.HoldID]
 		if hold == nil || hold.State != "dispute" || hold.Auditor != signer || hold.AuditVerdict != "" {
@@ -992,6 +1027,11 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		}
 		if hold.Moe != nil && hold.Moe.ChunkTotal > 0 {
 			if _, err := s.moeReceipt(hold); err != nil {
+				return err
+			}
+		}
+		if s.Version >= 14 && hold.Pipeline != nil && hold.Pipeline.Spot != nil {
+			if err := s.validateSpotVerdict(hold, action.Verdict, height); err != nil {
 				return err
 			}
 		}
@@ -1120,6 +1160,9 @@ func (s *State) recordAuditOutcome(hold *Hold, signer, outcome, evidenceRef stri
 		}
 		s.auditCompleted(hold, height)
 	}()
+	if s.Version >= 14 && hold.Pipeline != nil && hold.Pipeline.Spot != nil {
+		return s.spotOutcome(hold, signer, outcome, evidenceRef, at...)
+	}
 	if s.adjudicationEnabled(hold) {
 		v := &pb.AuditVerdict{}
 		_, _, binding, _ := verdictBindings(hold.VerdictBytes, v)
@@ -1597,7 +1640,7 @@ func LoadStateWithUpgrade(path string, upgrade *MembershipUpgrade) (*State, erro
 	if state.Version == 2 && upgrade != nil {
 		return MigrateV2State(raw, *upgrade)
 	}
-	if state.Version != 13 && state.Version != 12 && state.Version != 11 && state.Version != 10 && state.Version != 9 && state.Version != 8 && state.Version != 7 && state.Version != 6 && state.Version != 5 && state.Version != 4 {
+	if state.Version != 14 && state.Version != 13 && state.Version != 12 && state.Version != 11 && state.Version != 10 && state.Version != 9 && state.Version != 8 && state.Version != 7 && state.Version != 6 && state.Version != 5 && state.Version != 4 {
 		return nil, errors.New("unsupported state version")
 	}
 	if err = loadArchive(path, &state, raw); err != nil {

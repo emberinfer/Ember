@@ -114,6 +114,7 @@ func main() {
 	moeFleet := flags.String("moe-fleet-dir", "", "MoE fleet directory")
 	moeEvidence := flags.String("moe-evidence-dir", "", "MoE evidence directory")
 	moeReceiptV2 := flags.Bool("moe-receipt-v2", false, "compact MoE receipt transport over logical v1 signatures (requires chain version 13)")
+	pipelineChainCLI := flags.String("pipeline-chain-cli", "emberchain", "chain query CLI for pipeline availability ranking")
 	pipelinePython := flags.String("pipeline-python", "", "Python interpreter for dynamic shard assembly")
 	pipelineModelPath := flags.String("pipeline-model-path", "", "tokenizer/config path for dynamic shard assembly")
 	pipelineSchedulerKey := flags.String("pipeline-scheduler-key", "", "mode-0600 on-chain scheduler key for shard RPC")
@@ -422,7 +423,7 @@ func main() {
 			if e != nil {
 				log.Fatal(e)
 			}
-			api.Pipeline = &gateway.PipelineConfig{DynamicRanges: layout.DynamicRanges, MinStageLayers: layout.MinStageLayers, AllowedCuts: layout.AllowedLayerCuts, WitnessKeyFile: *chainAuditorKey, Python: *pipelinePython, WorkDir: workDir,
+			api.Pipeline = &gateway.PipelineConfig{ChainCLI: *pipelineChainCLI, ChainRPC: *chainRPC, DynamicRanges: layout.DynamicRanges, MinStageLayers: layout.MinStageLayers, AllowedCuts: layout.AllowedLayerCuts, WitnessKeyFile: *chainAuditorKey, Python: *pipelinePython, WorkDir: workDir,
 				ModelPath: *pipelineModelPath, SchedulerKeyFile: *pipelineSchedulerKey, Timeout: *requestTimeout}
 		}
 		if genesis.AuditParams != nil {

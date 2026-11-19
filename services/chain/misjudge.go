@@ -189,6 +189,12 @@ func (s *State) classifyOffense(h *Hold, node string, height int64) (OffenseReco
 	if (g.Class == "numerical" || g.Class == "token") && h.FirstGrade != nil && h.FirstGrade.Score < r.Score {
 		r.Score = h.FirstGrade.Score
 	}
+	// v14 spot conviction already requires independent full-review corroboration
+	// of the same step. The finalized spot protocol treats this positive evidence
+	// as fraud, rather than the legacy uncorroborated numerical gray/refund path.
+	if s.Version >= 14 && h.Pipeline != nil && h.Pipeline.Spot != nil && h.Pipeline.Spot.Round == "esc" && h.AuditVerdict == "reject" && h.FirstAuditor != "" && h.FirstAuditor != h.Auditor {
+		return r, nil
+	}
 	p := s.Parameters.Misjudge
 	if g.Class == "numerical" && (h.Pipeline == nil && h.Moe == nil || g.Band == core.RangeBand) {
 		r.ThetaPair, err = thresholdFor(h, g)

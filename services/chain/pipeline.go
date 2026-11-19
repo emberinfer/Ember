@@ -21,6 +21,9 @@ type PipelineAuthorization struct {
 	Reserved   int64  `json:"reserved,omitempty"`
 }
 type PipelineHold struct {
+	SpotStepCount   uint64                  `json:"spot_step_count,omitempty"`
+	CommitmentRoot  []byte                  `json:"commitment_root,omitempty"`
+	Spot            *SpotChallenge          `json:"spot,omitempty"`
 	FirstFaultNodes []string                `json:"first_fault_nodes,omitempty"`
 	TotalLayers     uint32                  `json:"total_layers"`
 	Authorizations  []PipelineAuthorization `json:"authorizations"`
@@ -120,6 +123,16 @@ func (s *State) submitPipeline(signer string, a Action, height int64) error {
 	if h == nil || h.Pipeline == nil || h.State != "frozen" || height >= h.ExpireHeight || !s.Coordinators[signer] || a.Actual <= 0 || a.Actual > h.Amount {
 		return errors.New("invalid pipeline submission")
 	}
+	if s.Version >= 14 {
+		if len(a.CommitmentRoot) != 32 || bytes.Equal(a.CommitmentRoot, make([]byte, 32)) {
+			return errors.New("nonzero 32-byte commitment_root required")
+		}
+		for _, id := range holdExecutors(h) {
+			if r := s.Availability[id]; r != nil && height < r.PauseUntil {
+				return errors.New("executor availability paused")
+			}
+		}
+	}
 	receipt := &pb.PipelineExecutionReceipt{}
 	if proto.Unmarshal(a.Receipt, receipt) != nil || receipt.RequestId != h.ID || receipt.InputTokens == 0 || receipt.OutputTokens == 0 || receipt.ElapsedMs <= 0 || len(receipt.OutputCommitment) != 32 {
 		return errors.New("invalid pipeline aggregate")
@@ -211,6 +224,21 @@ func (s *State) submitPipeline(signer string, a Action, height int64) error {
 	h.SettleHeight = height + s.Parameters.DisputeBlocks
 	h.AuditInputTokens = receipt.InputTokens
 	h.AuditOutputTokens = receipt.OutputTokens
+	if s.Version >= 14 {
+		h.Pipeline.CommitmentRoot = append([]byte(nil), a.CommitmentRoot...)
+		_, manifestRaw := modelArtifacts(s.Models[h.ModelID])
+		manifest := &pb.ModelManifest{}
+		if err := proto.Unmarshal(manifestRaw, manifest); err != nil {
+			return err
+		}
+		h.Pipeline.SpotStepCount = manifest.SpotStepCount
+		if h.Pipeline.SpotStepCount == 0 {
+			h.Pipeline.SpotStepCount = a.SpotStepCount
+		}
+		if h.Pipeline.SpotStepCount == 0 || h.Pipeline.SpotStepCount > 1000000 {
+			return errors.New("spot step count exceeds limit")
+		}
+	}
 	h.Pipeline.Receipt = append([]byte(nil), a.Receipt...)
 	h.Pipeline.Credits = shares
 	return nil
@@ -254,6 +282,9 @@ func (s *State) selectPipelineAuditor(h *Hold, exclude string, at ...int64) (str
 }
 
 func (s *State) settlePipeline(h *Hold, outcome string, height int64) error {
+	if s.Version >= 14 && outcome == "accept" && !h.Unaudited && (h.Pipeline.Spot == nil || !h.Pipeline.Spot.Received || h.AuditVerdict != "accept") {
+		return errors.New("unfulfilled spot obligations")
+	}
 	if outcome == "accept" {
 		if err := s.collectLatency(h); err != nil {
 			return err

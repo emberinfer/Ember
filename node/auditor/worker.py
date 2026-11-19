@@ -71,6 +71,9 @@ def execute(agent, frame, job):
     # The durable gateway driver owns retries; replay only finalized assignments.
     if hold.get('auditor') != agent.node_id or hold['state'] != 'dispute':
         raise ValueError('not the finalized assigned auditor')
+    if job.get('kind') == 'spotcheck':
+        from auditor.spot_worker import execute as execute_spot
+        return execute_spot(agent, frame, job, hold, query)
     state = {}
     if job.get("kind") == "pipeline" and job.get("drawn_stage") is not None:
         return execute_range(agent, frame, job, state, hold)

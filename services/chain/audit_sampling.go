@@ -303,7 +303,7 @@ func (s *State) auditCompleted(h *Hold, height int64) {
 		h.AuditCompletedHeight = height
 	}
 	s.auditStatsEvent(h, AuditStatsEvent{Kind: "audit", Node: h.Auditor, Height: height, Actual: h.Actual})
-	if h.AuditVerdict == "accept" && h.FirstVerdict == "reject" && h.FirstAuditor != "" {
+	if h.AuditVerdict == "accept" && h.FirstVerdict == "reject" && h.FirstAuditor != "" && !(s.Version >= 14 && h.Pipeline != nil && h.Pipeline.Spot != nil) {
 		s.auditStatsEvent(h, AuditStatsEvent{Kind: "misjudge", Node: h.FirstAuditor, Height: height})
 	}
 	if s.cooldownPolicy().CooldownCountOnCompletion {

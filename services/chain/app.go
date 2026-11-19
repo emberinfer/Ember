@@ -251,6 +251,9 @@ func (app *Application) FinalizeBlock(_ context.Context, req *abci.FinalizeBlock
 	if err := app.activateMembership(trial, req); err != nil {
 		return nil, err
 	}
+	if err := trial.advanceSpot(req.Height); err != nil {
+		return nil, err
+	}
 	trial.observeValidatorVotes(req)
 	if err := trial.advanceSubsidyTime(req.Time.Unix()); err != nil {
 		return nil, err
@@ -349,6 +352,9 @@ func (app *Application) Query(_ context.Context, req *abci.QueryRequest) (*abci.
 	}
 	var value any
 	switch {
+	case strings.HasPrefix(req.Path, "/availability/") && app.committed.Version >= 14:
+		id := strings.TrimPrefix(req.Path, "/availability/")
+		value = app.committed.Availability[id]
 	case strings.HasPrefix(req.Path, "/privacy/"):
 		parts := strings.SplitN(strings.TrimPrefix(req.Path, "/privacy/"), "/", 2)
 		if len(parts) != 2 || app.committed.Privacy == nil {

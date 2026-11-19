@@ -69,6 +69,9 @@ func (s *State) migrateLiveness(height int64) {
 	s.Version = 6
 }
 func (s *State) reassignAudit(h *Hold, height int64) error {
+	if s.Version >= 14 && h != nil && h.Pipeline != nil && h.Pipeline.Spot != nil {
+		return errors.New("spot replacements are automatic")
+	}
 	if h == nil || h.State != "dispute" || h.Auditor == "" || h.AuditVerdict != "" || height <= h.AuditAssignedHeight || height-h.AuditAssignedHeight <= s.Parameters.Liveness.AuditTimeout {
 		return errors.New("invalid or premature audit reassignment")
 	}

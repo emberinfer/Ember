@@ -1,0 +1,36 @@
+{
+  "description": "Independent Python hashlib/struct PARAMS section 1 golden vector; three leaves exercises odd duplication",
+  "leaves": [
+    {
+      "step": 1,
+      "tensor": "45545631010100000000000000010000803f",
+      "input_hash": "52c9948e436febd541550e5c26439e61a281e0a9ebb285b318a19a08825e4fc8",
+      "output_hash": "5784dbd0294ac7583690eb561aa0f7eee60d0add1081b63d91674c6f0295c081",
+      "format_hash": "8e11bf2a640ba2f9fb2c9e38587a5a11b7f220baabb9279dac7d28e212b9e2ac",
+      "profile_id_hash": "18f8ff23cd6ce3f102a89229bdac98afef9b2cc263186ff6cca83d406c22deb1",
+      "request_id": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "leaf_hash": "cacf0f99856d3085d78cb40a540306a0188ed07e70d14cf3513f2d03ffe61e46"
+    },
+    {
+      "step": 2,
+      "tensor": "455456310101000000000000000100000040",
+      "input_hash": "a9a72b7ac34715529fab854bbed6c43af7e3f8106e3c0a57c990da06794a6377",
+      "output_hash": "f7234f5cc8e82a979004d4a9288d59f226c293d347e8da144ee756517503c1d8",
+      "format_hash": "8e11bf2a640ba2f9fb2c9e38587a5a11b7f220baabb9279dac7d28e212b9e2ac",
+      "profile_id_hash": "18f8ff23cd6ce3f102a89229bdac98afef9b2cc263186ff6cca83d406c22deb1",
+      "request_id": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "leaf_hash": "6977933718c0337cfd4db4ba6bcf87c946dcc91121a1ba1908358b4b885c3ded"
+    },
+    {
+      "step": 3,
+      "tensor": "455456310101000000000000000100004040",
+      "input_hash": "ed928fe853cf9960d4c3f8e5f73c7b84c184e1efd7e6eb27b7bc485279438692",
+      "output_hash": "ed8f07f51a8312af2e5e20f766547178fc46cc0d1c02bb59440b06b3b0b00483",
+      "format_hash": "8e11bf2a640ba2f9fb2c9e38587a5a11b7f220baabb9279dac7d28e212b9e2ac",
+      "profile_id_hash": "18f8ff23cd6ce3f102a89229bdac98afef9b2cc263186ff6cca83d406c22deb1",
+      "request_id": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "leaf_hash": "e3aa76b678a913c0137ad57778464fa9f2470e8962eb0fe9de7efe59e0e4dca0"
+    }
+  ],
+  "root": "40f0acfd9130d7a155cb1de7012ba529e99c2b59109b25135655bcabc5437354"
+}

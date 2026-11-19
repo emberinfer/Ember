@@ -20,6 +20,18 @@ class FixtureFilterTests(unittest.TestCase):
         for line in ('other/'+self.hit, self.hit.replace(':4:', ':5:'), self.hit+'extra'):
             self.assertEqual(filter_matches([line], lambda _: self.blob), ([line], 0))
 
+    def test_original_corpus_only_allowed_in_history(self):
+        old = self.blob.replace(b'FAKE-EXAMPLE-VALUE', b'hunter2', 1)
+        old = old.replace(b'FAKE-EXAMPLE-VALUE', b'hunter2', 1)
+        old = old.replace(b'FAKE-EXAMPLE-VALUE', b'sk-example0123456789')
+        old = old.replace(b'AKIA' + b'FAKEEXAMPLE000000', b'AKIA' + b'ABCDEFGHIJKLMNOP')
+        old = old.replace(b'ghp_FAKEEXAMPLE000000000000000', b'ghp_abcdefghijklmnopqrstuvwx')
+        line = FIXTURE + ':4:' + old.decode().splitlines()[3] + '\n'
+        historical = '1' * 40 + ':' + line
+        self.assertEqual(filter_matches([historical], lambda _: old), ([], 1))
+        self.assertEqual(filter_matches([line], lambda _: old), ([line], 0))
+        self.assertEqual(filter_matches([historical], lambda _: old + b'\n'), ([historical], 0))
+
     def test_empty_scan(self):
         self.assertEqual(filter_matches([], lambda _: self.blob), ([], 0))
 

@@ -23,6 +23,8 @@ import (
 )
 
 type PipelineConfig struct {
+	ChainCLI         string
+	ChainRPC         string
 	DynamicRanges    bool
 	MinStageLayers   uint32
 	AllowedCuts      []uint32
@@ -53,17 +55,20 @@ type pipelineStageInput struct {
 }
 
 type pipelineInput struct {
-	TokenizerVersion string               `json:"tokenizer_version,omitempty"`
-	WitnessKeyFile   string               `json:"witness_key_file,omitempty"`
-	Prompt           string               `json:"prompt"`
-	Seed             int64                `json:"seed"`
-	MaxTokens        int                  `json:"max_tokens"`
-	RequestID        string               `json:"request_id"`
-	Stream           bool                 `json:"stream"`
-	ModelPath        string               `json:"model_path"`
-	SchedulerKeyFile string               `json:"scheduler_key_file"`
-	Timeout          float64              `json:"timeout"`
-	Stages           []pipelineStageInput `json:"stages"`
+	ChainCLI              string               `json:"chain_cli,omitempty"`
+	ChainRPC              string               `json:"chain_rpc,omitempty"`
+	AvailabilityQueryPath string               `json:"availability_query_path,omitempty"`
+	TokenizerVersion      string               `json:"tokenizer_version,omitempty"`
+	WitnessKeyFile        string               `json:"witness_key_file,omitempty"`
+	Prompt                string               `json:"prompt"`
+	Seed                  int64                `json:"seed"`
+	MaxTokens             int                  `json:"max_tokens"`
+	RequestID             string               `json:"request_id"`
+	Stream                bool                 `json:"stream"`
+	ModelPath             string               `json:"model_path"`
+	SchedulerKeyFile      string               `json:"scheduler_key_file"`
+	Timeout               float64              `json:"timeout"`
+	Stages                []pipelineStageInput `json:"stages"`
 }
 
 type pipelineEvent struct {
@@ -133,7 +138,7 @@ func (g *Gateway) servePipeline(w http.ResponseWriter, r *http.Request, q reques
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	input := pipelineInput{Prompt: prompt, Seed: q.Seed, MaxTokens: q.MaxTokens,
+	input := pipelineInput{ChainCLI: g.Pipeline.ChainCLI, ChainRPC: g.Pipeline.ChainRPC, AvailabilityQueryPath: "/availability/{node_id}", Prompt: prompt, Seed: q.Seed, MaxTokens: q.MaxTokens,
 		RequestID: requestID, Stream: q.Stream, ModelPath: g.Pipeline.ModelPath,
 		WitnessKeyFile: g.Pipeline.WitnessKeyFile, SchedulerKeyFile: g.Pipeline.SchedulerKeyFile, Timeout: g.Pipeline.Timeout.Seconds()}
 	if input.Timeout <= 0 {

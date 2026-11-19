@@ -39,8 +39,12 @@ def _derive(agent, frame, job, hold, query):
     genesis = ChainGenesis.FromString(genesis_raw)
     verify(genesis)
     model = query('/model/' + hold['model_id'])
+    # Legacy publications carry the genesis only inside the publication
+    # record; mirror the privacy path's fallback. Either source must decode
+    # to exactly the locally pinned genesis bytes, else fail closed.
+    profile_b64 = model.get('signed_profile') or model['publication']['genesis']
     if (genesis.chain_id != hold['model_id'] or genesis_raw != agent.genesis_bytes
-            or base64.b64decode(model['signed_profile'], validate=True) != genesis_raw):
+            or base64.b64decode(profile_b64, validate=True) != genesis_raw):
         raise ValueError('profile differs from finalized model')
     metric = genesis.numeric_audit_policy.metric
     if metric not in ('legacy-ranked-v1', 'union-interval-v1', 'rank-probability-v1'):

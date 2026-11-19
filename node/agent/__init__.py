@@ -162,6 +162,8 @@ class Agent:
                                      attempt_id=frame.attempt_id, kind=kind, payload=payload))
         acquired = False
         executing = False
+        claimed_key = None
+        commit_marked = False
         try:
             if self.authorized_schedulers:
                 verify(frame)
@@ -228,6 +230,8 @@ class Agent:
                 if not self.claims.claim(kind, task_id):
                     send('unavailable', b'duplicate task: already claimed in this process')
                     return
+                if kind == 'audit':
+                    claimed_key = (kind, task_id)
             if frame.kind in ('run', 'tokenize'):
                 self.execution_lock.acquire()
                 executing = True
@@ -237,6 +241,7 @@ class Agent:
                         send('unavailable', b'duplicate task: already claimed in this process')
                         return
                     self.audit_commits.add(task_id)
+                    commit_marked = True
                     if job.get('kind') == 'spotcheck':
                         self.audit_task_ids[transfer_id] = task_id
             contribution = getattr(self, 'contribution', None)
@@ -339,6 +344,16 @@ class Agent:
             self.completed_requests += 1
         except Exception as exc:
             self.failed_requests += 1
+            if claimed_key is not None:
+                # Local derivation/pre-verdict failure: no verdict exists, so
+                # release this process's ownership marks and let a gateway
+                # retransmission be processed instead of duplicate-blocked.
+                self.claims.release(*claimed_key)
+                if commit_marked:
+                    with self.audit_verdicts_lock:
+                        self.audit_commits.discard(claimed_key[1])
+                        if self.audit_task_ids.get(transfer_id) == claimed_key[1]:
+                            del self.audit_task_ids[transfer_id]
             send('error', str(exc).encode())
         finally:
             if executing:

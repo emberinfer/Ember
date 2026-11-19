@@ -126,3 +126,36 @@ def test_other_anchor_mismatches_fail_closed(tmp_path, change):
     with pytest.raises(ContextDerivationError):
         context_for(agent, frame, hold, job, query)
     assert not (tmp_path/'spot-context').exists()
+
+
+def test_legacy_model_record_derives_via_publication_genesis(tmp_path):
+    agent, frame, job, hold, query, packages = setup(tmp_path)
+    def legacy_query(path):
+        if path.startswith('/model/'):
+            return {'publication': {'genesis': base64.b64encode(agent.genesis_bytes).decode()}}
+        return query(path)
+    context = context_for(agent, frame, hold, job, legacy_query)
+    assert context['request_tokens'] == [1, 2]
+    assert verify_pipeline_binding(packages[0], context).token == 7
+
+
+def test_empty_signed_profile_falls_back_to_publication_genesis(tmp_path):
+    agent, frame, job, hold, query, packages = setup(tmp_path)
+    def legacy_query(path):
+        if path.startswith('/model/'):
+            return {'signed_profile': '',
+                    'publication': {'genesis': base64.b64encode(agent.genesis_bytes).decode()}}
+        return query(path)
+    context = context_for(agent, frame, hold, job, legacy_query)
+    assert verify_pipeline_binding(packages[1], context).token == 8
+
+
+def test_legacy_publication_genesis_mismatch_fails_closed(tmp_path):
+    agent, frame, job, hold, query, _ = setup(tmp_path)
+    def bad_query(path):
+        if path.startswith('/model/'):
+            return {'publication': {'genesis': base64.b64encode(b'other').decode()}}
+        return query(path)
+    with pytest.raises(ContextDerivationError):
+        context_for(agent, frame, hold, job, bad_query)
+    assert not (tmp_path/'spot-context').exists()

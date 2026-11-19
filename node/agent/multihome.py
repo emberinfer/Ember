@@ -1,7 +1,11 @@
 """Process-wide task ownership and registration coordination.
 
 Claims intentionally survive failures and reconnects. No eviction permits an old
-request to execute twice; restart starts a new process ownership lifetime.
+request to execute twice; restart starts a new process ownership lifetime. The
+single exception is a local processing failure before any verdict exists: the
+claim is rolled back so a retransmission can be processed, because no signed
+verdict could have been produced. A produced verdict is served from the verdict
+cache and is never re-executed.
 """
 import json
 import threading
@@ -19,6 +23,10 @@ class Claims:
                 return False
             self.ids.add(key)
             return True
+
+    def release(self, kind, ident):
+        with self.lock:
+            self.ids.discard((kind, ident))
 
 
 class Registration:

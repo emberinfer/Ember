@@ -66,3 +66,39 @@ def test_completed_verdict_cache_bound_does_not_allow_evicted_replay(tmp_path):
         agent._run(TunnelFrame(kind='audit_commit', request_id='0'), outgoing)
         assert outgoing.get_nowait().kind == 'unavailable'
         assert replay.call_count == 17
+
+
+def test_failed_commit_releases_claim_for_retransmission(tmp_path):
+    agent = Agent('auditor', MockEngine())
+    path = tmp_path / 'job.json'
+    path.write_text('{}')
+    agent.audit_transfer = SimpleNamespace(finish=lambda _: str(path))
+    outgoing = queue.Queue()
+    with patch('auditor.worker.execute',
+               side_effect=ValueError('spot context derivation failed')):
+        agent._run(TunnelFrame(kind='audit_commit', request_id='hold'), outgoing)
+    assert outgoing.get_nowait().kind == 'error'
+    # No verdict was produced: ownership marks are rolled back, so the
+    # gateway retransmission is processed instead of duplicate-blocked.
+    assert 'hold' not in agent.audit_commits
+    path.write_text('{}')
+    outgoing = queue.Queue()
+    with patch('auditor.worker.execute', return_value=b'{"verdict":"accept"}') as replay:
+        agent._run(TunnelFrame(kind='audit_commit', request_id='hold'), outgoing)
+    assert outgoing.get_nowait().kind == 'audit_result'
+    assert replay.call_count == 1
+    # A completed verdict keeps its claim; later retries take the cache path.
+    assert not agent.claims.claim('audit', 'hold')
+
+
+def test_failed_spotcheck_releases_tuple_claim(tmp_path):
+    agent = Agent('auditor', MockEngine())
+    job = json.dumps(dict(kind='spotcheck', mode='full',
+                          spot_delivery=dict(challenge_height=10, round='first'))).encode()
+    task_id = ('req', 10, 'first', 'full')
+    outgoing = queue.Queue()
+    with patch('auditor.worker.execute',
+               side_effect=ValueError('spot context derivation failed')):
+        agent._run(TunnelFrame(kind='audit', request_id='req', payload=job), outgoing)
+    assert outgoing.get_nowait().kind == 'error'
+    assert agent.claims.claim('audit', task_id)

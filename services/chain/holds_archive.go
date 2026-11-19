@@ -38,6 +38,9 @@ func (s *State) terminalHold(h *Hold) bool {
 	if h == nil {
 		return false
 	}
+	if s.Version >= 14 && h.Pipeline != nil && h.Pipeline.Spot != nil && s.Height < h.SettleHeight {
+		return false
+	}
 	switch h.State {
 	case "settled", "cancelled", "slashed":
 	default:

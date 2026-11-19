@@ -516,6 +516,9 @@ func TestSpotManifestLadderAndLoad(t *testing.T) {
 		if height >= 2 {
 			want = 14
 		}
+		if app.staged.Parameters.DisputeBlocks != 1 {
+			t.Fatal("activation unexpectedly overrides dispute_blocks")
+		}
 		if app.staged.Version != want || res.ConsensusParamUpdates.Version.App != want {
 			t.Fatal("wrong rung")
 		}
@@ -610,7 +613,7 @@ func TestSpotLegacyByteEquivalence(t *testing.T) {
 	}
 }
 
-func TestSpotSilentAuditorCannotAvoidTimer(t *testing.T) {
+func TestSpotUndeliveredDoesNotBlameAuditor(t *testing.T) {
 	s, _, _, h := spotFixture(t)
 	c := h.Pipeline.Spot
 	first := h.Auditor
@@ -618,8 +621,8 @@ func TestSpotSilentAuditorCannotAvoidTimer(t *testing.T) {
 	if err := s.advanceSpot(at); err != nil {
 		t.Fatal(err)
 	}
-	if s.Availability[first].Minor != 1 || c.ReplaceAfter != at {
-		t.Fatal("silent auditor escaped timeout")
+	if s.Availability[first].Minor != 0 || c.ReplaceAfter != 0 || c.Round != "2" {
+		t.Fatal("undelivered challenge blamed auditor or did not advance")
 	}
 	for _, id := range spotExecutors(h) {
 		if s.Availability[id].Minor != 0 || s.Availability[id].Major != 0 {
@@ -647,5 +650,260 @@ func TestSpotLegacyIgnoresUnknownActionFields(t *testing.T) {
 		if _, err = s.Apply(raw, 1); err != nil {
 			t.Fatalf("v%d changed legacy unknown-field semantics: %v", version, err)
 		}
+	}
+}
+
+func TestSpotPureDeadlineProgression(t *testing.T) {
+	s, _, nodes, h := spotFixture(t)
+	c := h.Pipeline.Spot
+	old := *c
+	at := c.Deadline + 1
+	if err := s.advanceSpot(at); err != nil {
+		t.Fatal(err)
+	}
+	if c.Round != "2" || c.ChallengeHeight != at || c.Deadline != at+120 || c.VerdictDeadline != at+180 || !reflect.DeepEqual(c.StepSet, old.StepSet) || len(c.History) != 1 || c.History[0].ChallengeHeight != old.ChallengeHeight {
+		t.Fatal("bad resend", c)
+	}
+	if err := s.advanceSpot(c.Deadline + 1); err != nil {
+		t.Fatal(err)
+	}
+	if h.State != "cancelled" || h.AuditVerdict != "unconfirmed_delivery_timeout" || s.Accounts[h.Payer].Balance != 1000 {
+		t.Fatal("bad refund", h)
+	}
+	for _, n := range nodes {
+		r := s.Availability[n.id]
+		if r.Minor != 0 || r.Major != 0 || r.Executor.UnopenedTotal != 0 || s.Accounts[n.id].Balance != 0 || s.Accounts[n.id].Stake != 5000 {
+			t.Fatal("timeout attributed or paid", r)
+		}
+	}
+	if s.Availability[h.Auditor].Minor != 0 || c.ReplaceAfter != 0 {
+		t.Fatal("auditor blamed")
+	}
+}
+func TestSpotPendingAccusationOwnsDeadline(t *testing.T) {
+	s, _, _, h := spotFixture(t)
+	g := gatewayFixture(t, s)
+	c := h.Pipeline.Spot
+	at := c.Deadline + 1
+	if err := s.spotAction(h.Auditor, Action{Type: "spot_unopened", HoldID: h.ID, Spool: spoolFor(h, g, false, at)}, at); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.advanceSpot(at + 60); err != nil {
+		t.Fatal(err)
+	}
+	if c.Round != "1" || c.Accusation == nil || c.ReplaceAfter != 0 {
+		t.Fatal("pending accusation lost")
+	}
+	if err := s.advanceSpot(at + 61); err != nil {
+		t.Fatal(err)
+	}
+	if c.Round != "2" || c.Accusation != nil {
+		t.Fatal("accusation did not advance")
+	}
+}
+func TestSpotEscPureDeadlineAndTotalPriority(t *testing.T) {
+	for _, total := range []bool{false, true} {
+		s, _, _, h := spotFixture(t)
+		c := h.Pipeline.Spot
+		c.Round = "esc"
+		at := c.Deadline + 1
+		if total {
+			at = h.SettleHeight
+		}
+		if err := s.advanceSpot(at); err != nil {
+			t.Fatal(err)
+		}
+		want := "unconfirmed_delivery_timeout"
+		if total {
+			want = "service_failure"
+		}
+		if h.State != "cancelled" || h.AuditVerdict != want || len(c.History) != 0 {
+			t.Fatal("wrong priority", h)
+		}
+		for _, id := range spotExecutors(h) {
+			if s.Availability[id].Major != 0 || s.Availability[id].Executor.UnopenedTotal != 0 {
+				t.Fatal("blamed executor")
+			}
+		}
+	}
+}
+
+func TestSpotHistoricalEvidenceAfterAutomaticAdvance(t *testing.T) {
+	for _, counter := range []bool{false, true} {
+		s, _, _, h := spotFixture(t)
+		g := gatewayFixture(t, s)
+		c := h.Pipeline.Spot
+		absence := spoolFor(h, g, false, c.Deadline+1)
+		receipt := spoolFor(h, g, true, c.Deadline)
+		at := c.Deadline + 1
+		if err := s.advanceSpot(at); err != nil {
+			t.Fatal(err)
+		}
+		if err := s.spotAction(h.Auditor, Action{Type: "spot_unopened", HoldID: h.ID, Spool: absence}, at+1); err != nil {
+			t.Fatal(err)
+		}
+		if counter {
+			if err := s.spotAction(spotExecutors(h)[0], Action{Type: "spot_counterproof", HoldID: h.ID, Spool: receipt}, at+2); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := s.advanceSpot(at + 62); err != nil {
+			t.Fatal(err)
+		}
+		old := &c.History[0]
+		if !old.EvidenceResolved || (counter && s.Availability[old.Auditor].Major != 1) {
+			t.Fatal("historical evidence not resolved")
+		}
+		for _, id := range spotExecutors(h) {
+			want := uint64(1)
+			if counter {
+				want = 0
+			}
+			if s.Availability[id].Executor.UnopenedTotal != want || s.Availability[id].Major != 0 {
+				t.Fatal("wrong historical attribution")
+			}
+		}
+		if err := s.spotAction(h.Auditor, Action{Type: "spot_unopened", HoldID: h.ID, Spool: absence}, at+63); err == nil {
+			t.Fatal("duplicate evidence")
+		}
+	}
+}
+func TestSpotTerminalEvidenceNeverRefundsTwice(t *testing.T) {
+	s, _, nodes, h := spotFixture(t)
+	g := gatewayFixture(t, s)
+	c := h.Pipeline.Spot
+	if err := s.advanceSpot(c.Deadline + 1); err != nil {
+		t.Fatal(err)
+	}
+	at := c.Deadline + 1
+	absence := spoolFor(h, g, false, at)
+	if err := s.advanceSpot(at); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.spotAction(h.Auditor, Action{Type: "spot_unopened", HoldID: h.ID, Spool: absence}, at+1); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.advanceSpot(at + 62); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.advanceSpot(at + 63); err != nil {
+		t.Fatal(err)
+	}
+	if h.State != "cancelled" || h.AuditVerdict != "reject_unopened" || s.Accounts[h.Payer].Balance != 1000 {
+		t.Fatal("terminal evidence changed funds", h)
+	}
+	for _, n := range nodes {
+		r := s.Availability[n.id]
+		if r.Major != 1 || r.Executor.UnopenedTotal != 1 || s.Accounts[n.id].Balance != 0 {
+			t.Fatal("bad attribution", r)
+		}
+	}
+}
+func TestSpotSubstitutePreservesEscalationBudget(t *testing.T) {
+	s, _, _, h := spotFixture(t)
+	c := h.Pipeline.Spot
+	c.Round = "esc"
+	c.Deadline = 100
+	c.Received = true
+	c.VerdictDeadline = 10
+	if err := s.advanceSpot(11); err != nil {
+		t.Fatal(err)
+	}
+	s.BlockHashes[12] = bytes.Repeat([]byte{42}, 32)
+	if err := s.advanceSpot(13); err != nil {
+		t.Fatal(err)
+	}
+	if c.Round != "esc" || c.Deadline != 100 || c.VerdictDeadline != 100 || c.ChallengeHeight != 4 {
+		t.Fatal("substitute reset budget", c)
+	}
+}
+
+func TestSpotSignedHistoricalClaimAndAssignmentQuery(t *testing.T) {
+	s, a, _, h := spotFixture(t)
+	g := gatewayFixture(t, s)
+	c := h.Pipeline.Spot
+	at := c.Deadline + 1
+	absence := spoolFor(h, g, false, at)
+	if err := s.advanceSpot(at); err != nil {
+		t.Fatal(err)
+	}
+	aud := a["auditor"]
+	if aud.id != h.Auditor {
+		aud = a["auditor2"]
+	}
+	raw, err := Sign(s.Parameters.ChainID, aud.key, s.Accounts[aud.id].Nonce+1, Action{Type: "spot_unopened", HoldID: h.ID, Spool: absence})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Apply(raw, at+1); err != nil {
+		t.Fatal(err)
+	}
+	h = s.Holds[h.ID]
+	if h.Pipeline.Spot.History[0].Accusation == nil {
+		t.Fatal("signed claim not stored")
+	}
+	s.Height = at + 1
+	app := &Application{committed: s}
+	for _, id := range []string{h.Auditor, "unassigned"} {
+		res, err := app.Query(context.Background(), &abci.QueryRequest{Path: "/spot-assignments/" + id})
+		if err != nil || res.Code != 0 {
+			t.Fatal(err, res)
+		}
+		var snapshot struct {
+			Height int64            `json:"height"`
+			Holds  map[string]*Hold `json:"holds"`
+		}
+		if err = json.Unmarshal(res.Value, &snapshot); err != nil {
+			t.Fatal(err)
+		}
+		want := 0
+		if id == h.Auditor {
+			want = 1
+		}
+		if len(snapshot.Holds) != want || snapshot.Height != at+1 {
+			t.Fatal("bad assignment filter", snapshot)
+		}
+	}
+}
+func TestSpotHistoricalEvidenceBindingAndCutoff(t *testing.T) {
+	s, _, _, h := spotFixture(t)
+	g := gatewayFixture(t, s)
+	c := h.Pipeline.Spot
+	at := c.Deadline + 1
+	absence := spoolFor(h, g, false, at)
+	if err := s.advanceSpot(at); err != nil {
+		t.Fatal(err)
+	}
+	claim := Action{Type: "spot_unopened", HoldID: h.ID, Spool: absence}
+	if s.spotAction(h.Payer, claim, at+1) == nil {
+		t.Fatal("wrong historical signer")
+	}
+	absence.Signature[0] ^= 1
+	if s.spotAction(h.Auditor, claim, at+1) == nil {
+		t.Fatal("bad historical gateway signature")
+	}
+	absence.Signature[0] ^= 1
+	if s.spotAction(h.Auditor, claim, h.SettleHeight-60) == nil {
+		t.Fatal("unbounded historical evidence")
+	}
+}
+
+func TestSpotExpiredEscalationDoesNotBlameFreshSubstitute(t *testing.T) {
+	s, _, _, h := spotFixture(t)
+	c := h.Pipeline.Spot
+	c.Round = "esc"
+	c.Received = true
+	c.Deadline = 10
+	c.VerdictDeadline = 10
+	first := h.Auditor
+	if err := s.advanceSpot(11); err != nil {
+		t.Fatal(err)
+	}
+	s.BlockHashes[12] = bytes.Repeat([]byte{42}, 32)
+	if err := s.advanceSpot(13); err != nil {
+		t.Fatal(err)
+	}
+	if h.Auditor != first || h.State != "cancelled" || s.Availability[first].Minor != 1 {
+		t.Fatal("expired budget reassigned", h)
 	}
 }

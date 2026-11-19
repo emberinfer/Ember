@@ -51,6 +51,7 @@ type AvailabilityRecord struct {
 	Auditor    AvailabilityCounters `json:"auditor"`
 }
 type SpotChallenge struct {
+	EvidenceResolved bool              `json:"evidence_resolved,omitempty"`
 	RequestID        string            `json:"request_id"`
 	Auditor          string            `json:"auditor"`
 	StepSet          []uint64          `json:"step_set"`
@@ -242,7 +243,9 @@ func (s *State) startSpot(h *Hold, height int64) error {
 	return nil
 }
 func (s *State) verifySpool(h *Hold, a *SpoolAttestation, height int64) error {
-	c := h.Pipeline.Spot
+	return s.verifySpotSpool(h.Pipeline.Spot, a, height)
+}
+func (s *State) verifySpotSpool(c *SpotChallenge, a *SpoolAttestation, height int64) error {
 	if a == nil || a.RequestID != c.RequestID || a.ChallengeHeight != c.ChallengeHeight || !bytes.Equal(a.StepSetHash, SpotStepSetHash(c.StepSet)) || a.Height > height || a.Height < c.ChallengeHeight {
 		return errors.New("spool challenge binding mismatch")
 	}
@@ -271,10 +274,25 @@ func (s *State) spotReceived(h *Hold, height int64) {
 	}
 	if c.Substitute {
 		c.VerdictDeadline = h.AuditAssignedHeight + SPOT_SUBSTITUTE_BLOCKS
+		if c.Round == "esc" {
+			c.VerdictDeadline = min(c.VerdictDeadline, c.Deadline)
+		}
 	}
 }
 func (s *State) spotAction(signer string, a Action, height int64) error {
 	h := s.Holds[a.HoldID]
+	if s.Version >= 14 && h != nil && h.Pipeline != nil && h.Pipeline.Spot != nil && a.Spool != nil {
+		c := h.Pipeline.Spot
+		for i := range c.History {
+			old := &c.History[i]
+			if old.ChallengeHeight == a.Spool.ChallengeHeight {
+				return s.historicalSpotAction(h, old, signer, a, height)
+			}
+		}
+		if h.AuditVerdict == "unconfirmed_delivery_timeout" && c.ChallengeHeight == a.Spool.ChallengeHeight {
+			return s.historicalSpotAction(h, c, signer, a, height)
+		}
+	}
 	if s.Version < 14 || h == nil || h.State != "dispute" || h.Pipeline == nil || h.Pipeline.Spot == nil || h.AuditVerdict != "" {
 		return errors.New("invalid spot transition")
 	}
@@ -324,6 +342,25 @@ func (s *State) rejectUnopened(h *Hold, height int64) error {
 	h.AuditVerdict = "reject_unopened"
 	return s.settleAt(h, "service_failure", height)
 }
+
+// resendSpot preserves the committed step set and snapshots the prior challenge.
+func (s *State) resendSpot(h *Hold, height int64) {
+	c := h.Pipeline.Spot
+	old := *c
+	old.History = nil
+	c.History = append(c.History, old)
+	c.Round = "2"
+	c.EvidenceResolved = false
+	c.ChallengeHeight = height
+	c.Deadline = height + SPOT_OPEN_ROUND_BLOCKS
+	c.VerdictDeadline = c.Deadline + SPOT_FIRST_VERDICT_BLOCKS
+	c.Substitute = false
+	c.Accusation = nil
+	c.AccusedAt = 0
+	for _, id := range spotExecutors(h) {
+		s.availability(id).Executor.ChallengedTotal++
+	}
+}
 func (s *State) advanceSpot(height int64) error {
 	if s.Version < 14 {
 		return nil
@@ -343,8 +380,10 @@ func (s *State) advanceSpot(height int64) error {
 			if err := s.settleAt(h, "service_failure", height); err != nil {
 				return err
 			}
+			s.advanceHistoricalSpot(h, height)
 			continue
 		}
+		s.advanceHistoricalSpot(h, height)
 		if h.State != "dispute" || h.Pipeline == nil || h.Pipeline.Spot == nil || h.AuditVerdict != "" {
 			continue
 		}
@@ -353,27 +392,38 @@ func (s *State) advanceSpot(height int64) error {
 			for _, id := range spotExecutors(h) {
 				s.availability(id).Executor.UnopenedTotal++
 			}
+			c.EvidenceResolved = true
 			if c.Round != "1" {
 				if err := s.rejectUnopened(h, height); err != nil {
 					return err
 				}
 				continue
 			}
-			old := *c
-			old.History = nil
-			c.History = append(c.History, old)
-			c.Round = "2"
-			c.ChallengeHeight = height
-			c.Deadline = height + SPOT_OPEN_ROUND_BLOCKS
-			c.VerdictDeadline = c.Deadline + SPOT_FIRST_VERDICT_BLOCKS
-			c.Substitute = false
-			c.Accusation = nil
-			c.AccusedAt = 0
-			for _, id := range spotExecutors(h) {
-				s.availability(id).Executor.ChallengedTotal++
-			}
+			s.resendSpot(h, height)
 		}
-		if c.ReplaceAfter > 0 && height > c.ReplaceAfter+1 {
+		// Pending evidence owns this round until its counterproof window closes.
+		// A missing delivery confirmation advances funds, never attribution.
+		if !c.Received && c.Accusation == nil && height > c.Deadline {
+			if c.Round == "1" {
+				s.resendSpot(h, height)
+			} else {
+				h.AuditVerdict = "unconfirmed_delivery_timeout"
+				if err := s.settleAt(h, "service_failure", height); err != nil {
+					return err
+				}
+			}
+			continue
+		}
+		if c.Received && c.ReplaceAfter > 0 && height > c.ReplaceAfter+1 {
+			// The escalation budget belongs to the segment, not each auditor.
+			// Do not assign an already-expired budget and blame the new auditor.
+			if c.Round == "esc" && height > c.Deadline {
+				h.AuditVerdict = "service_failure"
+				if err := s.settleAt(h, "service_failure", height); err != nil {
+					return err
+				}
+				continue
+			}
 			next, proof, err := s.selectAuditor(h, h.Auditor, height)
 			if err != nil {
 				continue
@@ -383,11 +433,14 @@ func (s *State) advanceSpot(height int64) error {
 			h.AuditAssignedHeight = height
 			c.Auditor = next
 			c.VerdictDeadline = height + SPOT_SUBSTITUTE_BLOCKS
+			if c.Round == "esc" {
+				c.VerdictDeadline = min(c.VerdictDeadline, c.Deadline)
+			}
 			c.ReplaceAfter = 0
 			c.Substitute = true
 			s.availability(next).Auditor.ChallengedTotal++
 		}
-		if c.Accusation == nil && c.ReplaceAfter == 0 && height > c.VerdictDeadline {
+		if c.Received && c.Accusation == nil && c.ReplaceAfter == 0 && height > c.VerdictDeadline {
 			s.availabilityEvent(h.Auditor, false, height)
 			s.availability(h.Auditor).Auditor.UnopenedTotal++
 			c.ReplaceAfter = height
@@ -545,4 +598,70 @@ func confirmedSpotConviction(h *Hold) bool {
 		}
 	}
 	return false
+}
+
+// Historical evidence affects attribution only: never revive or repay a hold.
+// New claims close 60 blocks before SettleHeight, so every claim retains its
+// complete counterproof window within the existing total dispute budget.
+func (s *State) historicalSpotAction(h *Hold, c *SpotChallenge, signer string, a Action, height int64) error {
+	if height >= h.SettleHeight || (a.Type == "spot_unopened" && height >= h.SettleHeight-SPOT_FIRST_VERDICT_BLOCKS) || c.EvidenceResolved || c.Received {
+		return errors.New("historical evidence closed")
+	}
+	if err := s.verifySpotSpool(c, a.Spool, height); err != nil {
+		return err
+	}
+	switch a.Type {
+	case "spot_unopened":
+		if signer != c.Auditor || c.Accusation != nil || height <= c.Deadline || a.Spool.Received || a.Spool.Height < c.Deadline {
+			return errors.New("invalid historical accusation")
+		}
+		cp := *a.Spool
+		c.Accusation = &cp
+		c.AccusedAt = height
+	case "spot_counterproof":
+		executor := false
+		for _, id := range spotExecutors(h) {
+			executor = executor || signer == id
+		}
+		if !executor || c.Accusation == nil || height > c.AccusedAt+SPOT_FIRST_VERDICT_BLOCKS || !a.Spool.Received || a.Spool.Height > c.Deadline {
+			return errors.New("invalid historical counterproof")
+		}
+		s.availabilityEvent(c.Auditor, true, height)
+		c.Accusation = nil
+		c.AccusedAt = 0
+		c.Received = true
+		c.EvidenceResolved = true
+	default:
+		return errors.New("invalid historical action")
+	}
+	return nil
+}
+func (s *State) advanceHistoricalSpot(h *Hold, height int64) {
+	if h.Pipeline == nil || h.Pipeline.Spot == nil {
+		return
+	}
+	current := h.Pipeline.Spot
+	resolve := func(c *SpotChallenge) {
+		if c.EvidenceResolved || c.Accusation == nil || height <= c.AccusedAt+SPOT_FIRST_VERDICT_BLOCKS {
+			return
+		}
+		c.EvidenceResolved = true
+		for _, id := range spotExecutors(h) {
+			s.availability(id).Executor.UnopenedTotal++
+		}
+		if c.Round != "1" {
+			for _, id := range spotExecutors(h) {
+				s.availabilityEvent(id, true, height)
+			}
+			if h.AuditVerdict == "unconfirmed_delivery_timeout" {
+				h.AuditVerdict = "reject_unopened"
+			}
+		}
+	}
+	for i := range current.History {
+		resolve(&current.History[i])
+	}
+	if h.State != "dispute" {
+		resolve(current)
+	}
 }

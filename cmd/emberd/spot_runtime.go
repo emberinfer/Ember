@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -181,7 +182,7 @@ func spotQuery(book *ledger.ChainLedger, store *gateway.SpotStore) http.Handler 
 			return
 		}
 		h, height, version, err := book.SpotRuntimeState(parts[0])
-		if err != nil || version < 14 || h.State != "dispute" || h.Pipeline == nil || h.Pipeline.Spot == nil {
+		if err != nil || version < 14 || (h.State != "dispute" && h.AuditVerdict != "unconfirmed_delivery_timeout") || height >= h.SettleHeight || h.Pipeline == nil || h.Pipeline.Spot == nil {
 			http.Error(w, "finalized spot challenge unavailable", 404)
 			return
 		}
@@ -191,6 +192,27 @@ func spotQuery(book *ledger.ChainLedger, store *gateway.SpotStore) http.Handler 
 			return
 		}
 		c := h.Pipeline.Spot
+		if raw := r.URL.Query().Get("challenge_height"); raw != "" {
+			requested, parseErr := strconv.ParseInt(raw, 10, 64)
+			if parseErr != nil {
+				http.Error(w, "invalid challenge height", 400)
+				return
+			}
+			if requested != c.ChallengeHeight {
+				var historical *chain.SpotChallenge
+				for i := range c.History {
+					if c.History[i].ChallengeHeight == requested {
+						historical = &c.History[i]
+						break
+					}
+				}
+				if historical == nil {
+					http.Error(w, "unknown challenge", 404)
+					return
+				}
+				c = historical
+			}
+		}
 		var value any
 		switch parts[1] {
 		case "receipt":

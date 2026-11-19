@@ -352,6 +352,15 @@ func (app *Application) Query(_ context.Context, req *abci.QueryRequest) (*abci.
 	}
 	var value any
 	switch {
+	case strings.HasPrefix(req.Path, "/spot-assignments/") && app.committed.Version >= 14:
+		auditor := strings.TrimPrefix(req.Path, "/spot-assignments/")
+		holds := map[string]*Hold{}
+		for id, h := range app.committed.Holds {
+			if (h.State == "dispute" || h.AuditVerdict == "unconfirmed_delivery_timeout") && app.committed.Height < h.SettleHeight && h.Auditor == auditor && h.Pipeline != nil && h.Pipeline.Spot != nil {
+				holds[id] = h
+			}
+		}
+		value = map[string]any{"height": app.committed.Height, "holds": holds}
 	case strings.HasPrefix(req.Path, "/availability/") && app.committed.Version >= 14:
 		id := strings.TrimPrefix(req.Path, "/availability/")
 		value = app.committed.Availability[id]

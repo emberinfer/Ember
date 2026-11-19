@@ -178,14 +178,24 @@ class OpeningService:
     def _records(self):
         return [json.loads(p.read_text()) for p in self.root.glob('*.json')]
 
-    def open(self, manifest, steps, round, challenge_height, height, escalation=False):
+    def open(self, manifest, steps, round, challenge_height, height, escalation=False,
+             read_invocation=None, read_opening=None):
         with self._locked():
             rid = manifest['request_id']
             leaves = manifest['leaves']
             levels = tree(leaves)
             if levels[-1][0].hex() != manifest['commitment_root']:
                 raise ValueError('manifest commitment mismatch')
-            if (leaves[0]['input_hash'] != manifest['input_token_hash'] or
+            pipeline = manifest.get('kind') == 'pipeline'
+            if any(leaf['request_id'] != rid or leaf['step_index'] != i+1
+                   for i, leaf in enumerate(leaves)):
+                raise ValueError('manifest leaf identity mismatch')
+            if pipeline and (manifest.get('spot_step_count') != len(leaves) or
+                             len(manifest.get('records', [])) != len(leaves)):
+                raise ValueError('pipeline manifest count mismatch')
+            if pipeline and (read_invocation is None or read_opening is None):
+                raise ValueError('pipeline requires original spool readers')
+            if not pipeline and (leaves[0]['input_hash'] != manifest['input_token_hash'] or
                     leaves[-1]['output_hash'] != manifest['output_token_hash'] or
                     any(leaf['request_id'] != rid or leaf['step_index'] != i+1
                         for i, leaf in enumerate(leaves)) or
@@ -207,6 +217,9 @@ class OpeningService:
             directory.mkdir()
             packages = []
             for i in steps:
+                if pipeline:
+                    packages.append(pipeline_package(manifest, i, read_invocation, read_opening))
+                    continue
                 neighbor = i+1 if i < len(leaves) else max(1, i-1)
                 package = dict(step_index=i, leaf=leaves[i-1], proof=proof(levels, i-1),
                                neighbor_leaf=leaves[neighbor-1], neighbor_proof=proof(levels, neighbor-1), leaf_count=len(leaves), tensors={})
@@ -328,3 +341,113 @@ def verify_signed(envelope, registered_public_key):
     Ed25519PublicKey.from_public_bytes(registered_public_key).verify(
         bytes.fromhex(envelope['signature']), b'EMBER-SPOOL-V1\0' + canonical(envelope['payload']))
     return envelope['payload']
+
+
+# Pipeline token steps bind original records. ETV1 Commitment remains exclusively
+# for range/shard tasks; do not apply tensor adjacency to pipeline token steps.
+PIPELINE_RECORD_FORMAT = 'pipeline-record-hashes-v1'
+
+
+def record_hashes(request_hashes, response_hashes, opening_hash):
+    def combine(values):
+        raw = [bytes.fromhex(v) for v in values]
+        if not raw or any(len(v) != 32 for v in raw):
+            raise ValueError('invalid record digest table')
+        return sha(b''.join(raw)).hex()
+    if not request_hashes or len(request_hashes) != len(response_hashes):
+        raise ValueError('incomplete stage digest table')
+    return combine(request_hashes), combine([*response_hashes, opening_hash])
+
+
+def pipeline_commitment(request_id, profile_id, invocations, opening_records, output_tokens):
+    """Consume spool records without model execution; retain only digest metadata.
+
+    opening_records supplies the ORIGINAL JSON bytes, not decoded/reserialized
+    objects. Invocation protobufs are the original wire hex, as in audit jobs.
+    Execution order within each request.step is preserved, never profile-sorted.
+    """
+    from ember_pb2 import ShardForwardRequest
+    if len(bytes.fromhex(request_id)) != 32:
+        raise ValueError('request ID must be 32 bytes')
+    if type(output_tokens) is not int or output_tokens < 1:
+        raise ValueError('invalid receipt.output_tokens')
+    groups = {}
+    invocation_request_id = None
+    for index, item in enumerate(invocations):
+        raw = bytes.fromhex(item['request'])
+        request = ShardForwardRequest.FromString(raw)
+        if not request.request_id:
+            raise ValueError('empty invocation request identity')
+        if invocation_request_id is None:
+            invocation_request_id = request.request_id
+        if request.request_id != invocation_request_id:
+            raise ValueError('inconsistent invocation request identity')
+        group = groups.setdefault(request.step, dict(indices=[], request_hashes=[], response_hashes=[]))
+        group['indices'].append(index)
+        group['request_hashes'].append(sha(raw).hex())
+        group['response_hashes'].append(sha(bytes.fromhex(item['response'])).hex())
+    leaves, records = [], []
+    for step, raw in enumerate(opening_records):
+        if not isinstance(raw, bytes):
+            raise ValueError('opening must be original record bytes')
+        if step not in groups:
+            raise ValueError('opening missing stage invocations')
+        group = groups[step]
+        group['opening_hash'] = sha(raw).hex()
+        incoming, outgoing = record_hashes(group['request_hashes'], group['response_hashes'], group['opening_hash'])
+        leaves.append(dict(step_index=step+1, input_hash=incoming, output_hash=outgoing,
+            format_hash=sha(PIPELINE_RECORD_FORMAT.encode()).hex(),
+            profile_id_hash=sha(profile_id.encode()).hex(), request_id=request_id))
+        records.append(group)
+    if not leaves or len(leaves) != output_tokens or set(groups) != set(range(len(leaves))):
+        raise ValueError('openings, receipt.output_tokens and request.step coverage differ')
+    return dict(kind='pipeline', request_id=request_id, leaves=leaves, records=records,
+                commitment_root=tree(leaves)[-1][0].hex(), spot_step_count=len(leaves))
+
+
+def pipeline_package(manifest, step, read_invocation, read_opening):
+    """Ruling 10 minimal disclosure, read from caller-owned durable spool.
+
+    Read callbacks return original records by index; all fully opened stage
+    records are rehashed before disclosure, including undisclosed intermediates.
+    """
+    from ember_pb2 import ShardForwardRequest
+    leaves, records = manifest['leaves'], manifest['records']
+    if type(step) is not int or not 1 <= step <= len(leaves):
+        raise ValueError('invalid pipeline step')
+    levels = tree(leaves)
+    if levels[-1][0].hex() != manifest['commitment_root']:
+        raise ValueError('pipeline manifest root changed')
+
+    def disclose(index, full):
+        record = records[index]
+        first, last = None, None
+        for position, invocation_index in enumerate(record['indices']):
+            item = read_invocation(invocation_index)
+            request_raw = bytes.fromhex(item['request'])
+            request = ShardForwardRequest.FromString(request_raw)
+            if request.step != index or sha(request_raw).hex() != record['request_hashes'][position]:
+                raise ValueError('spool request changed')
+            if full and sha(bytes.fromhex(item['response'])).hex() != record['response_hashes'][position]:
+                raise ValueError('spool response changed')
+            if first is None:
+                first = item['request']
+            last = item['response']
+        value = dict(first_request=first, request_hashes=record['request_hashes'])
+        if full:
+            raw = read_opening(index)
+            if sha(raw).hex() != record['opening_hash']:
+                raise ValueError('spool opening changed')
+            value.update(last_response=last, opening=raw.hex(),
+                         response_hashes=record['response_hashes'])
+            ih, oh = record_hashes(record['request_hashes'], record['response_hashes'], record['opening_hash'])
+            if (ih, oh) != (leaves[index]['input_hash'], leaves[index]['output_hash']):
+                raise ValueError('pipeline digest table changed')
+        return value
+
+    package = dict(kind='pipeline', step_index=step, leaf_count=len(leaves),
+                   leaf=leaves[step-1], proof=proof(levels, step-1), **disclose(step-1, True))
+    if step < len(leaves):
+        package.update(next_leaf=leaves[step], next_proof=proof(levels, step),
+                       next=disclose(step, False))
+    return package

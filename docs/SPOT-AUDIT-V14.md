@@ -124,7 +124,7 @@ three leaf hashes and an odd-width root. The Go tests check these constants,
 left/right proofs, self-pairing, and tampering. Helpers implement PARAMS section
 1 exactly; the chain stores the submitted root without parsing leaf data.
 
-## Final wiring status (F)
+## Data-plane wiring status (G, incomplete)
 
 Pipeline N is the submission-bound generated-token count. Version 14 rejects
 `spot_step_count != PipelineExecutionReceipt.output_tokens`; challenges and
@@ -135,13 +135,28 @@ Two independent, corroborating spot rejects settle against the actual credited
 hold executors, without legacy `offense` or `fault_node_ids`. Existing slash
 arithmetic, stake floors, block caps and payer refunds remain unchanged.
 
-Activation remains blocked. Ruling 9 specifies SHA-256 of *all* stage request
-bytes, and of *all* stage response bytes plus the opening, but discloses only the
-first request, last response and opening. Those disclosed records cannot
-recompute the specified digests. The next-step first request also cannot by
-itself recompute the next leaf's all-stage input hash. Merkle membership of a
-leaf does not prove that a disclosed subset is part of its concatenation
-preimage. Existing individual stage receipt hashes cannot reconstruct that
-preimage either. No verifier bypass or alternative commitment format is enabled.
-A coordinated evidence-format revision is required before gateway/spot wiring
-can meet the requested binding verification contract.
+Ruling 10 supersedes the Ruling 9 concatenation contract. Pipeline leaves now
+have library builders in `node/spotcheck.py` and
+`services/gateway/spot_records.go`: hash each original protobuf record, combine
+request digests in execution order, and combine response digests followed by
+the original opening digest. Both implementations enforce opening count equals
+receipt output tokens and contiguous zero-based request-step coverage. The
+pipeline format discriminator is `pipeline-record-hashes-v1`; ETV1 helpers stay
+separate for range/shard. The signed two-stage golden fixture is
+`node/auditor/testdata/pipeline-record-v1.json`.
+
+Python `OpeningService.open` dispatches pipeline manifests to record disclosure;
+round two reuses the selected set and escalation supplies only uncovered steps.
+This is a library API, not an enabled gateway submission/delivery path. Its
+caller must supply readers for original durable invocation and opening records.
+The existing tensor cleanup and auditor paths do not yet support these pipeline
+packages. No activation or complete end-to-end implementation is claimed.
+
+One specification clarification remains: the prescribed next-step disclosure
+contains only its first request and request digests, while the verification
+requirement asks to recompute both next-leaf input and output hashes. Next input
+can be recomputed; next output also requires next response digests and the next
+opening digest, which are absent. Verifying a Merkle proof binds the supplied
+next output digest but does not recompute it from record hashes. Either the
+verification requirement or the disclosure set needs a coordinated clarification.
+The verifier has not been weakened to silently choose between those contracts.

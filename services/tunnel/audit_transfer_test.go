@@ -73,7 +73,7 @@ func TestAuditLargePythonPeer(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
 			received := false
-			err := relay.Audit(ctx, "audit-probe", "request", strconv.Itoa(size), payload, func(frame *pb.TunnelFrame) error {
+			err := relay.Audit(ctx, "audit-probe", "request-"+strconv.Itoa(size), strconv.Itoa(size), payload, func(frame *pb.TunnelFrame) error {
 				var got struct {
 					Size    int    `json:"size"`
 					SHA256  string `json:"sha256"`

@@ -48,7 +48,7 @@ def test_claims_race_and_never_evict_failure():
 
 
 @pytest.mark.parametrize('kind', ['run', 'audit', 'audit_commit'])
-def test_two_sessions_execute_once_and_duplicate_is_unavailable(kind):
+def test_two_sessions_execute_once_and_duplicate_is_unavailable(kind, tmp_path):
     one = Agent('node', MockEngine())
     two = copy.copy(one)
     one.chain_args = two.chain_args = SimpleNamespace(no_exec=False, no_audit=False)
@@ -58,7 +58,7 @@ def test_two_sessions_execute_once_and_duplicate_is_unavailable(kind):
     entered, release = threading.Event(), threading.Event()
     calls = []
     def execute(*args):
-        calls.append(1); entered.set(); assert release.wait(5); return b'signed-verdict'
+        calls.append(1); entered.set(); assert release.wait(5); return b'{"verdict":"accept"}'
     if kind == 'run':
         def generate(*args, **kwargs):
             execute(); return iter(())
@@ -66,7 +66,9 @@ def test_two_sessions_execute_once_and_duplicate_is_unavailable(kind):
     else:
         context = patch('auditor.worker.execute', side_effect=execute)
     if kind == 'audit_commit':
-        one.audit_transfer = SimpleNamespace(finish=lambda _: frame.payload)
+        payload_path = tmp_path / 'audit.json'
+        payload_path.write_bytes(frame.payload)
+        one.audit_transfer = SimpleNamespace(finish=lambda _: str(payload_path))
         # Duplicate must be rejected before reassembly, even after original consumed it.
         two.audit_transfer = SimpleNamespace(finish=lambda _: pytest.fail('duplicate reassembled'))
     with context:

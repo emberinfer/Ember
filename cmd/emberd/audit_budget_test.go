@@ -11,11 +11,12 @@ func TestAuditAttemptBudget(t *testing.T) {
 		steps       int
 		floor, want time.Duration
 	}{
-		{2250842603, 124, 10 * time.Minute, 11502808676666 * time.Nanosecond},
+		{2250842603, 124, 10 * time.Minute, 22757021691666 * time.Nanosecond},
 		{1, 1, time.Hour, time.Hour},
-		{300000, 0, time.Second, 926 * time.Second},
-		{1 << 60, 1, time.Second, 6 * time.Hour},
-		{1, 1, 7 * time.Hour, 6 * time.Hour},
+		{300000, 0, time.Second, 927500 * time.Millisecond},
+		{1 << 60, 1, time.Second, 12 * time.Hour},
+		{1, 1, 7 * time.Hour, 7 * time.Hour},
+		{1, 1, 13 * time.Hour, 12 * time.Hour},
 	} {
 		if got := auditAttemptBudget(c.floor, c.size, c.steps); got != c.want {
 			t.Fatalf("%+v got=%v", c, got)

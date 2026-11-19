@@ -95,8 +95,11 @@ class BindingTest(unittest.TestCase):
         sign(receipt, key)
         scores = [(i, -i*2.0) for i in range(16)]
         steps = [Step(0, '', scores, {}) for _ in range(4)]
-        engine = NS(count_input_tokens=lambda p: 2, generate=lambda *a, **kw: iter(steps),
-                    score_forced=lambda *a: steps)
+        def after_replay(*args, **kwargs):
+            state['accounts']['auditor']['nonce'] = 40
+            return steps
+        engine = NS(count_input_tokens=lambda p: 2, generate=lambda *a, **kw: iter(after_replay()),
+                    score_forced=after_replay)
         agent = NS(node_id='auditor', key=key, engine=engine, genesis_bytes=genesis,
                    chain_args=NS(audit_role=True, chain_rpc='stub', chain_cli='stub', ledger_chain_id='test'))
         hold = dict(auditor=agent.node_id, state='dispute', audit_round=3,
@@ -110,6 +113,7 @@ class BindingTest(unittest.TestCase):
         for teacher_forcing in ('0', '1'):
             for mismatch in (True, False):
                 job['openings'] = [{'token': int(mismatch and i == 2)} for i in range(4)]
+                state['accounts'][agent.node_id]['nonce'] = 9
                 with patch('agent.join._chain_json', side_effect=targeted_query(state)), patch.dict('os.environ', {'EMBER_AUDIT_TEACHER_FORCING': teacher_forcing}):
                     result = json.loads(execute(agent, TunnelFrame(request_id='hold'), dict(job)))
                 pre, main = decode_envelope(result['pre_envelope']), decode_envelope(result['envelope'])
@@ -123,7 +127,7 @@ class BindingTest(unittest.TestCase):
                 self.assertEqual(v.tolerance, 'token-equality-v1')
                 evidence = dict(auditor=agent.node_id, result_commitment=hold['receipt_ref'], replay_record=v.recompute_ref.hex(), first_divergence=v.first_divergence if mismatch else -1, tolerance=v.tolerance, cause='token::token-equality-v1')
                 self.assertEqual(pre['action']['adjudication_commitment'], third_commitment(v.verdict, evidence))
-                self.assertEqual((pre['nonce'], main['nonce']), (10, 11))
+                self.assertEqual((pre['nonce'], main['nonce']), (41, 42))
 
     def test_execute_numeric_preserves_first_over_tolerance(self):
         from auditor.worker import execute

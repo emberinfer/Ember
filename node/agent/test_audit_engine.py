@@ -13,7 +13,7 @@ from engine import MockEngine
 
 
 @pytest.mark.parametrize('kind', ['audit', 'audit_commit'])
-def test_audit_waits_after_claim_and_duplicate_never_replays(kind, caplog):
+def test_audit_waits_after_claim_and_duplicate_never_replays(kind, caplog, tmp_path):
     caplog.set_level('INFO')
     one = Agent('node', MockEngine())
     two = copy.copy(one)
@@ -26,14 +26,16 @@ def test_audit_waits_after_claim_and_duplicate_never_replays(kind, caplog):
     run = TunnelFrame(kind='run', request_id='execution', payload=json.dumps(
         dict(prompt='hello', seed=1, max_tokens=2)).encode())
     audit = TunnelFrame(kind=kind, request_id='hold', payload=b'{}')
-    two.audit_transfer = type('Transfer', (), {'finish': lambda self, frame: b'{}'})()
+    payload_path = tmp_path / 'audit.json'
+    payload_path.write_bytes(b'{}')
+    two.audit_transfer = type('Transfer', (), {'finish': lambda self, frame: str(payload_path)})()
     q1, q2, duplicate = queue.Queue(), queue.Queue(), queue.Queue()
     def worker(view, frame, job):
         # Exercise the actual engine boundary used by the audit worker.
         result = view.engine.replay('hello', 1, [1, 2])
         audited.set()
         assert len(result) == 2
-        return b'verdict'
+        return b'{"verdict":"accept"}'
     with patch.object(one.engine, 'generate_for_request', side_effect=generate), \
          patch('auditor.worker.execute', side_effect=worker):
         first = threading.Thread(target=one._run, args=(run, q1))
@@ -55,7 +57,7 @@ def test_audit_waits_after_claim_and_duplicate_never_replays(kind, caplog):
     replies = list(q1.queue)
     assert len([r for r in replies if r.kind == 'token']) == 2
     assert replies[-1].kind == 'receipt'
-    assert q2.get_nowait().payload == b'verdict'
+    assert q2.get_nowait().payload == b'{"verdict":"accept"}'
     assert 'wait_seconds=' in caplog.text
 
 

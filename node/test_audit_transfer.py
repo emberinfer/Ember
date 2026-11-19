@@ -1,6 +1,7 @@
 """Integrity, ordering, retry, identity and cleanup of audit pieces."""
 import hashlib
 import json
+from pathlib import Path
 import unittest
 
 from agent.audit_transfer import AuditTransfer, CHUNK_BYTES
@@ -27,12 +28,14 @@ class AuditTransferTest(unittest.TestCase):
             manifest_root=self.root, index=index, data=data).SerializeToString(), request))
 
     def finish(self):
-        return self.receiver.finish(self.frame('audit_commit', self.manifest))
+        path = Path(self.receiver.finish(self.frame('audit_commit', self.manifest)))
+        self.addCleanup(path.unlink, missing_ok=True)
+        return path.read_bytes()
 
     def test_retry_and_roundtrip(self):
-        self.assertEqual(self.begin(), self.root)
+        self.assertEqual(self.begin(), self.root + (0).to_bytes(4, 'big'))
         self.chunk(0, self.data[:CHUNK_BYTES])
-        self.begin()  # lost begin ack must not reset accepted pieces
+        self.assertEqual(self.begin(), self.root + (1).to_bytes(4, 'big'))  # resume prefix
         self.chunk(0, self.data[:CHUNK_BYTES])  # lost piece ack
         self.chunk(1, b'y')
         file = self.receiver.file

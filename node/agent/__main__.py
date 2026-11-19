@@ -54,6 +54,8 @@ def main():
             cli.add_argument('--contribution-concurrency', type=int)
             cli.add_argument('--vram-budget-bytes', type=int)
             cli.add_argument('--contribution-context-tokens', type=int, default=512)
+            cli.add_argument('--spot-spool-dir', help='read-only durable gateway spool mirror for v14 audits')
+            cli.add_argument('--spot-context-dir', help='locally pinned per-request replay contexts (default STATE/spot-context)')
             cli.add_argument('--no-audit', action='store_true', help='opt out of chain-drawn review until registration expiry')
             cli.add_argument('--no-exec', action='store_true', help='opt out of gateway execution until registration expiry')
             cli.add_argument('--audit-role', action='store_true', help='legacy: add review eligibility to engine roles')

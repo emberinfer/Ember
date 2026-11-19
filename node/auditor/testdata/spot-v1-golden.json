@@ -1,0 +1,98 @@
+{
+  "description": "PARAMS v14 three-leaf odd self-pair SHA-256 vector; payloads raw little-endian",
+  "request_id": "abababababababababababababababababababababababababababababababab",
+  "profile_id": "tiny",
+  "tensors": [
+    {
+      "dtype": "i64",
+      "shape": [
+        1
+      ],
+      "raw_hex": "0100000000000000"
+    },
+    {
+      "dtype": "f32",
+      "shape": [
+        1,
+        1,
+        2
+      ],
+      "raw_hex": "0000803f00000040"
+    },
+    {
+      "dtype": "f32",
+      "shape": [
+        1,
+        1,
+        2
+      ],
+      "raw_hex": "0000004000008040"
+    },
+    {
+      "dtype": "i64",
+      "shape": [
+        1
+      ],
+      "raw_hex": "0200000000000000"
+    }
+  ],
+  "leaves": [
+    {
+      "step_index": 1,
+      "input_hash": "9ecbf449df717bd2ae9fdceea65a12c1bb4d31f80e887200ac148e2d3f6459e8",
+      "output_hash": "9b7d1bd7508b601a24e222e984213768d6f89b8287b5db312ed8b01578c3c251",
+      "format_hash": "56fa792af701d7032dc775060d6a0b1d39555f6ab3eb231f0378b1da7e6a70da",
+      "profile_id_hash": "8950abfda7b727630760dd35bcf5c3daa7631aff223a90f7728c0d2521dde10c",
+      "request_id": "abababababababababababababababababababababababababababababababab"
+    },
+    {
+      "step_index": 2,
+      "input_hash": "9b7d1bd7508b601a24e222e984213768d6f89b8287b5db312ed8b01578c3c251",
+      "output_hash": "c633a40488ae235500f13cafffe50141f693869bacb7b160f9276c3d3a244c84",
+      "format_hash": "56fa792af701d7032dc775060d6a0b1d39555f6ab3eb231f0378b1da7e6a70da",
+      "profile_id_hash": "8950abfda7b727630760dd35bcf5c3daa7631aff223a90f7728c0d2521dde10c",
+      "request_id": "abababababababababababababababababababababababababababababababab"
+    },
+    {
+      "step_index": 3,
+      "input_hash": "c633a40488ae235500f13cafffe50141f693869bacb7b160f9276c3d3a244c84",
+      "output_hash": "5786caeeaec516b47f683b4feb0f88219cad26e6372c6cbf7b313d72fbb45a52",
+      "format_hash": "ee6eeab46b594e397201832a7ea0f20803bc6f4858181ef3685e8afdcc21c46f",
+      "profile_id_hash": "8950abfda7b727630760dd35bcf5c3daa7631aff223a90f7728c0d2521dde10c",
+      "request_id": "abababababababababababababababababababababababababababababababab"
+    }
+  ],
+  "proofs": [
+    [
+      {
+        "hash": "85fb61985e699ac5966d2e60b13132fc83e0c34548651051574f973ad54689e5",
+        "left": false
+      },
+      {
+        "hash": "27daddfdfad2c36c5ae6d7528d92d964e8d914ab100939ed92c257ee55a56ee0",
+        "left": false
+      }
+    ],
+    [
+      {
+        "hash": "66040533bb7dcf79e5b24c84bb911d4f5312853d2889e1cf14ab5f3ff7f4e1de",
+        "left": true
+      },
+      {
+        "hash": "27daddfdfad2c36c5ae6d7528d92d964e8d914ab100939ed92c257ee55a56ee0",
+        "left": false
+      }
+    ],
+    [
+      {
+        "hash": "b3d2bc8e00d53d8088c030a9d55c60f7b30048b79064970b64d42a7d211dca40",
+        "left": false
+      },
+      {
+        "hash": "74bd255f9e88bf4b9f3abc2c2a9e7e957aa7f171743e30f52c18816202ee3378",
+        "left": true
+      }
+    ]
+  ],
+  "root": "2710c505caa99d07321382067483c56a638a9c97a35fea9806b30af558c98f8f"
+}

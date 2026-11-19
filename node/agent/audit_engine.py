@@ -50,6 +50,12 @@ class AuditEngine:
                 return list(result) if name in ('generate', 'score_forced') else result
         return call
 
+    def replay_spot(self, opening, operation):
+        """Lease shared weights for one CPU step; spool and chain I/O stay free."""
+        from auditor.spot_replay import replay_step
+        with self.locked():
+            return replay_step(self.agent.engine, opening, operation)
+
     def close(self):
         if self.range_locked:
             self.range_lease.__exit__(None, None, None)

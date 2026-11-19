@@ -32,7 +32,9 @@ type Handler struct {
 
 type persistedState struct {
 	Accounts map[string]int64 `json:"accounts"`
-	Sources  map[string]int64 `json:"sources"`
+	// Sources is telemetry only (last claim time per source IP). It is
+	// persisted for anti-abuse visibility and never used to gate claims.
+	Sources map[string]int64 `json:"sources"`
 }
 
 type request struct {
@@ -90,7 +92,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cutoff := now.Add(-window).Unix()
-	if h.state.Accounts[account] > cutoff || h.state.Sources[source] > cutoff {
+	// Rate limit is per account only. The source is still recorded below
+	// as anti-abuse telemetry, but it never gates a claim: many legitimate
+	// users share one egress IP (carrier NAT, Cloudflare), and gating on it
+	// locked out every fresh address behind a shared source.
+	if h.state.Accounts[account] > cutoff {
 		w.Header().Set("Retry-After", durationSeconds(window))
 		http.Error(w, "faucet rate limit exceeded", http.StatusTooManyRequests)
 		return
@@ -102,9 +108,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err = h.Transfer(account, h.Amount); err != nil {
-		delete(h.state.Accounts, account)
-		delete(h.state.Sources, source)
-		_ = h.save()
+		// Never roll back the rate-limit record on a transfer error. The
+		// transfer is a chain broadcast whose confirmation can fail after
+		// the transaction has already landed (unknown outcome); deleting
+		// the record here is what allowed double claims on 2026-11-16.
+		// The record stands and the claim stays spent; a genuinely failed
+		// transfer is reconciled by tx hash out of band, not by reopening
+		// the window.
 		http.Error(w, "faucet transfer failed", http.StatusServiceUnavailable)
 		return
 	}
@@ -178,7 +188,7 @@ func durationSeconds(value time.Duration) string {
 }
 
 // PublicMux exposes only the rate-limited funding path. Sharing the handler
-// preserves one account/source quota across the private and public listeners.
+// preserves one per-account quota across the private and public listeners.
 func PublicMux(handler *Handler) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/testnet/faucet", handler)

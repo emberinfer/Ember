@@ -92,7 +92,7 @@ func main() {
 	faucetHTTP := flags.String("faucet-http", "", "optional separate faucet-only listener; expose this instead of the gateway")
 	faucetKey := flags.String("faucet-key", "", "optional mode-0600 testnet faucet account key")
 	faucetAmount := flags.Int64("faucet-amount", 0, "valueless testnet Spark subunits per rate-limited claim (0 disables)")
-	faucetWindow := flags.Duration("faucet-window", 24*time.Hour, "per-account and per-source faucet claim window")
+	faucetWindow := flags.Duration("faucet-window", 24*time.Hour, "per-account faucet claim window")
 	faucetTrustedProxy := flags.String("faucet-trusted-proxy", "", "single immediate proxy IP allowed to supply X-Forwarded-For; proxy must overwrite client headers")
 	faucetState := flags.String("faucet-state", "", "mode-0600 persistent faucet rate-limit state")
 	schedulerKeyFile := flags.String("scheduler-key", "", "mode-0600 scheduler Ed25519 key for signed node work")

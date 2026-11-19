@@ -36,8 +36,28 @@ func (s *State) QueryAuditRoute(id string) (*AuditRouteView, error) {
 			return nil, errors.New("invalid frozen stage profile")
 		}
 	}
+	// Non-range pipeline assignments select against the first frozen stage,
+	// not Hold.Node (which is empty for pipeline holds). Match that lookup
+	// for spot challenges without weakening the registered replay check.
+	spot := h.Pipeline != nil && h.Pipeline.Spot != nil
+	if !drawn && spot {
+		if len(h.Pipeline.Authorizations) == 0 {
+			return nil, errors.New("missing frozen stages")
+		}
+		auth := h.Pipeline.Authorizations[0]
+		producer = s.ActiveProfile(auth.NodeID, s.Height)
+		if len(auth.Profile) > 0 {
+			producer = &pb.ResourceProfile{}
+			if proto.Unmarshal(auth.Profile, producer) != nil {
+				return nil, errors.New("invalid frozen stage profile")
+			}
+		}
+	}
 	eligible := producer != nil && s.EligibleAuditorProfile(h.Auditor, producer.NodeId, producer, s.Height)
-	if drawn {
+	// Spot replay spans shard stages even when no legacy range was drawn.
+	// Use the existing shard/full-model runtime compatibility check.
+	spotShard := spot && producer != nil && producer.EngineCapabilities != nil && producer.EngineCapabilities.EngineName == "transformers-shard"
+	if drawn || spotShard {
 		eligible = producer != nil && s.EligibleRangeAuditor(h.Auditor, producer.NodeId, producer, s.Height)
 	}
 	return &AuditRouteView{h, producer, s.ActiveProfile(h.Auditor, s.Height), eligible}, nil

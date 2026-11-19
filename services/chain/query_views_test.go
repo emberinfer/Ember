@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"bytes"
 	"context"
 	core "ember/core-go"
 	pb "ember/proto"
@@ -134,5 +135,75 @@ func TestTargetedQueryDifferential(t *testing.T) {
 		if q.Code != 0 || string(q.Value) != string(raw) {
 			t.Fatal("settlement differs", q.Log)
 		}
+	}
+}
+
+func TestSpotAssignmentAuditRoute(t *testing.T) {
+	s, actors, nodes, auth, receipt := pipelineState(t)
+	s.Version = 14
+	s.Parameters.AuditEquality.Enabled = true
+	for _, node := range nodes {
+		p := s.ActiveProfile(node.id, 1)
+		p.ActualDevice = "cpu"
+		p.TorchVersion = "2.5.1"
+		p.TransformersVersion = "4.45.2"
+		p.EngineCapabilities = &pb.EngineCapabilities{EngineName: "transformers-shard", EngineVersion: "4.45.2", NumericalFormat: "bfloat16", Roles: []string{"shard-stage"}, EvidenceLevels: []string{"shard-layer"}, ScoreKind: "raw-logits", MaxTopK: 16}
+		core.Sign(p, node.key)
+		raw, _ := proto.Marshal(p)
+		s.Nodes[node.id].Profile = raw
+	}
+	producer := s.ActiveProfile(nodes[0].id, 1)
+	for _, name := range []string{"auditor", "auditor2"} {
+		auditor := actors[name]
+		p := proto.Clone(producer).(*pb.ResourceProfile)
+		p.NodeId = auditor.id
+		p.EngineCapabilities = proto.Clone(producer.EngineCapabilities).(*pb.EngineCapabilities)
+		p.EngineCapabilities.EngineName = "transformers"
+		p.EngineCapabilities.ForcedPrefixReplay = true
+		p.EngineCapabilities.EvidenceLevels = []string{"full"}
+		p.EngineCapabilities.Roles = []string{"auditor"}
+		core.Sign(p, auditor.key)
+		raw, _ := proto.Marshal(p)
+		s.Accounts[auditor.id].Stake = 5000
+		s.Nodes[auditor.id] = &NodeRegistration{Profile: raw, ExpiresHeight: 1000}
+	}
+	apply(t, s, actors["payer"], 1, Action{Type: "freeze_pipeline", HoldID: "units", Payer: actors["payer"].id, Amount: 6, TotalLayers: 4, PipelineAuthorizations: auth}, 2)
+	raw, _ := proto.Marshal(receipt)
+	apply(t, s, actors["coordinator"], 1, Action{Type: "submit_pipeline", HoldID: "units", Actual: 6, Receipt: raw, SpotStepCount: 1, CommitmentRoot: bytes.Repeat([]byte{1}, 32)}, 3)
+	apply(t, s, actors["coordinator"], 2, Action{Type: "assign_audit", HoldID: "units"}, 4)
+	h := s.Holds["units"]
+	if h.Node != "" || h.Pipeline.Spot == nil || h.Assignments[len(h.Assignments)-1].DrawnStage != nil {
+		t.Fatal("fixture must use real non-range spot assignment")
+	}
+	s.Height = 4
+	route, err := s.QueryAuditRoute(h.ID)
+	if err != nil || !route.Eligible || !proto.Equal(route.Producer, producer) || route.Auditor.NodeId != h.Auditor {
+		t.Fatalf("spot route: %+v, %v", route, err)
+	}
+	// Producer resolution uses the frozen authorization, not current presence.
+	delete(s.Nodes, nodes[0].id)
+	route, err = s.QueryAuditRoute(h.ID)
+	if err != nil || !route.Eligible || !proto.Equal(route.Producer, producer) {
+		t.Fatal("lost frozen profile", err)
+	}
+	// An active but incompatible replay runtime must still fail closed.
+	compatible := append([]byte(nil), s.Nodes[h.Auditor].Profile...)
+	incompatible := s.ActiveProfile(h.Auditor, s.Height)
+	incompatible.TorchVersion = "different"
+	for _, candidate := range actors {
+		if candidate.id == h.Auditor {
+			core.Sign(incompatible, candidate.key)
+		}
+	}
+	s.Nodes[h.Auditor].Profile, _ = proto.Marshal(incompatible)
+	route, err = s.QueryAuditRoute(h.ID)
+	if err != nil || route.Eligible {
+		t.Fatal("incompatible runtime accepted", err)
+	}
+	s.Nodes[h.Auditor].Profile = compatible
+	s.Nodes[h.Auditor].ExpiresHeight = s.Height
+	route, err = s.QueryAuditRoute(h.ID)
+	if err != nil || route.Eligible || route.Auditor != nil {
+		t.Fatal("expired auditor accepted", err)
 	}
 }

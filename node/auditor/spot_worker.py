@@ -12,7 +12,7 @@ from .spot import (DirectorySpool, audit, canonical, durable_json,
 from .spot_wire import SpotVerdict
 
 
-def context_for(agent, frame, hold):
+def context_for(agent, frame, hold, job=None, query=None):
     """Load locally pinned profile/formats and payer/output token anchors.
 
     The local record is provisioned from the request's authenticated execution
@@ -24,8 +24,17 @@ def context_for(agent, frame, hold):
     request_id = frame.request_id
     if len(bytes.fromhex(request_id)) != 32 or Path(request_id).name != request_id:
         raise ValueError('invalid spot request identity')
-    with (root / (request_id + '.json')).open() as source:
-        context = json.load(source)
+    path = root / (request_id + '.json')
+    derived = False
+    try:
+        with path.open() as source:
+            context = json.load(source)
+    except FileNotFoundError:
+        from .spot_context import derive_context
+        if job is None or query is None:
+            raise
+        context = derive_context(agent, frame, job, hold, query)
+        derived = True
     pipeline = hold['pipeline']
     challenge = pipeline['spot']
     if context['request_id'] != request_id or challenge['request_id'] != request_id:
@@ -42,6 +51,9 @@ def context_for(agent, frame, hold):
     context['segment_deadlines'] = dict(open=context['open_deadline'],
         first_verdict=context['verdict_deadline'],
         substitute_blocks=SPOT_SUBSTITUTE_BLOCKS, escalation_blocks=SPOT_ESCALATION_BLOCKS)
+    if derived:
+        # All required fields must be available before the first durable write.
+        durable_json(path, context)
     return context
 
 
@@ -58,7 +70,7 @@ def envelope_result(agent, action, summary):
 def execute(agent, frame, job, hold, query):
     if hold.get('auditor') != agent.node_id or hold['pipeline']['spot']['auditor'] != agent.node_id:
         raise ValueError('not finalized spot auditor')
-    context = context_for(agent, frame, hold)
+    context = context_for(agent, frame, hold, job, query)
     equality = query('/parameters').get('audit_equality', {})
     if equality.get('enabled'):
         context['epsilon'] = equality['epsilon']

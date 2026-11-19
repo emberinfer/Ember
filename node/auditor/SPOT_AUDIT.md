@@ -1,7 +1,7 @@
 # v14 auditor entry points
 
 The existing signed `audit` / resumable `audit_begin`, `audit_chunk`,
-`audit_commit` tunnel accepts a **metadata-only** job:
+`audit_commit` tunnel accepts gateway archive metadata and committed openings:
 
 ```json
 {"kind":"spotcheck","genesis":"<pinned genesis bytes in hex>","mode":"normal"}
@@ -22,6 +22,12 @@ Join configuration:
   references. References must remain below the configured root.
 - `--spot-context-dir PATH`: defaults to `STATE/spot-context`; contains
   `<request-id>.json` from the operator's authenticated request archive.
+- `--spot-profile-config PATH`: enables pipeline context derivation when that
+  request file is absent. This operator-owned JSON file contains
+  `{"gateway_public":"<deployment public key hex>","profiles":{"<hold model_id>":{"profile_id":"<spot profile ID>","genesis":"<signed model genesis hex>","tokenizer_version":"<artifact_version identity>"}}}`.
+  The signed genesis must match the joined model and the chain model's
+  `signed_profile`; the reference tokenizer must match the pinned version.
+  Existing request files remain usable without this option.
 - The registered reference runtime must be CPU BF16. GPU jobs do not silently
   fall back to a different numerical path.
 
@@ -36,6 +42,26 @@ The request archive must supply authenticated payer/input and claimed-output
 token anchors and signed profile formats; an unsigned tunnel job cannot
 provision or override them. Enabled chain equality parameters override archived
 `epsilon`. The worker checks total steps against the finalized model.
+
+For pipelines, the gateway supplies its durable header (`prompt`, `seed`,
+`metric`, `tolerance`, `pipeline_receipt`), complete `openings`, and
+`first_invocation_request` over the existing authenticated audit transfer.
+Ordinary jobs omit the full invocation array. Complete openings are needed to
+verify the aggregate commitment, so transfer size grows with output length.
+`spot_context.py` hashes the canonical encoded step array (token IDs, top-k,
+activation hashes and optional score kind) against the finalized receipt before
+trusting output tokens. It tokenizes the header prompt locally and binds the
+invocation ID to the finalized hold ID. The existing Merkle binding checker
+then detects altered prompts through exact input token prefix equality.
+
+Derivation requires enabled `/parameters.audit_equality` and uses its epsilon.
+That object has no metric field: the metric comes from the pinned,
+chain-registered signed model's numeric audit policy; header metric must agree.
+Header tolerance cannot override chain epsilon. Missing fields, unavailable
+pins and commitment mismatches raise `ContextDerivationError`, log a failure
+without payload contents, and create neither a context nor a verdict. Only a
+successful derivation is atomically persisted in the existing context format.
+Cached contexts remain subject to normal binding verification.
 
 `DirectorySpool(root, attestor=...)` supports directly requesting a gateway
 absence statement. The read-only mirror adapter also reads gateway-issued

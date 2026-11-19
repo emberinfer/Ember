@@ -125,18 +125,34 @@ func BuildPipelineSpotPackage(e *PipelineExecution, m *PipelineSpotCommitment, s
 }
 
 // WritePipelineSpotAudit keeps escalation on the existing streamed full-package
-// channel. Ordinary challenges disclose only the record packages above.
+// channel. Ordinary challenges include the header and output-committed openings
+// for context derivation, without the full stage invocation tensor array.
 func WritePipelineSpotAudit(w io.Writer, source *jsonspool.Object, r *SpotDelivery, mode string) error {
 	job := map[string]any{}
+	metadata, err := source.Metadata("openings", "invocations", "failovers")
+	if err != nil {
+		return err
+	}
+	if err = json.Unmarshal(metadata, &job); err != nil {
+		return err
+	}
+	// The auditor derives tokens from the complete output-committed openings.
+	// Only the first invocation request is needed for the hold identity check;
+	// ordinary spot audits still omit stage tensors and the full invocation array.
+	execution := PipelineExecution{Source: source}
+	if execution.InvocationCount() == 0 {
+		return errors.New("context derivation requires first invocation")
+	}
+	first, err := execution.ReadInvocation(0)
+	if err != nil {
+		return err
+	}
+	job["first_invocation_request"] = hex.EncodeToString(first.Request)
 	if mode == "escalation" {
-		raw, err := source.Metadata("openings", "invocations", "failovers")
-		if err != nil {
-			return err
-		}
-		if err = json.Unmarshal(raw, &job); err != nil {
-			return err
-		}
 		job["pipeline_full"] = true
+	} else {
+		delete(job, "invocations")
+		delete(job, "failovers")
 	}
 	var genesis string
 	if err := source.Decode("genesis", &genesis); err != nil {
@@ -153,8 +169,7 @@ func WritePipelineSpotAudit(w io.Writer, source *jsonspool.Object, r *SpotDelive
 	if mode == "escalation" {
 		return WritePipelineAudit(w, raw, source)
 	}
-	_, err = w.Write(raw)
-	return err
+	return jsonspool.WriteMergeTransform(w, raw, source, nil, "openings")
 }
 
 // BuildDurablePipelineSpotCommitment owns reopening the final spool. The caller

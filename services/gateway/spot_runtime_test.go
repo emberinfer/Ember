@@ -51,7 +51,7 @@ func TestPipelineSpotRuntimeTransfer(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer original.Close()
-	spoolJob := append(append([]byte(nil), golden.Job[:len(golden.Job)-1]...), []byte(`,"genesis":""}`)...)
+	spoolJob := append(append([]byte(nil), golden.Job[:len(golden.Job)-1]...), []byte(`,"genesis":"","prompt":"fixture","seed":0,"metric":"legacy-ranked-v1","tolerance":0.01}`)...)
 	spoolJob = bytes.Replace(spoolJob, []byte(`"openings":[{`), []byte(`"openings":[{ `), 1)
 	original.Write(spoolJob)
 	source, err := jsonspool.Index(original)
@@ -123,6 +123,33 @@ func TestPipelineSpotRuntimeTransfer(t *testing.T) {
 	var fullInvocations []json.RawMessage
 	if err = json.Unmarshal(fullJob["invocations"], &fullInvocations); err != nil || len(fullInvocations) != 4 {
 		t.Fatal("full channel lost invocations", err)
+	}
+	var ordinary bytes.Buffer
+	if err = WritePipelineSpotAudit(&ordinary, indexed, delivery, "normal"); err != nil {
+		t.Fatal(err)
+	}
+	var ordinaryJob map[string]json.RawMessage
+	if err = json.Unmarshal(ordinary.Bytes(), &ordinaryJob); err != nil {
+		t.Fatal(err)
+	}
+	var contextOpenings []json.RawMessage
+	if err = json.Unmarshal(ordinaryJob["openings"], &contextOpenings); err != nil || len(contextOpenings) != 2 {
+		t.Fatal("ordinary context lost output-committed openings", err)
+	}
+	var firstRequest string
+	if err = json.Unmarshal(ordinaryJob["first_invocation_request"], &firstRequest); err != nil || firstRequest == "" {
+		t.Fatal("ordinary context lost invocation identity", err)
+	}
+	if _, exists := ordinaryJob["invocations"]; exists {
+		t.Fatal("ordinary channel disclosed full invocations")
+	}
+	if !bytes.Equal(ordinaryJob["pipeline_receipt"], fullJob["pipeline_receipt"]) {
+		t.Fatal("ordinary header lost pipeline receipt")
+	}
+	for _, field := range []string{"prompt", "seed", "metric", "tolerance"} {
+		if len(ordinaryJob[field]) == 0 || !bytes.Equal(ordinaryJob[field], fullJob[field]) {
+			t.Fatal("ordinary header lost field", field)
+		}
 	}
 	retryChallenge := *c
 	retryChallenge.Round = "2"

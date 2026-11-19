@@ -322,14 +322,23 @@ class AttentionStage:
                     frame_context.routing = routing
                     frame_context.a_att = a_att_map
                 combined = torch.zeros_like(a_att)
-                # Fan out per distinct expert, preserving row order.
+                # Construct and consume in serial expert/row order. Only the
+                # independent RPC work between these barriers may overlap.
+                jobs = []
                 for expert in sorted(set(top_i.flatten().tolist())):
-                    mask = top_i == expert  # (S, k)
+                    mask = top_i == expert
                     rows_idx = mask.any(dim=-1).nonzero(as_tuple=True)[0]
-                    rows = a_att[rows_idx]
-                    out_rows = (self.expert_call(frame_context, layer, expert, rows)
+                    jobs.append((expert, rows_idx, a_att[rows_idx], mask))
+                batch = getattr(self, 'expert_calls', None)
+                if batch is not None and frame_context is not None:
+                    outputs = batch(frame_context, layer,
+                                    [(e, rows) for e, _, rows, _ in jobs])
+                else:
+                    outputs = [(self.expert_call(frame_context, layer, e, rows)
                                 if frame_context is not None else
-                                self.expert_call(layer, expert, rows))
+                                self.expert_call(layer, e, rows))
+                               for e, _, rows, _ in jobs]
+                for (_, rows_idx, _, mask), out_rows in zip(jobs, outputs):
                     slot_weights = (top_w * mask).sum(dim=-1)[rows_idx]
                     combined[rows_idx] += out_rows * slot_weights.to(out_rows.dtype)[:, None]
                 records.append({

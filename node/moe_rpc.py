@@ -8,6 +8,7 @@ experts) and the activation boundary hashes. At the end of a frame the
 attention service seals the frame: it signs its own NodeFrameReceipt and
 collects one from every expert node it called (moe_call_kind "seal").
 """
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 import json
 import os
@@ -189,6 +190,12 @@ class MoeAttentionService(ShardPipelineServicer):
         self.expert_router = expert_router
         self.auth = _SchedulerAuth(authorized_schedulers, nonce_path)
         stage.expert_call = self._expert_call
+        stage.expert_calls = self._expert_calls
+        self._expert_pool_size = int(os.environ.get('EMBER_MOE_EXPERT_POOL_SIZE', '8'))
+        if self._expert_pool_size < 1:
+            raise ValueError('EMBER_MOE_EXPERT_POOL_SIZE must be positive')
+        self._expert_pool = (ThreadPoolExecutor(max_workers=self._expert_pool_size)
+                             if self._expert_pool_size > 1 else None)
         self._execution_lock = threading.Lock()
         self._next_frame = {}
 
@@ -197,7 +204,7 @@ class MoeAttentionService(ShardPipelineServicer):
             return self.expert_router(layer, expert)
         return self.expert_router.get((layer, expert))
 
-    def _expert_call(self, frame_context, layer, expert, rows):
+    def _expert_result(self, frame_context, layer, expert, rows):
         client = self._expert_client(layer, expert)
         if client is None:
             raise RuntimeError(f'no expert client for {layer}/{expert}')
@@ -210,9 +217,49 @@ class MoeAttentionService(ShardPipelineServicer):
         routing_hash = moe_core.routing_record_hash(proto)
         out, receipt = client.call_expert(frame_context.request_id, frame_context.frame, layer,
                                           expert, rows, routing_hash, input_hash)
+        return out, receipt
+
+    def _expert_call(self, frame_context, layer, expert, rows):
+        out, receipt = self._expert_result(frame_context, layer, expert, rows)
         frame_context.expert_receipts.append(receipt)
         frame_context.pending_rows[(layer, expert)] = (rows, out)
         return out
+
+    def _expert_calls(self, frame_context, layer, jobs):
+        if self._expert_pool is None:
+            return [self._expert_call(frame_context, layer, e, rows)
+                    for e, rows in jobs]
+        # Same-target jobs keep their original order. The 2B dispatch state
+        # also serializes sign-through-response across all client objects.
+        groups = {}
+        for i, (expert, rows) in enumerate(jobs):
+            client = self._expert_client(layer, expert)
+            target = getattr(client, '_dispatch_state', client)
+            groups.setdefault(target, []).append((i, expert, rows))
+        def run(group):
+            with torch.no_grad():
+                return [(i, self._expert_result(frame_context, layer, e, rows))
+                        for i, e, rows in group]
+        futures = [self._expert_pool.submit(run, group)
+                   for group in groups.values()]
+        results = {}
+        errors = []
+        # Drain all submitted work even on failure before releasing frame
+        # context/KV rollback. No partial result is published to the caller.
+        for future in futures:
+            try:
+                results.update(future.result())
+            except BaseException as exc:
+                errors.append(exc)
+        if errors:
+            raise errors[0]
+        outputs = []
+        for i, (expert, rows) in enumerate(jobs):
+            out, receipt = results[i]
+            outputs.append(out)
+            frame_context.expert_receipts.append(receipt)
+            frame_context.pending_rows[(layer, expert)] = (rows, out)
+        return outputs
 
     def Forward(self, request, context):
         # Transitional per-stage fence: retain until independent isolation proof.

@@ -250,6 +250,8 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if g.Pipeline != nil {
+		// Spot leaves bind a 32-byte request identity throughout the pipeline.
+		requestID += id()
 		g.servePipeline(w, r, q, prompt, account, requestID)
 		return
 	}

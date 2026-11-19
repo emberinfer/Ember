@@ -181,6 +181,10 @@ func thresholdFor(h *Hold, g *pb.OffenseGrade) (*ThresholdPair, error) {
 
 // classifyOffense is read-only; receipt validation and recording use the same classification.
 func (s *State) classifyOffense(h *Hold, node string, height int64) (OffenseRecord, error) {
+	if s.Version >= 14 && confirmedSpotConviction(h) {
+		return OffenseRecord{Version: 2, HoldID: h.ID, NodeID: node,
+			Height: height, Class: "spot", Status: "slash"}, nil
+	}
 	g, err := s.validateGrade(h, h.VerdictBytes)
 	if err != nil {
 		return OffenseRecord{}, err
@@ -188,12 +192,6 @@ func (s *State) classifyOffense(h *Hold, node string, height int64) (OffenseReco
 	r := OffenseRecord{Version: 2, HoldID: h.ID, NodeID: node, Height: height, Class: g.Class, Score: g.Score, Band: g.Band, LengthClass: g.LengthClass, Fault: g.Fault, Status: "slash"}
 	if (g.Class == "numerical" || g.Class == "token") && h.FirstGrade != nil && h.FirstGrade.Score < r.Score {
 		r.Score = h.FirstGrade.Score
-	}
-	// v14 spot conviction already requires independent full-review corroboration
-	// of the same step. The finalized spot protocol treats this positive evidence
-	// as fraud, rather than the legacy uncorroborated numerical gray/refund path.
-	if s.Version >= 14 && h.Pipeline != nil && h.Pipeline.Spot != nil && h.Pipeline.Spot.Round == "esc" && h.AuditVerdict == "reject" && h.FirstAuditor != "" && h.FirstAuditor != h.Auditor {
-		return r, nil
 	}
 	p := s.Parameters.Misjudge
 	if g.Class == "numerical" && (h.Pipeline == nil && h.Moe == nil || g.Band == core.RangeBand) {

@@ -113,3 +113,20 @@ func TestSpotBoundExecutionCount(t *testing.T) {
 		t.Fatal("challenge request identity missing")
 	}
 }
+
+func TestSpotSubmissionCountMatchesReceipt(t *testing.T) {
+	for _, count := range []uint64{0, 2, 62, 1000001} {
+		s, a, _, auth, r := pipelineState(t)
+		s.Version = 14
+		apply(t, s, a["payer"], 1, Action{Type: "freeze_pipeline", HoldID: "units", Payer: a["payer"].id, Amount: 6, TotalLayers: 4, PipelineAuthorizations: auth}, 2)
+		raw, _ := proto.Marshal(r)
+		rejected(t, s, a["coordinator"], Action{Type: "submit_pipeline", HoldID: "units", Actual: 6, Receipt: raw, SpotStepCount: count, CommitmentRoot: bytes.Repeat([]byte{1}, 32)}, 3)
+		if s.Holds["units"].State != "frozen" {
+			t.Fatal("failed count changed hold")
+		}
+		apply(t, s, a["coordinator"], 1, Action{Type: "submit_pipeline", HoldID: "units", Actual: 6, Receipt: raw, SpotStepCount: 1, CommitmentRoot: bytes.Repeat([]byte{1}, 32)}, 3)
+		if s.Holds["units"].Pipeline.SpotStepCount != 1 {
+			t.Fatal("submission count not frozen")
+		}
+	}
+}

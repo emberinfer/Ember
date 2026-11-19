@@ -218,24 +218,9 @@ func (s *State) availabilityEvent(id string, major bool, height int64) {
 	}
 }
 
-// Explicit signed count supports profiles whose replay operators differ from
-// layer units (including the 62-step profile). Legacy manifests describe one
-// atomic embedding, TotalLayers layer units, and one head, in that order.
-func spotProfileSteps(m *pb.ModelManifest) uint64 {
-	if m.SpotStepCount > 0 {
-		return m.SpotStepCount
-	}
-	return uint64(m.TotalLayers) + 2
-}
-
 func (s *State) startSpot(h *Hold, height int64) error {
 	if h.Pipeline.Spot != nil {
 		return errors.New("challenge already fixed")
-	}
-	_, raw := modelArtifacts(s.Models[h.ModelID])
-	m := &pb.ModelManifest{}
-	if proto.Unmarshal(raw, m) != nil || h.Pipeline.TotalLayers == 0 {
-		return errors.New("missing profile steps")
 	}
 	seed, _, err := s.assignmentSeed(h)
 	if err != nil {
@@ -427,11 +412,6 @@ func (s *State) validateSpotVerdict(h *Hold, raw []byte, height int64) error {
 	}
 	expected := c.StepSet
 	if c.Round == "esc" {
-		_, raw := modelArtifacts(s.Models[h.ModelID])
-		m := &pb.ModelManifest{}
-		if proto.Unmarshal(raw, m) != nil {
-			return errors.New("invalid profile")
-		}
 		expected = make([]uint64, h.Pipeline.SpotStepCount)
 		for i := range expected {
 			expected[i] = uint64(i) + 1
@@ -522,11 +502,6 @@ func (s *State) spotOutcome(h *Hold, signer, outcome, evidence string, at ...int
 	old := *c
 	old.History = nil
 	c.History = append(c.History, old)
-	_, raw := modelArtifacts(s.Models[h.ModelID])
-	m := &pb.ModelManifest{}
-	if proto.Unmarshal(raw, m) != nil {
-		return errors.New("invalid profile")
-	}
 	c.StepSet = make([]uint64, h.Pipeline.SpotStepCount)
 	for i := range c.StepSet {
 		c.StepSet[i] = uint64(i) + 1
@@ -550,4 +525,24 @@ func (s *State) spotOutcome(h *Hold, signer, outcome, evidence string, at ...int
 		s.availability(id).Executor.ChallengedTotal++
 	}
 	return nil
+}
+
+// Both signed verdicts have already passed Apply's identity and challenge
+// checks. Recheck their positive, same-step corroboration before settlement.
+func confirmedSpotConviction(h *Hold) bool {
+	if h.Pipeline == nil || h.Pipeline.Spot == nil || h.Pipeline.Spot.Round != "esc" || h.AuditVerdict != "reject" || h.FirstAuditor == "" || h.FirstAuditor == h.Auditor {
+		return false
+	}
+	first, second := &pb.AuditVerdict{}, &pb.AuditVerdict{}
+	if proto.Unmarshal(h.Pipeline.Spot.FirstVerdict, first) != nil || proto.Unmarshal(h.VerdictBytes, second) != nil || first.Verdict != "reject" || second.Verdict != "reject" {
+		return false
+	}
+	for _, a := range first.PerStep {
+		for _, b := range second.PerStep {
+			if a.Step == b.Step && a.Outcome != "match" && b.Outcome != "match" {
+				return true
+			}
+		}
+	}
+	return false
 }

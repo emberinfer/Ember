@@ -137,6 +137,11 @@ func (s *State) submitPipeline(signer string, a Action, height int64) error {
 	if proto.Unmarshal(a.Receipt, receipt) != nil || receipt.RequestId != h.ID || receipt.InputTokens == 0 || receipt.OutputTokens == 0 || receipt.ElapsedMs <= 0 || len(receipt.OutputCommitment) != 32 {
 		return errors.New("invalid pipeline aggregate")
 	}
+	// Ruling 7: N is the generated-token count, visible in the aggregate.
+	// The reserved manifest field is deliberately not a source of pipeline N.
+	if s.Version >= 14 && (a.SpotStepCount != uint64(receipt.OutputTokens) || a.SpotStepCount > 1000000) {
+		return errors.New("spot_step_count must equal receipt.output_tokens within limit")
+	}
 	if err := verifyTokenFee(h.TokenFee, receipt.InputTokens, receipt.OutputTokens, a.Actual, nil); err != nil {
 		return err
 	}
@@ -226,18 +231,7 @@ func (s *State) submitPipeline(signer string, a Action, height int64) error {
 	h.AuditOutputTokens = receipt.OutputTokens
 	if s.Version >= 14 {
 		h.Pipeline.CommitmentRoot = append([]byte(nil), a.CommitmentRoot...)
-		_, manifestRaw := modelArtifacts(s.Models[h.ModelID])
-		manifest := &pb.ModelManifest{}
-		if err := proto.Unmarshal(manifestRaw, manifest); err != nil {
-			return err
-		}
-		h.Pipeline.SpotStepCount = manifest.SpotStepCount
-		if h.Pipeline.SpotStepCount == 0 {
-			h.Pipeline.SpotStepCount = a.SpotStepCount
-		}
-		if h.Pipeline.SpotStepCount == 0 || h.Pipeline.SpotStepCount > 1000000 {
-			return errors.New("spot step count exceeds limit")
-		}
+		h.Pipeline.SpotStepCount = a.SpotStepCount
 	}
 	h.Pipeline.Receipt = append([]byte(nil), a.Receipt...)
 	h.Pipeline.Credits = shares
@@ -382,6 +376,25 @@ func (s *State) settlePipeline(h *Hold, outcome string, height int64) error {
 	}
 	h.State = "cancelled"
 	if outcome == "reject" {
+		if s.Version >= 14 && h.Pipeline.Spot != nil {
+			if !confirmedSpotConviction(h) {
+				return errors.New("spot settlement requires corroborated independent rejects")
+			}
+			// Ruling 8: use actual credited execution identities, never legacy
+			// auditor-supplied fault nodes (nor unexecuted standby nodes).
+			for _, share := range h.Pipeline.Credits {
+				if _, err := s.recordOffense(h, share.NodeID, height); err != nil {
+					return err
+				}
+				if err := s.slashOffender(h, share.NodeID, share.Amount, height); err != nil {
+					return err
+				}
+			}
+			if len(h.Slashes) > 0 {
+				h.State = "slashed"
+			}
+			return nil
+		}
 		v := &pb.AuditVerdict{}
 		if proto.Unmarshal(h.VerdictBytes, v) != nil || len(v.FaultNodeIds) == 0 {
 			return errors.New("pipeline rejection needs signed fault attribution")

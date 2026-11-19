@@ -24,6 +24,17 @@ func spotFixture(t *testing.T) (*State, map[string]actor, []actor, *Hold) {
 	s, a, nodes, auth, r := pipelineState(t)
 	s.Version = 14
 	s.Parameters.DisputeBlocks = 5000
+	// Six generated tokens, with three signed stage invocations per token.
+	r.OutputTokens = 6
+	base := append([]*pb.ShardStepReceipt(nil), r.StageReceipts...)
+	for step := uint32(1); step < r.OutputTokens; step++ {
+		for i, old := range base {
+			stage := proto.Clone(old).(*pb.ShardStepReceipt)
+			stage.Step = step
+			core.Sign(stage, nodes[i].key)
+			r.StageReceipts = append(r.StageReceipts, stage)
+		}
+	}
 	apply(t, s, a["payer"], 1, Action{Type: "freeze_pipeline", HoldID: "units", Payer: a["payer"].id, Amount: 6, TotalLayers: 4, PipelineAuthorizations: auth}, 2)
 	raw, _ := proto.Marshal(r)
 	apply(t, s, a["coordinator"], 1, Action{Type: "submit_pipeline", HoldID: "units", Actual: 6, Receipt: raw, SpotStepCount: 6, CommitmentRoot: bytes.Repeat([]byte{1}, 32)}, 3)
@@ -381,8 +392,10 @@ func TestSpotMerkleGolden(t *testing.T) {
 }
 
 func TestSpotSignedAuditsAndSettlement(t *testing.T) {
-	for _, reject := range []bool{false, true} {
+	for _, mode := range []string{"accept", "reject", "good_faith"} {
+		reject := mode != "accept"
 		s, a, nodes, h := spotFixture(t)
+		firstAuditor := h.Auditor
 		firstSet := append([]uint64(nil), h.Pipeline.Spot.StepSet...)
 		for round := 1; round <= 2; round++ {
 			aud := a["auditor"]
@@ -393,8 +406,8 @@ func TestSpotSignedAuditsAndSettlement(t *testing.T) {
 				t.Fatal("missing auditor fixture")
 			}
 			v := &pb.AuditVerdict{}
-			proto.Unmarshal(spotVerdict(h, reject), v)
-			if reject {
+			proto.Unmarshal(spotVerdict(h, reject && !(mode == "good_faith" && round == 2)), v)
+			if reject && !(mode == "good_faith" && round == 2) {
 				for _, p := range v.PerStep {
 					p.Outcome = "match"
 					p.FirstDivergenceDistance = 0
@@ -405,8 +418,6 @@ func TestSpotSignedAuditsAndSettlement(t *testing.T) {
 						p.FirstDivergenceDistance = 1
 					}
 				}
-				v.Offense = &pb.OffenseGrade{Class: "numerical", Band: "pipeline-replay-v1", Score: 1}
-				v.FaultNodeIds = []string{nodes[0].id}
 			}
 			ref, _ := hex.DecodeString(h.ReceiptRef)
 			proof, _ := hex.DecodeString(h.AuditProof)
@@ -434,21 +445,47 @@ func TestSpotSignedAuditsAndSettlement(t *testing.T) {
 			if round == 1 && len(h.Slashes) != 0 {
 				t.Fatal("single reject slashed")
 			}
+			if round == 1 {
+				rejected(t, s, a["coordinator"], Action{Type: "settle", HoldID: h.ID, Outcome: "reject"}, 5)
+				h = s.Holds[h.ID]
+			}
 		}
 		outcome := "accept"
-		if reject {
+		if mode == "reject" {
 			outcome = "reject"
 		}
-		if err := s.settleAt(h, outcome, h.SettleHeight); err != nil {
-			t.Fatal(err)
-		}
-		if reject {
-			if h.State != "slashed" || len(h.Slashes) != 1 || h.Slashes[0].Amount == 0 || s.Accounts[h.Payer].Balance <= 1000 {
+		apply(t, s, a["coordinator"], s.Accounts[a["coordinator"].id].Nonce+1,
+			Action{Type: "settle", HoldID: h.ID, Outcome: outcome}, h.SettleHeight)
+		h = s.Holds[h.ID]
+		if mode == "reject" {
+			if h.State != "slashed" || len(h.Slashes) != 3 || h.Slashes[0].Amount == 0 || s.Accounts[h.Payer].Balance <= 1000 {
 				t.Fatalf("two-reject conviction missing: state=%s slashes=%+v balance=%d", h.State, h.Slashes, s.Accounts[h.Payer].Balance)
+			}
+			penalty := int64(0)
+			for i, share := range h.Pipeline.Credits {
+				want := max(share.Amount*20, int64(50)) // existing 1% stake floor
+				penalty += want
+				if h.Slashes[i].NodeID != share.NodeID || h.Slashes[i].Amount != want || s.Accounts[share.NodeID].Stake != 5000-want || s.Accounts[share.NodeID].Balance != 0 {
+					t.Fatal("executor slash or balance mismatch", h.Slashes)
+				}
+			}
+			if penalty != 180 || s.Accounts[h.Payer].Balance != 1180 || s.Accounts[a["auditor"].id].Balance != 1000 || s.Accounts[a["auditor2"].id].Balance != 1000 {
+				t.Fatal("payer/auditor accounting mismatch")
 			}
 		} else {
 			if h.State != "settled" {
 				t.Fatal("accept not settled")
+			}
+			if s.Accounts[h.Payer].Balance != 994 || len(h.Slashes) != 0 {
+				t.Fatal("accept payer accounting")
+			}
+			for i, n := range nodes {
+				if s.Accounts[n.id].Stake != 5000 || s.Accounts[n.id].Balance != []int64{1, 4, 1}[i] {
+					t.Fatal("accept executor accounting")
+				}
+			}
+			if mode == "good_faith" && (h.Pipeline.Spot.GoodFaithAuditor != firstAuditor || s.Availability[firstAuditor].Major != 0 || s.NodeAuditStats[firstAuditor].AuditsMisjudged != 0) {
+				t.Fatal("good faith auditor penalized")
 			}
 		}
 	}
@@ -495,9 +532,6 @@ func TestSpotManifestLadderAndLoad(t *testing.T) {
 }
 
 func TestSpotProfileCountAndGates(t *testing.T) {
-	if spotProfileSteps(&pb.ModelManifest{TotalLayers: 4, SpotStepCount: 62}) != 62 || spotProfileSteps(&pb.ModelManifest{TotalLayers: 4}) != 6 {
-		t.Fatal("profile count")
-	}
 	s, _, _, h := spotFixture(t)
 	s.Version = 13
 	if s.spotAction(h.Auditor, Action{Type: "spot_received", HoldID: h.ID}, 5) == nil {

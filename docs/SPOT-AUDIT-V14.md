@@ -11,15 +11,11 @@ or performed by this change.
 bytes. The hold pins it unchanged. All added state fields are omitted when
 absent, preserving pre-v14 serialization. Pre-v14 envelope decoding continues to
 ignore commitment_root/spool as unknown fields, including arbitrary JSON
-values, before signature normalization. `ModelManifest.spot_step_count` (20)
-is the signed number of replay steps. If absent, v14 requires a nonzero
-`submit_pipeline.spot_step_count`, frozen into the hold with the commitment.
-This is a signed submission assertion, not proof of the executed operator count:
-full opening must disclose exactly N leaves and out-of-range sampled steps are
-binding failures. Never substitute output-token counts or mutable registrations.
-The production unified scheme has 30 atoms (28 layers plus embedding/head),
-not a declared 62-step layout. Gateway capture/routing and fault attribution
-remain integration blockers; this branch is not ready for activation.
+values, before signature normalization. Pipeline steps are generated-token rounds
+(ruling 7), not layer atoms. N is frozen from the signed submission and must
+equal the aggregate receipt's output_tokens. The manifest count field remains
+reserved and unused for pipeline N. Gateway evidence wiring remains blocked as
+described below; this branch is not ready for activation.
 
 The assigned hold exposes `pipeline.spot`:
 `request_id`, `auditor`, ascending unique `step_set`, `challenge_height`, `round`
@@ -85,16 +81,16 @@ The chain rejects missing/duplicate/out-of-order steps, invalid outcomes,
 nonfinite/negative distances, incorrect maximum distances or inconsistent kind.
 The existing challenge signature, selection proof, evidence reference, offense
 grade and fault attribution checks apply to legacy verdicts. Spot verdict
-validation bypasses those two legacy gates; settlement attribution for
-grade-free spot rejections is still unresolved in this integration branch.
+validation and corroborated spot settlement bypass those two legacy gates.
+Settlement attributes the offense to the actual credited hold executors.
 Challenge signatures, selection proofs, and evidence references remain mandatory.
 Numerical tolerance and tensor verification remain auditor responsibilities.
 
 A first reject_step preserves its signed verdict and chooses the second auditor
 through existing corroboration selection. Full accept records good_faith_auditor,
 invalidates the first reject for settlement, and does not count misjudgment.
-Full reject must corroborate a bad step in the first verdict and matching fault
-attribution/grade. This positive evidence enters existing fraud settlement and
+Full reject must corroborate a bad step in the first verdict from a different
+auditor; legacy fault attribution/grade is not required. This positive evidence enters existing fraud settlement and
 slash arithmetic (20x fee policy), bypassing legacy numerical refund-only/gray
 classification only for the completed v14 spot corroboration path.
 
@@ -127,3 +123,25 @@ struct golden fixture, containing exact tensor bytes, all leaf components,
 three leaf hashes and an odd-width root. The Go tests check these constants,
 left/right proofs, self-pairing, and tampering. Helpers implement PARAMS section
 1 exactly; the chain stores the submitted root without parsing leaf data.
+
+## Final wiring status (F)
+
+Pipeline N is the submission-bound generated-token count. Version 14 rejects
+`spot_step_count != PipelineExecutionReceipt.output_tokens`; challenges and
+escalation use the frozen count. `ModelManifest.spot_step_count` remains reserved
+and is not enabled as a pipeline N source.
+
+Two independent, corroborating spot rejects settle against the actual credited
+hold executors, without legacy `offense` or `fault_node_ids`. Existing slash
+arithmetic, stake floors, block caps and payer refunds remain unchanged.
+
+Activation remains blocked. Ruling 9 specifies SHA-256 of *all* stage request
+bytes, and of *all* stage response bytes plus the opening, but discloses only the
+first request, last response and opening. Those disclosed records cannot
+recompute the specified digests. The next-step first request also cannot by
+itself recompute the next leaf's all-stage input hash. Merkle membership of a
+leaf does not prove that a disclosed subset is part of its concatenation
+preimage. Existing individual stage receipt hashes cannot reconstruct that
+preimage either. No verifier bypass or alternative commitment format is enabled.
+A coordinated evidence-format revision is required before gateway/spot wiring
+can meet the requested binding verification contract.

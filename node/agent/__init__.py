@@ -39,6 +39,7 @@ class Agent:
         self.claims = Claims()
         self.scheduler_lock = threading.Lock()
         self.execution_lock = threading.Lock()
+        self.spot_tx_lock = threading.Lock()
         self.ready = False
         self.started_at = time.monotonic()
         self.completed_requests = 0

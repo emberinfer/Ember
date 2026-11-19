@@ -81,6 +81,14 @@ def join(args):
                   sessions=Sessions([address for address, _ in peers]))
     shared['nonce_lock'] = threading.Lock()
     shared['execution_lock'] = threading.Lock()
+    shared['spot_tx_lock'] = threading.Lock()
+    if getattr(args, 'chain_rpc', None) and getattr(args, 'spot_gateway_url', None) and getattr(args, 'spot_spool_dir', None):
+        from auditor.spot_patrol import start
+        key, ident = identity(args.state_dir)
+        patrol_agent = Agent(ident, None, key=key)
+        patrol_agent.chain_args = args
+        patrol_agent.spot_tx_lock = shared.setdefault('spot_tx_lock', threading.Lock())
+        start(patrol_agent)
     shared['renewal'] = Registration()
     for address, _ in peers:
         shared['sessions'].update(address, False)
@@ -133,6 +141,7 @@ def _join_single(args, shared):
     agent.scheduler_lock = shared['nonce_lock']
     agent.claims = shared['claims']
     agent.execution_lock = shared['execution_lock']
+    agent.spot_tx_lock = shared.setdefault('spot_tx_lock', threading.Lock())
     agent.session_status = lambda ready: shared['sessions'].update(address, ready)
     start_health_server(agent, getattr(args, 'health_listen', ''))
     loaded_anchor = None
@@ -282,7 +291,6 @@ def _join_single(args, shared):
         return pinned_channel(target, args.tls_fingerprint) if args.tls_fingerprint else grpc.insecure_channel(target)
 
     if getattr(args, 'chain_rpc', None) and getattr(args, 'liveness_enabled', True):
-        import threading
         threading.Thread(target=send_liveness, args=(args, Path(args.state_dir), ident),
                          daemon=True).start()
     agent.serve(address, channel_factory=channel_factory, authenticate=authenticate)

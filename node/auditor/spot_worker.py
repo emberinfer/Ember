@@ -114,6 +114,9 @@ def execute(agent, frame, job, hold, query):
         if not isinstance(spool, DirectorySpool):
             raise ValueError('transferred opening requires configured durable mirror')
         durable_json(spool.root / (hashlib.sha256(canonical(delivery)).hexdigest()+'.json'), delivery)
+        if not hold['pipeline']['spot'].get('received'):
+            from .spot_patrol import submit_received
+            submit_received(agent, frame.request_id)
     mode = job.get('mode', 'normal')
     if mode == 'unopened':
         return unopened_action(agent, context, spool, bytes.fromhex(context['gateway_public']),

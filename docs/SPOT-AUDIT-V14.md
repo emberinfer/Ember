@@ -14,8 +14,8 @@ ignore commitment_root/spool as unknown fields, including arbitrary JSON
 values, before signature normalization. Pipeline steps are generated-token rounds
 (ruling 7), not layer atoms. N is frozen from the signed submission and must
 equal the aggregate receipt's output_tokens. The manifest count field remains
-reserved and unused for pipeline N. Gateway evidence wiring remains blocked as
-described below; this branch is not ready for activation.
+reserved and unused for pipeline N. Runtime wiring is described below. Activation still requires the signed upgrade
+procedure and operator provisioning of authenticated request contexts.
 
 The assigned hold exposes `pipeline.spot`:
 `request_id`, `auditor`, ascending unique `step_set`, `challenge_height`, `round`
@@ -124,39 +124,66 @@ three leaf hashes and an odd-width root. The Go tests check these constants,
 left/right proofs, self-pairing, and tampering. Helpers implement PARAMS section
 1 exactly; the chain stores the submitted root without parsing leaf data.
 
-## Data-plane wiring status (G, incomplete)
+## Pipeline runtime wiring
 
 Pipeline N is the submission-bound generated-token count. Version 14 rejects
 `spot_step_count != PipelineExecutionReceipt.output_tokens`; challenges and
-escalation use the frozen count. `ModelManifest.spot_step_count` remains reserved
-and is not enabled as a pipeline N source.
+escalation use the frozen count. `ModelManifest.spot_step_count` remains reserved.
+Two independent corroborating rejects settle against actual credited executors;
+existing slash arithmetic and economic parameters are unchanged.
 
-Two independent, corroborating spot rejects settle against the actual credited
-hold executors, without legacy `offense` or `fault_node_ids`. Existing slash
-arithmetic, stake floors, block caps and payer refunds remain unchanged.
+`services/gateway/spot_records.go` and `node/spotcheck.py` implement
+`pipeline-record-hashes-v1`. Each original protobuf record is SHA-256 hashed;
+input combines the stage request digests, output combines response digests and
+the original opening digest. Both enforce contiguous token-step coverage and
+opening count equal to receipt output tokens. ETV1 remains the range/shard path.
 
-Ruling 10 supersedes the Ruling 9 concatenation contract. Pipeline leaves now
-have library builders in `node/spotcheck.py` and
-`services/gateway/spot_records.go`: hash each original protobuf record, combine
-request digests in execution order, and combine response digests followed by
-the original opening digest. Both implementations enforce opening count equals
-receipt output tokens and contiguous zero-based request-step coverage. The
-pipeline format discriminator is `pipeline-record-hashes-v1`; ETV1 helpers stay
-separate for range/shard. The signed two-stage golden fixture is
-`node/auditor/testdata/pipeline-record-v1.json`.
+The submission callback in `cmd/emberd/main.go` completes `PutStream`, reopens
+that durable file and indexes its final compacted bytes before building the
+commitment. `services/ledger/spot_runtime.go` fills the submission action only
+for version 14 or later. The pre-upgrade submission path stays unchanged.
 
-Python `OpeningService.open` dispatches pipeline manifests to record disclosure;
-round two reuses the selected set and escalation supplies only uncovered steps.
-This is a library API, not an enabled gateway submission/delivery path. Its
-caller must supply readers for original durable invocation and opening records.
-The existing tensor cleanup and auditor paths do not yet support these pipeline
-packages. No activation or complete end-to-end implementation is claimed.
+`cmd/emberd/spot_runtime.go` consumes pending jobs using the existing recovery
+loop, resolves finalized challenges and delivers record packages using
+`AuditReader`. `services/gateway/spot_store.go` retains immutable challenge
+records before delivery and records completed delivery per auditor. Retries
+reuse those records; replacements receive their own copy. Round two uses the
+chain's unchanged step set. Escalation uses `WritePipelineAudit` to stream the
+existing full signed invocation package, alongside all committed record openings.
+The auditor reuses full `reconstruct` during escalation, the existing numeric
+`compare` implementation, and a single reference prefix replay up to the largest
+selected token position. Only selected positions produce spot results.
 
-One specification clarification remains: the prescribed next-step disclosure
-contains only its first request and request digests, while the verification
-requirement asks to recompute both next-leaf input and output hashes. Next input
-can be recomputed; next output also requires next response digests and the next
-opening digest, which are absent. Verifying a Merkle proof binds the supplied
-next output digest but does not recompute it from record hashes. Either the
-verification requirement or the disclosure set needs a coordinated clarification.
-The verifier has not been weakened to silently choose between those contracts.
+For a selected leaf the auditor rehashes disclosed first request, last response
+and original opening bytes, combines the supplied per-stage digests, and proves
+membership to the finalized root. For the next leaf it recomputes only input;
+its output digest is bound by the whole-leaf Merkle proof. No next response or
+opening is disclosed. Token prefixes are checked against the locally archived
+request and claimed output, including first and last anchors.
+
+Configure `--spot-context-dir` with authenticated per-request JSON archives named
+`<request-id>.json`, and `--spot-spool-dir` with a writable durable mirror.
+Pipeline archives require `kind: "pipeline"`, `request_id`, `profile_id`,
+`total_steps`, `invocation_request_id`, `request_tokens`, `claimed_tokens`,
+`prompt`, `seed`, `metric`, `epsilon`, and registered `gateway_public` (hex).
+The archive is local trusted configuration, never supplied by an unsigned job.
+`context_for` replaces challenge, root, assignment and deadlines with chain facts.
+The existing tensor task context and spool interfaces remain supported.
+
+The scheduler/coordinator key must have a current gateway registration. Receipt
+signatures use the registered key, `EMBER-SPOT-SPOOL-V1` domain and the existing
+Go struct-order JSON/base64 contract. Receipts live beside the audit queue in
+its `.spot` directory. Executors retrieve the current challenge's signed receipt
+with `GET /v1/spot/<request-id>/receipt`; auditors request signed absence with
+`GET /v1/spot/<request-id>/absence`. These queries expose signed facts only.
+The absence handler reads the current finalized challenge and height, and signs
+only after its deadline when the same locked durable index contains no timely
+intersecting opening. Configure `--spot-gateway-url` on auditors to use this
+existing HTTP query surface; C verifies the registered signature before making
+an unopened claim. A local mirror miss alone never proves absence.
+
+Go bulk-spool deletion requires a freshly queried terminal hold or finalized
+unselected lottery and logs `SPOT_SPOOL_DELETE`. Selected unsettled requests
+remain retained, including replacements and full review. The older Python
+`OpeningService.cleanup` continues to own standalone ETV1 tensor files; it does
+not delete Go pipeline spools. No production configuration is changed here.

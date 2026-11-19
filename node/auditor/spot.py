@@ -84,6 +84,12 @@ class DirectorySpool:
             for package in record['packages']:
                 if package['step_index'] == step:
                     value = copy.deepcopy(package)
+                    if context.get('kind') == 'pipeline':
+                        if value.get('kind') != 'pipeline':
+                            raise ValueError('expected pipeline opening')
+                        return value
+                    if value.get('kind') == 'pipeline':
+                        raise ValueError('pipeline opening in tensor task')
                     for fmt in value['tensors'].values():
                         path = Path(fmt['path']).resolve()
                         if not path.is_relative_to(self.root):
@@ -193,7 +199,7 @@ def reproduce_evidence(path, engine):
     if payload['cpu_reference'] != CPU_REFERENCE:
         raise ValueError('unsupported CPU reference semantics')
     opening = payload['opening']
-    for fmt in opening['tensors'].values():
+    for fmt in opening.get('tensors', {}).values():
         local = (path.parent / fmt['path']).resolve()
         if not local.is_relative_to(path.parent.resolve()):
             raise ValueError('evidence tensor escapes bundle')
@@ -204,6 +210,13 @@ def reproduce_evidence(path, engine):
         if digest.hexdigest() != fmt['evidence_sha256']:
             raise ValueError('signed evidence tensor digest mismatch')
         fmt['path'] = str(local)
+    if opening.get('kind') == 'pipeline':
+        from .spot_pipeline import audit_pipeline_spot
+        class Single:
+            def get(self, context, step):
+                return opening if step == opening['step_index'] else None
+        context = dict(payload['context'], steps=[opening['step_index']])
+        return audit_pipeline_spot(context, Single(), engine, None, path.parent, mode='normal', height=None)['per_step'][0]
     return audit_step(opening, payload['context'], engine)
 
 
@@ -220,6 +233,9 @@ def deadlines(context, height):
 def audit(context, spool, engine, key, evidence_dir, *, mode='normal', height=None):
     if mode not in ('normal', 'substitute', 'escalation'):
         raise ValueError('unknown spot audit mode')
+    if context.get('kind') == 'pipeline':
+        from .spot_pipeline import audit_pipeline_spot
+        return audit_pipeline_spot(context, spool, engine, key, evidence_dir, mode=mode, height=height)
     steps = list(range(1, context['total_steps'] + 1)) if mode == 'escalation' else context['steps']
     if not steps or steps != sorted(set(steps)):
         raise ValueError('challenge steps must be sorted and unique')

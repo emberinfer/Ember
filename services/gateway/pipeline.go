@@ -37,6 +37,8 @@ type PipelineConfig struct {
 }
 
 type PipelineExecution struct {
+	SpotRoot      []byte
+	SpotStepCount uint64
 	// Source remains valid through both callbacks; retainers must copy to durable storage.
 	Source      *jsonspool.Object
 	Receipt     *pb.PipelineExecutionReceipt
@@ -407,7 +409,13 @@ func (g *Gateway) servePipeline(w http.ResponseWriter, r *http.Request, q reques
 		charge, feeErr := g.settlementFee(holdID, inputTokens, execution.Receipt.OutputTokens)
 		err = feeErr
 		if err == nil {
-			_, err = g.Ledger.SubmitPipeline(holdID, execution.Receipt, charge.Total, g.TotalLayers, g.Dispute)
+			if spot, ok := g.Ledger.(interface {
+				SubmitPipelineSpot(string, *pb.PipelineExecutionReceipt, int64, uint32, time.Duration, []byte, uint64) ([]ledger.StageShare, error)
+			}); ok {
+				_, err = spot.SubmitPipelineSpot(holdID, execution.Receipt, charge.Total, g.TotalLayers, g.Dispute, execution.SpotRoot, execution.SpotStepCount)
+			} else {
+				_, err = g.Ledger.SubmitPipeline(holdID, execution.Receipt, charge.Total, g.TotalLayers, g.Dispute)
+			}
 		}
 	}
 	if observer, ok := g.Ledger.(ledger.ConsumerLatencyRecorder); err == nil && ok {

@@ -31,6 +31,7 @@ class Agent:
         self.audit_verdicts = OrderedDict()
         self.audit_verdicts_lock = threading.Lock()
         self.audit_commits = set()
+        self.audit_task_ids = {}
         self.authorized_schedulers = set(authorized_schedulers or ())
         self.scheduler_nonce_path = Path(scheduler_nonce_path) if scheduler_nonce_path else None
         self.scheduler_nonces = self._load_scheduler_nonces()
@@ -183,28 +184,22 @@ class Agent:
                 send('audit_chunk_ack', ack)
                 return
             if frame.kind == 'audit_commit':
+                transfer_id = json.loads(frame.payload or b'{}').get('sha256')
                 with self.audit_verdicts_lock:
-                    cached = self.audit_verdicts.get(frame.request_id)
+                    previous_task = self.audit_task_ids.get(transfer_id, frame.request_id)
+                    cached = self.audit_verdicts.get(previous_task)
+                    committed = previous_task in self.audit_commits
                 if cached is not None:
                     from auditor.worker import resend_verdict
                     result = resend_verdict(self, cached)
                     send('audit_result', result)
                     self._log_audit_result(frame.request_id, result)
                     return
-            if frame.kind in ('run', 'audit', 'audit_commit'):
-                kind = 'audit' if frame.kind in ('audit', 'audit_commit') else 'execution'
-                if not self.claims.claim(kind, frame.request_id):
+                if committed:
                     send('unavailable', b'duplicate task: already claimed in this process')
                     return
-            if frame.kind in ('run', 'tokenize'):
-                self.execution_lock.acquire()
-                executing = True
-            if frame.kind == 'audit_commit':
-                with self.audit_verdicts_lock:
-                    if frame.request_id in self.audit_commits:
-                        send('unavailable', b'duplicate task: already claimed in this process')
-                        return
-                    self.audit_commits.add(frame.request_id)
+            # Parse a completed transfer before choosing task ownership. Spot
+            # rounds share a hold ID but are distinct finalized challenges.
             if frame.kind == 'audit_commit':
                 payload_path = self.audit_transfer.finish(frame)
                 try:
@@ -213,8 +208,36 @@ class Agent:
                 finally:
                     os.unlink(payload_path)
             else:
-                payload = frame.payload
-                job = json.loads(payload)
+                job = json.loads(frame.payload)
+            task_id = frame.request_id
+            if frame.kind in ('audit', 'audit_commit') and job.get('kind') == 'spotcheck':
+                delivery = job.get('spot_delivery') or {}
+                task_id = (frame.request_id, delivery.get('challenge_height'), delivery.get('round'), job.get('mode'))
+            if frame.kind == 'audit_commit' or (frame.kind == 'audit' and job.get('kind') == 'spotcheck'):
+                with self.audit_verdicts_lock:
+                    cached = self.audit_verdicts.get(task_id)
+                if cached is not None:
+                    from auditor.worker import resend_verdict
+                    result = resend_verdict(self, cached)
+                    send('audit_result', result)
+                    self._log_audit_result(frame.request_id, result)
+                    return
+            if frame.kind in ('run', 'audit', 'audit_commit'):
+                kind = 'audit' if frame.kind in ('audit', 'audit_commit') else 'execution'
+                if not self.claims.claim(kind, task_id):
+                    send('unavailable', b'duplicate task: already claimed in this process')
+                    return
+            if frame.kind in ('run', 'tokenize'):
+                self.execution_lock.acquire()
+                executing = True
+            if frame.kind == 'audit_commit':
+                with self.audit_verdicts_lock:
+                    if task_id in self.audit_commits:
+                        send('unavailable', b'duplicate task: already claimed in this process')
+                        return
+                    self.audit_commits.add(task_id)
+                    if job.get('kind') == 'spotcheck':
+                        self.audit_task_ids[transfer_id] = task_id
             contribution = getattr(self, 'contribution', None)
             if contribution is not None and frame.kind != 'tokenize':
                 acquired = contribution.acquire()
@@ -224,11 +247,11 @@ class Agent:
             if frame.kind in ('audit', 'audit_commit'):
                 from .audit_engine import execute
                 result = execute(self, frame, job)
-                if frame.kind == 'audit_commit':
+                if frame.kind == 'audit_commit' or job.get('kind') == 'spotcheck':
                     from auditor.worker import cache_verdict
                     cached = cache_verdict(result)
                     with self.audit_verdicts_lock:
-                        self.audit_verdicts[frame.request_id] = cached
+                        self.audit_verdicts[task_id] = cached
                         while len(self.audit_verdicts) > 16:
                             self.audit_verdicts.popitem(last=False)
                 send('audit_result', result)

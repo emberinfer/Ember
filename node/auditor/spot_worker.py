@@ -68,13 +68,51 @@ def execute(agent, frame, job, hold, query):
     if spool is None:
         if not spool_root:
             raise ValueError('spot audit requires configured durable gateway spool mirror')
-        spool = DirectorySpool(spool_root)
+        attestor = None
+        gateway_url = getattr(args, 'spot_gateway_url', None)
+        if gateway_url:
+            def attestor(request_id, challenge_height, steps, deadline, height):
+                from urllib.request import urlopen
+                with urlopen(gateway_url.rstrip('/') + '/v1/spot/' + request_id + '/absence', timeout=30) as response:
+                    return json.load(response)
+        spool = DirectorySpool(spool_root, attestor=attestor)
+    delivery = job.get('spot_delivery')
+    if delivery is not None:
+        # Transport authenticates the job; roots/tokens still come exclusively
+        # from finalized chain facts and the locally provisioned context.
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+        from ember_core import node_id
+        att = delivery['receipt']
+        public = bytes.fromhex(context['gateway_public'])
+        ordered = {k: att[k] for k in ('request_id', 'challenge_height', 'step_set_hash', 'gateway', 'received', 'height')}
+        expected = hashlib.sha256(b''.join(int(i).to_bytes(8, 'big') for i in context['steps'])).digest()
+        if (att['gateway'] != node_id(public) or not att['received']
+                or att['request_id'] != context['request_id']
+                or att['challenge_height'] != context['challenge_height']
+                or base64.b64decode(att['step_set_hash'], validate=True) != expected
+                or delivery['steps'] != context['steps']
+                or delivery['challenge_height'] != context['challenge_height']
+                or delivery['request_id'] != context['request_id']
+                or delivery['height'] != att['height']
+                or not context['challenge_height'] <= att['height'] <= query('/state')['height']
+                or [p['step_index'] for p in delivery['packages']] != context['steps']):
+            raise ValueError('delivered spot challenge mismatch')
+        Ed25519PublicKey.from_public_bytes(public).verify(base64.b64decode(att['signature'], validate=True),
+            b'EMBER-SPOT-SPOOL-V1\0' + json.dumps(ordered, separators=(',', ':')).encode())
+        if not isinstance(spool, DirectorySpool):
+            raise ValueError('transferred opening requires configured durable mirror')
+        durable_json(spool.root / (hashlib.sha256(canonical(delivery)).hexdigest()+'.json'), delivery)
     mode = job.get('mode', 'normal')
     if mode == 'unopened':
         return unopened_action(agent, context, spool, bytes.fromhex(context['gateway_public']),
-                               job['spool_attestation'], query('/state')['height'])
+                               job.get('spool_attestation') or spool.absence(context, query('/state')['height']), query('/state')['height'])
     if (mode == 'escalation') != (context['round'] == 'esc'):
         raise ValueError('mode differs from finalized escalation assignment')
+    if mode == 'escalation':
+        if not job.get('pipeline_full') and context.get('kind') == 'pipeline':
+            raise ValueError('pipeline escalation requires the existing full package')
+        if context.get('kind') == 'pipeline':
+            spool.pipeline_full_job = job
     evidence_dir = Path(args.state_dir) / 'spot-evidence' / frame.request_id
     result = audit(context, spool, agent.engine, agent.key, evidence_dir, mode=mode,
                    height=lambda: query('/state')['height'])

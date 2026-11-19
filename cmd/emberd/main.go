@@ -657,17 +657,42 @@ func main() {
 		if err != nil {
 			return err
 		}
-		return spool.PutStream(execution.Receipt.RequestId, func(w io.Writer) error {
+		err = spool.PutStream(execution.Receipt.RequestId, func(w io.Writer) error {
 			if execution.Source == nil {
 				_, err := w.Write(raw)
 				return err
 			}
 			return gateway.WritePipelineAudit(w, raw, execution.Source)
 		})
+		if err != nil || chainBook == nil {
+			return err
+		}
+		_, _, version, err := chainBook.SpotRuntimeState(execution.Receipt.RequestId)
+		if err != nil || version < 14 {
+			return err
+		}
+		// Reopen AFTER PutStream: JSON compaction has already happened.
+		commitment, err := gateway.BuildDurablePipelineSpotCommitment(spool, execution.Receipt.RequestId, api.Profile, execution.Receipt)
+		if err != nil {
+			return err
+		}
+		execution.SpotRoot, err = hex.DecodeString(commitment.CommitmentRoot)
+		execution.SpotStepCount = commitment.SpotStepCount
+		return err
 	}
+	spotStore := openRuntimeSpotStore(*auditSpoolDir+".spot", relay, chainBook)
 	var routeMu sync.Mutex
 	auditorBusy := map[string]bool{}
 	processAudit := func(id string) {
+		if chainBook != nil {
+			handled, spotErr := processPipelineSpot(id, api.Profile, chainBook, spool, spotStore, relay)
+			if handled {
+				if spotErr != nil {
+					log.Printf("SPOT_RUNTIME hold=%s error=%v", id, spotErr)
+				}
+				return
+			}
+		}
 		state, err := book.State(id)
 		if err != nil {
 			log.Printf("AUDIT RECOVERY STATE %s: %v", id, err)
@@ -1169,6 +1194,7 @@ func main() {
 	var faucetServer *http.Server
 	errCh := make(chan error, 2)
 	mux := http.NewServeMux()
+	mux.Handle("/v1/spot/", spotQuery(chainBook, spotStore))
 	mux.Handle("/v1/chat/completions", api)
 	mux.Handle("/v1/quote", api)
 	mux.Handle("/v1/pricing", api)

@@ -503,6 +503,7 @@ func TestSpotDisputeExpiry(t *testing.T) {
 func TestSpotManifestLadderAndLoad(t *testing.T) {
 	s, _ := testState(t)
 	s.Version = 13
+	s.Parameters.HoldTimeout = 5000
 	app := &Application{committed: s}
 	if err := app.ConfigureMembershipUpgrade(MembershipUpgrade{ChainID: s.Parameters.ChainID, ActivationHeight: 2}); err != nil {
 		t.Fatal(err)
@@ -516,8 +517,12 @@ func TestSpotManifestLadderAndLoad(t *testing.T) {
 		if height >= 2 {
 			want = 14
 		}
-		if app.staged.Parameters.DisputeBlocks != 1 {
-			t.Fatal("activation unexpectedly overrides dispute_blocks")
+		dispute, timeout := int64(1), int64(5000)
+		if height >= 2 {
+			dispute, timeout = 5000, 7000
+		}
+		if app.staged.Parameters.DisputeBlocks != dispute || app.staged.Parameters.HoldTimeout != timeout {
+			t.Fatal("wrong version-gated hold parameters", app.staged.Parameters)
 		}
 		if app.staged.Version != want || res.ConsensusParamUpdates.Version.App != want {
 			t.Fatal("wrong rung")

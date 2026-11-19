@@ -251,6 +251,13 @@ func (app *Application) FinalizeBlock(_ context.Context, req *abci.FinalizeBlock
 	if err := app.activateMembership(trial, req); err != nil {
 		return nil, err
 	}
+	// Ruling 17: apply in the activation block before new freezes/submissions.
+	// 7000 covers the 5000-block dispute window plus 2000 execution blocks.
+	// Stored hold deadlines are deliberately not recomputed.
+	if trial.Version >= 14 {
+		trial.Parameters.DisputeBlocks = 5000
+		trial.Parameters.HoldTimeout = 7000
+	}
 	if err := trial.advanceSpot(req.Height); err != nil {
 		return nil, err
 	}

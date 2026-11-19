@@ -1,6 +1,8 @@
 """Identity-less dynamic pipeline assembly client for the coordinator."""
 from collections import OrderedDict
 import json
+import os
+import subprocess
 import sys
 import time
 
@@ -14,6 +16,16 @@ from engine import Step
 from evidence import encode_step, opening
 from shard_rpc import StageClient, bytes_tensor, read_scheduler_key
 from pipeline_spool import JobSpool
+from spotcheck import FailureJournal, rank_candidates
+
+
+def availability_lookup(job, node):
+    # The path is supplied by the chain adapter; v14's cross-line contract does
+    # not prescribe a query route. A missing adapter follows fail-open policy.
+    path = job['availability_query_path'].format(node_id=node)
+    raw = subprocess.check_output([job['chain_cli'], 'query', '--rpc',
+        job['chain_rpc'], '--path', path], text=True, timeout=10)
+    return json.loads(raw)['level']
 
 
 def load_profile(raw):
@@ -61,6 +73,7 @@ def run_job(job, cache=None):
 
 
 def _run_job(job, cache, spool):
+    journal = FailureJournal(job.get('baseline_dir', os.path.join('.runtime', 'pipeline-baseline')))
     if job['model_path'] not in cache.tokenizers:
         cache.tokenizers[job['model_path']] = AutoTokenizer.from_pretrained(
             job['model_path'], local_files_only=True, trust_remote_code=False)
@@ -73,6 +86,8 @@ def _run_job(job, cache, spool):
     witness_key=cache.key(job['witness_key_file']) if job.get('witness_key_file') else None
     for expected_index, item in enumerate(job['stages']):
         profiles = [load_profile(raw) for raw in item['profiles']]
+        profiles = rank_candidates(profiles, lambda node: availability_lookup(job, node),
+            lambda message: print(message, file=sys.stderr, flush=True))
         if not profiles:
             raise ValueError('pipeline stage has no candidates')
         for profile in profiles:
@@ -117,6 +132,7 @@ def _run_job(job, cache, spool):
                     call_started = time.monotonic()
                     observed_start = time.monotonic_ns()
                     emit({'type': 'stage_start'})
+                    journal.record(profile.node_id, job['request_id'], 'opportunity')
                     try:
                         if stage_index == 0:
                             response = client.forward(job['request_id'], step_index,
@@ -151,6 +167,7 @@ def _run_job(job, cache, spool):
                         activations.update(response.activations)
                         break
                     except (grpc.RpcError, OSError, ValueError) as exc:
+                        journal.record(profile.node_id, job['request_id'], 'task_failed')
                         emit({'type': 'stage_failed'})
                         last_error = exc
                         spool.append('failovers', {'step': step_index, 'stage': stage_index,

@@ -47,7 +47,7 @@ def _derive(agent, frame, job, hold, query):
             or base64.b64decode(profile_b64, validate=True) != genesis_raw):
         raise ValueError('profile differs from finalized model')
     metric = genesis.numeric_audit_policy.metric
-    if metric not in ('legacy-ranked-v1', 'union-interval-v1', 'rank-probability-v1'):
+    if metric not in ('legacy-ranked-v1', 'union-interval-v1', 'rank-probability-v1', 'relative-l2-v1'):
         raise ValueError('missing or unsupported registered metric')
     equality = query('/parameters')['audit_equality']
     epsilon = equality['epsilon']

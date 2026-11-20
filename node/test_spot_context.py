@@ -16,7 +16,7 @@ from auditor.spot_binding import BindingFailure
 from spotcheck import canonical, pipeline_commitment, pipeline_package
 
 
-def setup(tmp_path):
+def setup(tmp_path, metric='legacy-ranked-v1'):
     job = json.loads((Path(__file__).parent/'auditor/testdata/pipeline-record-v1.json').read_text())['job']
     request_id = 'ab'*32
     # Retain golden openings, but bind this synthetic request to the real hold-ID convention.
@@ -31,12 +31,12 @@ def setup(tmp_path):
     receipt.request_id = request_id
     raw = receipt.SerializeToString()
     job.update(pipeline_receipt=raw.hex(), first_invocation_request=job['invocations'][0]['request'],
-               prompt='fixture', seed=0, metric='legacy-ranked-v1', tolerance=0.01)
+               prompt='fixture', seed=0, metric=metric, tolerance=0.01)
     openings = [canonical(v) for v in job['openings']]
     manifest = pipeline_commitment(request_id, 'tiny', job['invocations'], openings, 2)
     packages = [pipeline_package(manifest, i, job['invocations'].__getitem__, openings.__getitem__) for i in (1, 2)]
     genesis = ChainGenesis(chain_id='model')
-    genesis.numeric_audit_policy.metric = 'legacy-ranked-v1'
+    genesis.numeric_audit_policy.metric = metric
     sign(genesis, Ed25519PrivateKey.generate())
     genesis_raw = genesis.SerializeToString()
     config = tmp_path/'profiles.json'
@@ -158,4 +158,36 @@ def test_legacy_publication_genesis_mismatch_fails_closed(tmp_path):
         return query(path)
     with pytest.raises(ContextDerivationError):
         context_for(agent, frame, hold, job, bad_query)
+    assert not (tmp_path/'spot-context').exists()
+
+
+def test_production_genesis_fixture_is_relative_l2():
+    # The pinned production genesis (sha256 of the exact bytes the auditor
+    # clients pin locally) registers relative-l2-v1 in both policy and band.
+    raw = (Path(__file__).parent/'auditor/testdata/production-genesis.pb').read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == \
+        '00973f5dc58bcbe2bad729d164f8f6171f20ad68c4535930799aa70f7495b668'
+    genesis = ChainGenesis.FromString(raw)
+    assert genesis.chain_id == 'ember-qwen2.5-1.5b-unified-v1'
+    assert genesis.numeric_audit_policy.metric == 'relative-l2-v1'
+    assert genesis.numeric_audit_policy.range_band.metric == 'relative-l2-v1'
+
+
+def test_relative_l2_legacy_era_genesis_derives(tmp_path):
+    # Old-era combination that production hit: no signed_profile on the model
+    # record (publication.genesis fallback) AND the relative-l2-v1 metric.
+    agent, frame, job, hold, query, packages = setup(tmp_path, metric='relative-l2-v1')
+    def legacy_query(path):
+        if path.startswith('/model/'):
+            return {'publication': {'genesis': base64.b64encode(agent.genesis_bytes).decode()}}
+        return query(path)
+    context = context_for(agent, frame, hold, job, legacy_query)
+    assert context['metric'] == 'relative-l2-v1'
+    assert verify_pipeline_binding(packages[0], context).token == 7
+
+
+def test_unknown_metric_fails_closed(tmp_path):
+    agent, frame, job, hold, query, _ = setup(tmp_path, metric='unknown-metric-v9')
+    with pytest.raises(ContextDerivationError, match='unsupported registered metric'):
+        context_for(agent, frame, hold, job, query)
     assert not (tmp_path/'spot-context').exists()

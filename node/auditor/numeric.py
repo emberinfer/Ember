@@ -11,6 +11,7 @@ import struct
 LEGACY = 'legacy-ranked-v1'
 UNION = 'union-interval-v1'
 RANK_PROB = 'rank-probability-v1'
+RELATIVE_L2 = 'relative-l2-v1'
 
 
 def topk_statistics(left, right):
@@ -125,7 +126,7 @@ def compare(actual, expected, metric=LEGACY):
             return failure('invalid logit evidence', index)
         if set(a.activations) != set(b.activations):
             return failure('layer mismatch', index)
-        if metric == LEGACY:
+        if metric in (LEGACY, RELATIVE_L2):
             if [t[0] for t in a.topk] != [t[0] for t in b.topk]:
                 return failure('topk/layer mismatch', index)
             logits = legacy_distance([v for _, v in a.topk], [v for _, v in b.topk])

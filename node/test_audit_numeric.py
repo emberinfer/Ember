@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from ember_core import node_id, sign
 from ember_pb2 import ChainGenesis, ExecutionReceipt, ResourceProfile
 from engine import EngineCapabilities, Step
-from auditor.numeric import LEGACY, UNION, compare, union_distance
+from auditor.numeric import LEGACY, RELATIVE_L2, UNION, compare, union_distance
 from auditor.policy import NUMERIC_EXECUTION_PROFILES, grade, load_job_policy, validate_policy
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -80,6 +80,20 @@ class NumericAuditTest(unittest.TestCase):
         distance, missing, _ = union_distance([(1, 3.0), (2, 1.0)], [(3, 2.0), (2, 1.0)])
         self.assertTrue(math.isfinite(distance) and distance > 0)
         self.assertEqual(missing, 2)
+
+    def test_relative_l2_metric_uses_aligned_relative_distance(self):
+        tensor = struct.pack('<ff', 1, 2)
+        left = [Step(1, '', [(1, 2.0), (2, 1.0)], {'0': tensor})]
+        same = [Step(1, '', [(1, 2.0), (2, 1.0)], {'0': tensor})]
+        self.assertEqual(compare(left, same, RELATIVE_L2)[0], 0)
+        shifted = [Step(1, '', [(1, 2.0), (2, 1.0)], {'0': struct.pack('<ff', 2, 2)})]
+        distance, details = compare(shifted, left, RELATIVE_L2)
+        self.assertTrue(math.isfinite(distance) and distance > 0)
+        self.assertEqual(details['logit_max'], 0)
+        reordered = [Step(1, '', [(2, 1.0), (1, 2.0)], {'0': tensor})]
+        self.assertTrue(math.isinf(compare(left, reordered, RELATIVE_L2)[0]))
+        with self.assertRaises(ValueError):
+            compare(left, same, 'unknown-metric-v9')
 
     def test_activations_count_shapes_and_nonfinite_cannot_accept(self):
         raw = struct.pack('<ff', 1, 2)

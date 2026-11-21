@@ -47,7 +47,51 @@ func (f *fakeMoeLedger) FinishMoe(_, v string, _ time.Time, _ int64) error {
 func (f *fakeMoeLedger) State(string) (string, error)                     { return "dispute", nil }
 func (f *fakeMoeLedger) ResolveAudit(string) (bool, error)                { return true, nil }
 func (f *fakeMoeLedger) RecordedVerdict(string) (*pb.AuditVerdict, error) { return nil, nil }
-func (f *fakeMoeLedger) MoeSettlementReady(string) (bool, error)          { return true, nil }
+
+// A false legacy readiness result must never gate the finisher.
+func (f *fakeMoeLedger) MoeSettlementReady(string) (bool, error) { return false, nil }
+
+type fateMoeLedger struct {
+	*fakeMoeLedger
+	unaudited bool
+	verdict   string
+	outcome   string
+}
+
+func (f *fateMoeLedger) ResolveAudit(string) (bool, error) { return f.unaudited, nil }
+func (f *fateMoeLedger) RecordedVerdict(string) (*pb.AuditVerdict, error) {
+	return &pb.AuditVerdict{Verdict: f.verdict}, nil
+}
+func (f *fateMoeLedger) FinishMoe(_ string, outcome string, _ time.Time, _ int64) error {
+	f.outcome = outcome
+	return nil
+}
+func TestMoeFinisherSettlesFateWithoutHeightGate(t *testing.T) {
+	for _, tc := range []struct {
+		name          string
+		unaudited     bool
+		verdict, want string
+	}{
+		{"unaudited_or_no_auditor", true, "", "accept"},
+		{"accepted", false, "accept", "accept"},
+		{"rejected", false, "reject", "reject"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g, base := moeFixture(t)
+			b := &fateMoeLedger{fakeMoeLedger: base, unaudited: tc.unaudited, verdict: tc.verdict}
+			done := make(chan struct{})
+			go func() { g.finishMoe(b, "hold"); close(done) }()
+			select {
+			case <-done:
+				if b.outcome != tc.want {
+					t.Fatalf("outcome = %q, want %q", b.outcome, tc.want)
+				}
+			case <-time.After(time.Second):
+				t.Fatal("fate did not trigger settlement on the first attempt")
+			}
+		})
+	}
+}
 func moeFixture(t *testing.T) (*Gateway, *fakeMoeLedger) {
 	t.Helper()
 	dir := t.TempDir()

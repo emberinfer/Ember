@@ -82,7 +82,7 @@ def test_retry_escalation_restart_and_absence(manifest, service):
     assert len(deliveries) == 2
     spool = OpeningService(spool.root, key, deliveries.append)
     spool.open(manifest, [2], 1, 10, 13, escalation=True)
-    assert deliveries[-1]['steps'] == [1, 3]
+    assert deliveries[-1]['steps'] == [2]  # Escalation honors the supplied StepSet.
     with pytest.raises(ValueError, match='exists'):
         spool.attest_absence(manifest['request_id'], 10, [2], 130, 131)
     with pytest.raises(ValueError, match='finalized'):

@@ -123,6 +123,9 @@ func processPipelineSpot(id, profile string, book *ledger.ChainLedger, q *auditq
 	mode := "normal"
 	if c.Round == "esc" {
 		mode = "escalation"
+		if version < 15 {
+			mode = "escalation_full"
+		}
 	} else if c.Substitute {
 		mode = "substitute"
 	}

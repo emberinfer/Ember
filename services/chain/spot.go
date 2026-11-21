@@ -20,17 +20,22 @@ const (
 	SPOT_OPEN_ROUND_BLOCKS    int64 = 120
 	SPOT_FIRST_VERDICT_BLOCKS int64 = 60
 	SPOT_SUBSTITUTE_BLOCKS    int64 = 120
-	SPOT_ESCALATION_BLOCKS    int64 = 350
-	AVAIL_MINOR_WINDOW        int64 = 50000
-	AVAIL_MAJOR_WINDOW        int64 = 200000
-	AVAIL_T1_MINOR                  = 4
-	AVAIL_T1_MAJOR                  = 2
-	AVAIL_T2_MINOR                  = 8
-	AVAIL_T2_MAJOR                  = 4
-	AVAIL_T3_MINOR                  = 12
-	AVAIL_T3_MAJOR                  = 6
-	AVAIL_PAUSE_BLOCKS        int64 = 30000
-	AVAIL_FINE_SUB            int64 = 1000
+	// Single-dispute bounded package: (1+15)*4.5MB (ddcfb1f7: 424MB/94) ~=72MB.
+	// 72/0.357 ~=202s transfer +224s CPU + margin ~=460s;
+	// 600*1.76=1056s gives >=2.3x margin. Total 120+60+120+60+600
+	// =960 blocks, comfortably inside the 5000-block dispute window.
+	SPOT_ESCALATION_BLOCKS int64 = 600
+	SPOT_ESCALATION_K            = 15
+	AVAIL_MINOR_WINDOW     int64 = 50000
+	AVAIL_MAJOR_WINDOW     int64 = 200000
+	AVAIL_T1_MINOR               = 4
+	AVAIL_T1_MAJOR               = 2
+	AVAIL_T2_MINOR               = 8
+	AVAIL_T2_MAJOR               = 4
+	AVAIL_T3_MINOR               = 12
+	AVAIL_T3_MAJOR               = 6
+	AVAIL_PAUSE_BLOCKS     int64 = 30000
+	AVAIL_FINE_SUB         int64 = 1000
 )
 
 type AvailabilityEvent struct {
@@ -142,6 +147,71 @@ func DeriveSpotSteps(seed []byte, n, k uint64) ([]uint64, error) {
 	out := append([]uint64(nil), pool[:k]...)
 	sort.Slice(out, func(i, j int) bool { return out[i] < out[j] })
 	return out, nil
+}
+
+// Additional draws use the same fixed post-submission finalized entropy as the
+// initial challenge, domain separated and never redrawn by an auditor. k=15
+// matches the strongest initial tier: with >=2 bad steps, seeking a second bad
+// step deters multi-step cheating while bounding the opening package.
+func DeriveBoundedSpotSteps(seed []byte, n uint64, initial []uint64, first *pb.AuditVerdict) ([]uint64, error) {
+	h := sha256.New()
+	h.Write([]byte("EMBER-SPOT-ESC-BOUNDED-V15"))
+	h.Write(seed)
+	if len(seed) != 32 {
+		return nil, errors.New("invalid escalation seed")
+	}
+	if n == 0 || n > 1000000 {
+		return nil, errors.New("invalid escalation count")
+	}
+	excluded := map[uint64]bool{}
+	for _, step := range initial {
+		excluded[step] = true
+	}
+	out := []uint64{}
+	for _, p := range first.PerStep {
+		if p.Outcome != "match" {
+			out = append(out, p.Step)
+			excluded[p.Step] = true
+		}
+	}
+	// Sample ranks in the canonical eligible population, excluding all initial steps.
+	available := []uint64{}
+	for step := uint64(1); step <= n; step++ {
+		if !excluded[step] {
+			available = append(available, step)
+		}
+	}
+	if len(available) > 0 {
+		k := uint64(SPOT_ESCALATION_K)
+		if k > uint64(len(available)) {
+			k = uint64(len(available))
+		}
+		ranks, err := DeriveSpotSteps(h.Sum(nil), uint64(len(available)), k)
+		if err != nil {
+			return nil, err
+		}
+		for _, rank := range ranks {
+			out = append(out, available[rank-1])
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i] < out[j] })
+	return out, nil
+}
+
+func boundedSpotConviction(first, second *pb.AuditVerdict) bool {
+	initial, disputed := map[uint64]bool{}, map[uint64]bool{}
+	for _, p := range first.PerStep {
+		initial[p.Step] = true
+		disputed[p.Step] = p.Outcome != "match"
+	}
+	corroborated, additional := false, false
+	for _, p := range second.PerStep {
+		if p.Outcome != "match" {
+			corroborated = corroborated || disputed[p.Step]
+			additional = additional || !initial[p.Step]
+		}
+	}
+	return corroborated && additional
 }
 
 // Aggregate opening obligations belong to credited execution participants, not
@@ -464,7 +534,7 @@ func (s *State) validateSpotVerdict(h *Hold, raw []byte, height int64) error {
 		return errors.New("verdict deadline passed")
 	}
 	expected := c.StepSet
-	if c.Round == "esc" {
+	if c.Round == "esc" && s.Version < 15 {
 		expected = make([]uint64, h.Pipeline.SpotStepCount)
 		for i := range expected {
 			expected[i] = uint64(i) + 1
@@ -502,6 +572,16 @@ func (s *State) validateSpotVerdict(h *Hold, raw []byte, height int64) error {
 			kind = "escalation_full_reject"
 		}
 	}
+	if c.Round == "esc" && s.Version >= 15 {
+		verdict, kind = "accept", "escalation_bounded_accept"
+		first := &pb.AuditVerdict{}
+		if proto.Unmarshal(c.FirstVerdict, first) != nil {
+			return errors.New("invalid first verdict")
+		}
+		if boundedSpotConviction(first, v) {
+			verdict, kind = "reject", "escalation_bounded_reject"
+		}
+	}
 	if v.VerdictKind != kind || v.VerdictDistance != max || v.Verdict != verdict {
 		return errors.New("inconsistent spot verdict")
 	}
@@ -536,6 +616,9 @@ func (s *State) spotOutcome(h *Hold, signer, outcome, evidence string, at ...int
 		if !same {
 			return errors.New("second reject does not corroborate same step")
 		}
+		if s.Version >= 15 && !boundedSpotConviction(first, second) {
+			return errors.New("bounded reject lacks an additional bad step")
+		}
 		h.AuditVerdict = "reject"
 		return nil
 	}
@@ -555,14 +638,33 @@ func (s *State) spotOutcome(h *Hold, signer, outcome, evidence string, at ...int
 	old := *c
 	old.History = nil
 	c.History = append(c.History, old)
-	c.StepSet = make([]uint64, h.Pipeline.SpotStepCount)
-	for i := range c.StepSet {
-		c.StepSet[i] = uint64(i) + 1
+	if s.Version >= 15 {
+		seed, _, err := s.assignmentSeed(h)
+		if err != nil {
+			return err
+		}
+		first := &pb.AuditVerdict{}
+		if proto.Unmarshal(c.FirstVerdict, first) != nil {
+			return errors.New("invalid first verdict")
+		}
+		steps, err := DeriveBoundedSpotSteps(seed, h.Pipeline.SpotStepCount, c.StepSet, first)
+		if err != nil {
+			return err
+		}
+		c.StepSet = steps
+	} else {
+		c.StepSet = make([]uint64, h.Pipeline.SpotStepCount)
+		for i := range c.StepSet {
+			c.StepSet[i] = uint64(i) + 1
+		}
 	}
 	c.Round = "esc"
 	c.Auditor = next
 	c.ChallengeHeight = height
 	c.Deadline = height + SPOT_ESCALATION_BLOCKS
+	if s.Version < 15 {
+		c.Deadline = height + 350
+	}
 	c.Received = false
 	c.VerdictDeadline = c.Deadline
 	c.Substitute = false
@@ -589,6 +691,9 @@ func confirmedSpotConviction(h *Hold) bool {
 	first, second := &pb.AuditVerdict{}, &pb.AuditVerdict{}
 	if proto.Unmarshal(h.Pipeline.Spot.FirstVerdict, first) != nil || proto.Unmarshal(h.VerdictBytes, second) != nil || first.Verdict != "reject" || second.Verdict != "reject" {
 		return false
+	}
+	if second.VerdictKind == "escalation_bounded_reject" {
+		return boundedSpotConviction(first, second)
 	}
 	for _, a := range first.PerStep {
 		for _, b := range second.PerStep {

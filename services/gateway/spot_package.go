@@ -124,9 +124,9 @@ func BuildPipelineSpotPackage(e *PipelineExecution, m *PipelineSpotCommitment, s
 	return v, nil
 }
 
-// WritePipelineSpotAudit keeps escalation on the existing streamed full-package
-// channel. Ordinary challenges include the header and output-committed openings
-// for context derivation, without the full stage invocation tensor array.
+// WritePipelineSpotAudit sends the challenged openings, including bounded
+// escalation, without the full stage invocation tensor array. The explicit
+// escalation_full mode retains the historical full-package transport.
 func WritePipelineSpotAudit(w io.Writer, source *jsonspool.Object, r *SpotDelivery, mode string) error {
 	job := map[string]any{}
 	metadata, err := source.Metadata("openings", "invocations", "failovers")
@@ -148,7 +148,7 @@ func WritePipelineSpotAudit(w io.Writer, source *jsonspool.Object, r *SpotDelive
 		return err
 	}
 	job["first_invocation_request"] = hex.EncodeToString(first.Request)
-	if mode == "escalation" {
+	if mode == "escalation_full" {
 		job["pipeline_full"] = true
 	} else {
 		delete(job, "invocations")
@@ -160,13 +160,16 @@ func WritePipelineSpotAudit(w io.Writer, source *jsonspool.Object, r *SpotDelive
 	}
 	job["kind"] = "spotcheck"
 	job["mode"] = mode
+	if mode == "escalation_full" {
+		job["mode"] = "escalation"
+	}
 	job["genesis"] = genesis
 	job["spot_delivery"] = r
 	raw, err := json.Marshal(job)
 	if err != nil {
 		return err
 	}
-	if mode == "escalation" {
+	if mode == "escalation_full" {
 		return WritePipelineAudit(w, raw, source)
 	}
 	return jsonspool.WriteMergeTransform(w, raw, source, nil, "openings")

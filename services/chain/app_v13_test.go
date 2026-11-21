@@ -8,7 +8,7 @@ import (
 )
 
 func TestParamActivationEmission(t *testing.T) {
-	for _, from := range []uint64{11, 12} {
+	for _, from := range []uint64{11, 12, 13, 14} {
 		s, _ := testState(t)
 		s.Version = from
 		app := &Application{committed: s}

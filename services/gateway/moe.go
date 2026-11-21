@@ -46,7 +46,6 @@ type moeLedger interface {
 	State(string) (string, error)
 	ResolveAudit(string) (bool, error)
 	RecordedVerdict(string) (*pb.AuditVerdict, error)
-	MoeSettlementReady(string) (bool, error)
 }
 
 func (g *Gateway) tokenizeMoe(ctx context.Context, q request, prompt, requestID string) ([]byte, uint32, error) {
@@ -172,9 +171,9 @@ func (g *Gateway) finishMoe(b moeLedger, id string) {
 				unaudited, e := b.ResolveAudit(id)
 				outcome := ""
 				if e == nil && unaudited {
-					if ready, e := b.MoeSettlementReady(id); e == nil && ready {
-						outcome = "accept"
-					}
+					// Consensus decides whether this fate can settle, including
+					// v15 early release. Keep retries on the existing ticker.
+					outcome = "accept"
 				} else if e == nil {
 					if v, e := b.RecordedVerdict(id); e == nil && v != nil {
 						outcome = v.Verdict

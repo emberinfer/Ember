@@ -91,6 +91,9 @@ func (s *State) legacyAuditor(h *Hold, ids []string) (string, []byte, error) {
 	}
 	sort.Strings(ids)
 	if len(ids) == 0 {
+		if s.Version >= 15 {
+			return "", nil, errNoAuditor
+		}
 		return "", nil, errors.New("no independent auditor available")
 	}
 	digest := sha256.New()

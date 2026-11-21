@@ -8,7 +8,7 @@ import (
 
 func TestConsumedUpgradeDecisionTable(t *testing.T) {
 	// Cross versions, membership content, chain identity, and past/equal/future heights.
-	for version := uint64(4); version <= 12; version++ {
+	for version := uint64(4); version <= 15; version++ {
 		for _, membership := range []bool{false, true} {
 			for _, matching := range []bool{false, true} {
 				for _, height := range []int64{19, 20, 21} {
@@ -28,7 +28,7 @@ func TestConsumedUpgradeDecisionTable(t *testing.T) {
 						app := &Application{committed: s}
 						err := app.ConfigureMembershipUpgrade(u)
 						consumed := matching && height <= s.Height && version >= 6 && version != 10
-						armed := matching && height > s.Height && version >= 5 && version <= 12
+						armed := matching && height > s.Height && version >= 5 && version <= 14
 						if (err == nil) != (consumed || armed) {
 							t.Fatalf("err=%v consumed=%t armed=%t", err, consumed, armed)
 						}

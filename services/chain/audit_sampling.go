@@ -251,6 +251,10 @@ type AuditStatsEvent struct {
 }
 
 func applyAuditStatsEvent(stats map[string]NodeAuditStats, e AuditStatsEvent, p AuditSamplingParameters, repeat int64) {
+	// This is a hold-level fate event, with no executor or auditor counters.
+	if e.Kind == "no_auditor" {
+		return
+	}
 	n := stats[e.Node]
 	switch e.Kind {
 	case "freeze":
@@ -311,7 +315,7 @@ func (s *State) auditCompleted(h *Hold, height int64) {
 	}
 }
 func (s *State) recordSettledStats(h *Hold, height int64) {
-	if h.State != "settled" {
+	if h.State != "settled" || (s.Version >= 15 && h.NoAuditor) {
 		return
 	}
 	for _, id := range holdExecutors(h) {

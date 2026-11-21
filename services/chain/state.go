@@ -43,6 +43,7 @@ type Parameters struct {
 	SubsidyCap             int64                   `json:"subsidy_cap"`
 	UnbondingBlocks        int64                   `json:"unbonding_blocks"`
 	SlashMultiplier        int64                   `json:"slash_multiplier"`
+	EarlySettleGraceBlocks int64                   `json:"early_settle_grace_blocks,omitempty"`
 	DisputeBlocks          int64                   `json:"dispute_blocks"`
 	MinNodeStake           int64                   `json:"min_node_stake"`
 	HoldTimeout            int64                   `json:"hold_timeout_blocks"`
@@ -100,6 +101,8 @@ type Unbond struct {
 }
 
 type Hold struct {
+	NoAuditor            bool                        `json:"no_auditor,omitempty"`
+	FateHeight           int64                       `json:"fate_height,omitempty"`
 	Adjudication         *AdjudicationCase           `json:"adjudication,omitempty"`
 	IdempotencyKey       string                      `json:"idempotency_key,omitempty"`
 	SamplingPolicy       *AuditSamplingSnapshot      `json:"sampling_policy,omitempty"`
@@ -375,7 +378,7 @@ func NewState(gen GenesisState) (*State, error) {
 		gen.Parameters.RegistrationTTL = 100
 	}
 	if gen.Parameters.ChainID == "" || gen.Parameters.SubsidyCap < 0 || gen.Parameters.UnbondingBlocks < 1 ||
-		gen.Parameters.SlashMultiplier != 20 || gen.Parameters.DisputeBlocks < 0 {
+		gen.Parameters.SlashMultiplier != 20 || gen.Parameters.DisputeBlocks < 0 || gen.Parameters.EarlySettleGraceBlocks < 0 {
 		return nil, errors.New("invalid genesis parameters")
 	}
 	if gen.Parameters.MinNodeStake < 1 || gen.Parameters.HoldTimeout < 2 || gen.Parameters.RegistrationTTL < 2 {
@@ -1001,7 +1004,7 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		return s.spotAction(signer, action, height)
 	case "resolve_audit", "assign_audit":
 		hold := s.Holds[action.HoldID]
-		if hold == nil || hold.State != "dispute" || hold.Auditor != "" || hold.AuditVerdict != "" || height <= hold.SubmitHeight {
+		if hold == nil || hold.State != "dispute" || hold.Auditor != "" || hold.AuditVerdict != "" || (s.Version >= 15 && hold.NoAuditor) || height <= hold.SubmitHeight {
 			return errors.New("invalid audit assignment transition")
 		}
 		sampled, err := s.resolveSampling(hold)
@@ -1009,10 +1012,18 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 			return err
 		}
 		if !sampled {
+			if s.Version >= 15 && hold.FateHeight == 0 {
+				hold.FateHeight = height
+			}
 			return nil
 		}
 		auditor, proof, err := s.selectAuditor(hold, "", height)
 		if err != nil {
+			if s.Version >= 15 && errors.Is(err, errNoAuditor) {
+				hold.NoAuditor, hold.Unaudited, hold.FateHeight = true, true, height
+				s.auditStatsEvent(hold, AuditStatsEvent{Kind: "no_auditor", Height: height})
+				return nil
+			}
 			return err
 		}
 		if s.Version >= 6 {
@@ -1081,7 +1092,7 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		if hold == nil || hold.State != "dispute" || (!hold.Unaudited && (hold.AuditVerdict == "" || action.Outcome != hold.AuditVerdict)) || (hold.Unaudited && action.Outcome != "accept") {
 			return errors.New("invalid settlement transition")
 		}
-		if action.Outcome == "accept" && height < hold.SettleHeight {
+		if action.Outcome == "accept" && height < hold.SettleHeight && !s.earlySettlementReady(hold, height) {
 			return errors.New("dispute window open")
 		}
 		if hold.TokenFee != nil && action.Actual != 0 && action.Actual != hold.Actual {
@@ -1159,6 +1170,9 @@ func (s *State) recordAuditOutcome(hold *Hold, signer, outcome, evidenceRef stri
 		height := s.Height
 		if len(at) > 0 {
 			height = at[0]
+		}
+		if s.Version >= 15 && hold.AuditVerdict != "" && hold.FateHeight == 0 {
+			hold.FateHeight = height
 		}
 		s.auditCompleted(hold, height)
 	}()
@@ -1468,9 +1482,40 @@ func (s *State) settledWorkCount(node string) int {
 	return count
 }
 
+// earlySettlementReady requires a recorded fate; the dispute height remains
+// an unconditional fallback. Subtraction avoids overflow of fate + grace.
+func (s *State) earlySettlementReady(h *Hold, height int64) bool {
+	if s.Version < 15 || !(h.NoAuditor || (h.Sampling != nil && !h.Sampling.Sampled) || h.AuditVerdict != "") {
+		return false
+	}
+	grace := s.Parameters.EarlySettleGraceBlocks
+	return grace == 0 || (h.FateHeight > 0 && height >= h.FateHeight && height-h.FateHeight >= grace)
+}
+
 func (s *State) exposure(node string) int64 {
 	var total int64
 	for _, hold := range s.Holds {
+		if s.Version >= 15 && hold.State == "dispute" {
+			switch {
+			case hold.Pipeline != nil:
+				for _, c := range hold.Pipeline.Credits {
+					if c.NodeID == node {
+						total += c.Amount
+					}
+				}
+			case hold.Moe != nil:
+				for _, c := range hold.Moe.Credits {
+					if c.NodeID == node {
+						total += c.Amount
+					}
+				}
+			default:
+				if hold.Node == node {
+					total += hold.Actual
+				}
+			}
+			continue
+		}
 		if hold.Pipeline != nil && (hold.State == "frozen" || hold.State == "dispute") {
 			for _, a := range hold.Pipeline.Authorizations {
 				if a.NodeID == node {
@@ -1642,7 +1687,7 @@ func LoadStateWithUpgrade(path string, upgrade *MembershipUpgrade) (*State, erro
 	if state.Version == 2 && upgrade != nil {
 		return MigrateV2State(raw, *upgrade)
 	}
-	if state.Version != 14 && state.Version != 13 && state.Version != 12 && state.Version != 11 && state.Version != 10 && state.Version != 9 && state.Version != 8 && state.Version != 7 && state.Version != 6 && state.Version != 5 && state.Version != 4 {
+	if state.Version != 15 && state.Version != 14 && state.Version != 13 && state.Version != 12 && state.Version != 11 && state.Version != 10 && state.Version != 9 && state.Version != 8 && state.Version != 7 && state.Version != 6 && state.Version != 5 && state.Version != 4 {
 		return nil, errors.New("unsupported state version")
 	}
 	if err = loadArchive(path, &state, raw); err != nil {

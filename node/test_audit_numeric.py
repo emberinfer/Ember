@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from ember_core import node_id, sign
 from ember_pb2 import ChainGenesis, ExecutionReceipt, ResourceProfile
 from engine import EngineCapabilities, Step
-from auditor.numeric import LEGACY, RELATIVE_L2, UNION, compare, union_distance
+from auditor.numeric import LEGACY, RELATIVE_L2, UNION, compare, legacy_distance, peak_relative, union_distance
 from auditor.policy import NUMERIC_EXECUTION_PROFILES, grade, load_job_policy, validate_policy
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -199,6 +199,112 @@ class NumericAuditTest(unittest.TestCase):
         job['producer_profile'] = profile.SerializeToString().hex()
         with self.assertRaises(Exception):
             load_job_policy(job, receipt)
+
+
+class ScoreKindRepresentationTest(unittest.TestCase):
+    """logprobs (dynamic-range segmented executors) vs raw-logits references.
+
+    The production fixture is order ddcfb1f7 step 9: the segmented executor
+    committed logprobs, the CPU replay reference is raw-logits, and the old
+    comparator failed closed with 'score kind' before any numeric comparison.
+    """
+    FIXTURE = json.loads((Path(__file__).parent/'auditor'/'testdata'/
+                          'spot-step9-ddcfb1f7.json').read_text())
+
+    def step(self, side):
+        raw = self.FIXTURE[side]
+        return Step(raw['token'], '', [tuple(v) for v in raw['topk']],
+                    {k: bytes.fromhex(v) for k, v in raw['activations'].items()},
+                    raw['score_kind'])
+
+    def test_production_step9_logprobs_unify_with_raw_reference(self):
+        actual, reference = self.step('executor'), self.step('reference')
+        self.assertEqual(actual.token, self.FIXTURE['claimed_token'])
+        self.assertEqual(reference.token, actual.token)
+        distance, details = compare([actual], [reference], RELATIVE_L2)
+        self.assertEqual(details['reason'], 'numerical comparison')
+        self.assertTrue(math.isfinite(distance))
+        # Measured 0.0197 (bf16 cross-device noise; activations dominate),
+        # far below the chain spot epsilon recorded in the fixture.
+        self.assertLess(distance, 0.1)
+        self.assertLess(distance, self.FIXTURE['epsilon'])
+
+    def test_pure_representation_shift_measures_zero(self):
+        actual = self.step('executor')
+        shifted = Step(actual.token, '', [(t, v + 27.6883) for t, v in actual.topk],
+                       dict(actual.activations), 'raw-logits')
+        distance, details = compare([actual], [shifted], RELATIVE_L2)
+        self.assertEqual(details['reason'], 'numerical comparison')
+        self.assertLess(distance, 1e-9)
+
+    def test_anchor_scales_are_not_washed_out(self):
+        # Rehearsal anchors in the comparator's old both-raw form: bf16
+        # cross-device noise (0.0193) must stay accept-scale after
+        # normalization; int8-scale divergence (0.674, 1.332) must stay
+        # escalation-scale, not collapse toward zero.
+        values = [v for _, v in self.step('executor').topk]
+        base = [v + (26.875 - values[0]) for v in values]
+        pattern = [0.3, -0.7, 1.0, -0.2, 0.5, -1.0, 0.8, -0.4,
+                   0.1, -0.9, 0.6, -0.5, 0.9, -0.1, 0.4, -0.8]
+
+        def scaled(target):
+            def old(s):
+                return legacy_distance(base, [b + s * p for b, p in zip(base, pattern)])
+            lo, hi = 0.0, 1.0
+            while old(hi) < target:
+                hi *= 2
+            for _ in range(60):
+                mid = (lo + hi) / 2
+                if old(mid) < target:
+                    lo = mid
+                else:
+                    hi = mid
+            s = (lo + hi) / 2
+            return [b + s * p for b, p in zip(base, pattern)]
+
+        for target, low, high in ((0.0193, 0.03, 0.3), (0.674, 0.5, 1.5)):
+            perturbed = scaled(target)
+            self.assertAlmostEqual(legacy_distance(base, perturbed), target, delta=0.01)
+            new = legacy_distance(peak_relative(values), peak_relative(perturbed))
+            self.assertTrue(low < new < high, (target, new))
+        shrink = 1.332 / 2.332
+        perturbed = [b * (1 - shrink) for b in base]
+        self.assertAlmostEqual(legacy_distance(base, perturbed), 1.332, delta=0.01)
+        self.assertAlmostEqual(
+            legacy_distance(peak_relative(values), peak_relative(perturbed)),
+            1.332, delta=0.01)
+
+    def test_unknown_and_mixed_kinds_stay_fail_closed(self):
+        tensor = struct.pack('<ff', 1, 2)
+        good = Step(1, '', [(1, 2.0), (2, 1.0)], {'0': tensor})
+        for kind in ('fp16-scores', 'logits', ''):
+            bad = Step(1, '', [(1, 2.0), (2, 1.0)], {'0': tensor}, kind)
+            distance, details = compare([bad], [good], RELATIVE_L2)
+            self.assertTrue(math.isinf(distance))
+            self.assertEqual(details['reason'], 'score kind')
+        probs = Step(1, '', [(1, -0.5), (2, -1.5)], {'0': tensor}, 'logprobs')
+        distance, details = compare([probs], [good], UNION)
+        self.assertTrue(math.isinf(distance))
+        self.assertEqual(details['reason'], 'score kind')
+        twin = Step(1, '', [(1, -0.5), (2, -1.5)], {'0': tensor}, 'logprobs')
+        self.assertEqual(compare([probs], [twin], RELATIVE_L2)[0], 0)
+
+    def test_normalized_branch_pairs_by_token_and_checks_layers(self):
+        tensor = struct.pack('<ff', 1, 2)
+        probs = Step(1, '', [(1, -0.5), (2, -1.5)], {'0': tensor}, 'logprobs')
+        # The other runtime's tie order still pairs by token, not position.
+        raw_reordered = Step(1, '', [(2, 11.0), (1, 12.0)], {'0': tensor})
+        distance, details = compare([probs], [raw_reordered], RELATIVE_L2)
+        self.assertEqual(details['reason'], 'numerical comparison')
+        self.assertLess(distance, 0.2)
+        raw_other = Step(1, '', [(1, 12.0), (3, 11.0)], {'0': tensor})
+        distance, details = compare([probs], [raw_other], RELATIVE_L2)
+        self.assertTrue(math.isinf(distance))
+        self.assertEqual(details['reason'], 'topk/layer mismatch')
+        raw_extra = Step(1, '', [(1, 12.0), (2, 11.0)], {'0': tensor, '7': tensor})
+        distance, details = compare([probs], [raw_extra], RELATIVE_L2)
+        self.assertTrue(math.isinf(distance))
+        self.assertEqual(details['reason'], 'layer mismatch')
 
 
 if __name__ == '__main__':

@@ -1,5 +1,9 @@
 """Versioned numerical comparisons; sparse missing logits remain censored.
 
+Steps committed as logprobs are unified with raw-logits references via exact
+peak-relative gaps (the representations differ only by a logsumexp constant)
+before the relative-L2 comparison; unknown score kinds fail closed.
+
 The union metric compares singleton values with (-inf, kth_score] intervals.
 Its numerator is the minimum possible L2 gap between those intervals. The scale
 uses observed scores with kth-score censoring, not invented measured logits.
@@ -12,6 +16,24 @@ LEGACY = 'legacy-ranked-v1'
 UNION = 'union-interval-v1'
 RANK_PROB = 'rank-probability-v1'
 RELATIVE_L2 = 'relative-l2-v1'
+
+# The two committed score representations. raw-logits are LM-head outputs;
+# logprobs are the same distribution after log-softmax, i.e. they differ only
+# by the per-step logsumexp constant. Anything else stays unrecognized and
+# comparisons fail closed.
+SCORE_KINDS = ('raw-logits', 'logprobs')
+
+
+def peak_relative(values):
+    """Peak-relative scores: each value minus the list maximum.
+
+    Log-softmax gaps are representation-free: for raw logits l and their
+    logprobs l - logsumexp(l), v - max(v) is identical. Expressing both sides
+    this way therefore unifies the representations exactly, with no estimated
+    constant, and the relative-L2 distance is measured on the gaps.
+    """
+    peak = max(values)
+    return [v - peak for v in values]
 
 
 def topk_statistics(left, right):
@@ -118,19 +140,38 @@ def compare(actual, expected, metric=LEGACY):
         return math.inf, {'reason': reason, 'position_values': position_values + [math.inf], 'failure_index': index}
     for index, (a, b) in enumerate(zip(actual, expected)):
         position_activation = 0.0
-        if a.score_kind != 'raw-logits' or b.score_kind != 'raw-logits':
+        if a.score_kind not in SCORE_KINDS or b.score_kind not in SCORE_KINDS:
             return failure('score kind', index)
         try:
-            score_map(a.topk); score_map(b.topk)
+            a_scores = score_map(a.topk); b_scores = score_map(b.topk)
         except (ValueError, TypeError):
             return failure('invalid logit evidence', index)
-        if set(a.activations) != set(b.activations):
+        # Every layer the reference measured must be present in the committed
+        # evidence; extra committed layers (stage boundaries a full-model
+        # reference does not hook) are bound by the commitment, not compared.
+        if not set(b.activations) <= set(a.activations):
             return failure('layer mismatch', index)
+        # A logprobs side and a raw-logits side are the same computation in
+        # two representations; unify them exactly via peak-relative gaps.
+        # Two raw-logits sides keep the signed ordered comparison unchanged.
+        normalized = a.score_kind == 'logprobs' or b.score_kind == 'logprobs'
         if metric in (LEGACY, RELATIVE_L2):
-            if [t[0] for t in a.topk] != [t[0] for t in b.topk]:
-                return failure('topk/layer mismatch', index)
-            logits = legacy_distance([v for _, v in a.topk], [v for _, v in b.topk])
+            if normalized:
+                if set(a_scores) != set(b_scores):
+                    return failure('topk/layer mismatch', index)
+                tokens = [t for t, _ in b.topk]
+                logits = legacy_distance(
+                    peak_relative([a_scores[t] for t in tokens]),
+                    peak_relative([b_scores[t] for t in tokens]))
+            else:
+                if [t[0] for t in a.topk] != [t[0] for t in b.topk]:
+                    return failure('topk/layer mismatch', index)
+                logits = legacy_distance([v for _, v in a.topk], [v for _, v in b.topk])
         elif metric in (UNION, RANK_PROB):
+            # Interval/rank statistics are representation-bound; no signed
+            # calibration covers mixed representations, so stay fail-closed.
+            if a.score_kind != b.score_kind:
+                return failure('score kind', index)
             logits, absent, total = union_distance(a.topk, b.topk)
             missing += absent
             union_count += total
@@ -143,8 +184,8 @@ def compare(actual, expected, metric=LEGACY):
         else:
             raise ValueError('unknown numeric metric')
         logit_max = max(logit_max, logits)
-        for layer, raw in a.activations.items():
-            other = b.activations[layer]
+        for layer, other in b.activations.items():
+            raw = a.activations[layer]
             if metric == LEGACY and raw == other:
                 continue  # preserves old exact-byte synthetic mock behavior
             if len(raw) != len(other) or not raw or len(raw) % 4:

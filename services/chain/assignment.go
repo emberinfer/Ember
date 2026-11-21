@@ -182,6 +182,8 @@ func RecomputeAssignment(r AssignmentRecord) (string, error) {
 	return eligible[binary.BigEndian.Uint64(seed[:8])%uint64(len(eligible))], nil
 }
 
+var errNoAuditor = errors.New("no independent auditor available")
+
 func (s *State) drawAuditor(h *Hold, ids []string, at ...int64) (string, []byte, error) {
 	seed, blocks, err := s.assignmentSeed(h)
 	if err != nil {
@@ -339,6 +341,11 @@ func (s *State) drawAuditor(h *Hold, ids []string, at ...int64) (string, []byte,
 	}
 	auditor, err := RecomputeAssignment(r)
 	if err != nil {
+		// Only an empty hard-eligible pool is a NoAuditor fate. Cooldown,
+		// entropy, stage validation and work reservation failures still fail.
+		if s.Version >= 15 && n == 0 {
+			return "", nil, errNoAuditor
+		}
 		return "", nil, err
 	}
 	if err := s.reserveAuditWork(h, executors, auditor, at...); err != nil {

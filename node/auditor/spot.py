@@ -20,7 +20,7 @@ from .spot_replay import CPU_REFERENCE, compare_output, replay_step
 SPOT_OPEN_ROUND_BLOCKS = 120
 SPOT_FIRST_VERDICT_BLOCKS = 60
 SPOT_SUBSTITUTE_BLOCKS = 120
-SPOT_ESCALATION_BLOCKS = 350
+SPOT_ESCALATION_BLOCKS = 600
 
 
 def canonical(value):
@@ -236,11 +236,11 @@ def audit(context, spool, engine, key, evidence_dir, *, mode='normal', height=No
     if context.get('kind') == 'pipeline':
         from .spot_pipeline import audit_pipeline_spot
         return audit_pipeline_spot(context, spool, engine, key, evidence_dir, mode=mode, height=height)
-    steps = list(range(1, context['total_steps'] + 1)) if mode == 'escalation' else context['steps']
+    steps = list(range(1, context['total_steps'] + 1)) if mode == 'escalation' and context.get('version', 14) < 15 else context['steps']
     if not steps or steps != sorted(set(steps)):
         raise ValueError('challenge steps must be sorted and unique')
     invalid_full_count = False
-    if mode == 'escalation' and hasattr(spool, 'records'):
+    if mode == 'escalation' and context.get('version', 14) < 15 and hasattr(spool, 'records'):
         heights = {context['challenge_height'], *context.get('history_heights', [])}
         opened = {p['step_index'] for r in spool.records(context['request_id'])
                   if r['challenge_height'] in heights for p in r['packages']}
@@ -266,7 +266,7 @@ def audit(context, spool, engine, key, evidence_dir, *, mode='normal', height=No
             result['evidence'] = write_evidence(evidence_dir, opening, context, result.copy(), key)
         results.append(result)
     bad = any(r['outcome'] != 'match' for r in results)
-    kind = ('escalation_full_reject' if bad else 'escalation_full_accept') if mode == 'escalation' else ('reject_step' if bad else 'accept')
+    kind = verdict_kind(context, results, mode)
     return dict(per_step=results, verdict_distance=max(r['first_divergence_distance'] for r in results),
                 verdict_kind=kind, escalation_required=bad and mode != 'escalation')
 
@@ -305,3 +305,17 @@ def unopened_claim(context, spool, key, gateway_public, height):
                      attestation_sha256=hashlib.sha256(canonical(document)).hexdigest())
     return dict(verdict_kind='reject_unopened', challenge=context['challenge_record'],
                 attestation=document, auditor_statement=signed(statement, key, b'EMBER-SPOT-UNOPENED-V1\0'))
+
+
+def verdict_kind(context, results, mode):
+    bad = any(r['outcome'] != 'match' for r in results)
+    if mode != 'escalation':
+        return 'reject_step' if bad else 'accept'
+    if context.get('version', 14) < 15:
+        return 'escalation_full_reject' if bad else 'escalation_full_accept'
+    first = context['first_per_step']
+    initial = {r['step'] for r in first}
+    disputed = {r['step'] for r in first if r['outcome'] != 'match'}
+    wrong = {r['step'] for r in results if r['outcome'] != 'match'}
+    convicted = bool(wrong & disputed) and bool(wrong - initial)
+    return 'escalation_bounded_reject' if convicted else 'escalation_bounded_accept'

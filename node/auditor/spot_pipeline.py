@@ -74,8 +74,8 @@ def verify_pipeline_binding(package, context):
 
 
 def audit_pipeline_spot(context, spool, engine, key, evidence_dir, *, mode, height):
-    from .spot import deadlines, write_evidence
-    steps = list(range(1, context['total_steps']+1)) if mode == 'escalation' else context['steps']
+    from .spot import deadlines, write_evidence, verdict_kind
+    steps = list(range(1, context['total_steps']+1)) if mode == 'escalation' and context.get('version', 14) < 15 else context['steps']
     if not steps or steps != sorted(set(steps)):
         raise ValueError('invalid pipeline challenge set')
     packages, actual, results = {}, {}, []
@@ -94,7 +94,7 @@ def audit_pipeline_spot(context, spool, engine, key, evidence_dir, *, mode, heig
         results.append(result)
     # Bind every opening before any model execution. One prefix traversal only.
     if len(actual) == len(steps):
-        if mode == 'escalation':
+        if mode == 'escalation' and context.get('version', 14) < 15:
             full_job = getattr(spool, 'pipeline_full_job', None)
             if full_job is None:
                 raise ValueError('pipeline escalation requires signed full evidence')
@@ -125,7 +125,7 @@ def audit_pipeline_spot(context, spool, engine, key, evidence_dir, *, mode, heig
         if result['outcome'] != 'match' and key is not None:
             result['evidence'] = write_evidence(evidence_dir, packages[result['step']], context, result.copy(), key)
     bad = any(r['outcome'] != 'match' for r in results)
-    kind = ('escalation_full_reject' if bad else 'escalation_full_accept') if mode == 'escalation' else ('reject_step' if bad else 'accept')
+    kind = verdict_kind(context, results, mode)
     return dict(per_step=results, verdict_kind=kind,
                 verdict_distance=max(r['first_divergence_distance'] for r in results),
                 escalation_required=bad and mode != 'escalation')

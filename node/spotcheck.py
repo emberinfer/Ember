@@ -12,7 +12,7 @@ import uuid
 SPOT_OPEN_ROUND_BLOCKS = 120
 SPOT_FIRST_VERDICT_BLOCKS = 60
 SPOT_SUBSTITUTE_BLOCKS = 120
-SPOT_ESCALATION_BLOCKS = 350
+SPOT_ESCALATION_BLOCKS = 600
 DTYPES = {'f32': (1, 4), 'f64': (2, 8), 'bf16': (3, 2), 'f16': (4, 2), 'i64': (5, 8), 'i32': (6, 4)}
 
 
@@ -209,9 +209,6 @@ class OpeningService:
                 raise ValueError('retry must reuse first challenge set')
             if height < challenge_height:
                 raise ValueError('opening precedes challenge')
-            if escalation:
-                opened = {i for r in prior for i in r['steps']}
-                steps = [i for i in range(1, len(leaves)+1) if i not in opened]
             record_id = uuid.uuid4().hex
             directory = self.root / record_id
             directory.mkdir()

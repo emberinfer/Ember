@@ -66,11 +66,11 @@ def test_durable_pipeline_disclosure_retry_and_gap():
         service.open(manifest, [1], 2, 12, 13, **readers)
         assert records[-1]['packages'] == records[0]['packages']
         service.open(manifest, [1, 2], 1, 14, 15, escalation=True, **readers)
-        assert records[-1]['steps'] == [2]
-        assert 'next' not in records[-1]['packages'][0]
+        assert records[-1]['steps'] == [1, 2]
+        assert 'next' not in records[-1]['packages'][-1]
         # Metadata survived delivery and reload.
         saved = [json.loads(p.read_text()) for p in service.root.glob('*.json')]
-        assert sum(len(r['packages']) for r in saved) == 3
+        assert sum(len(r['packages']) for r in saved) == 4
 
 
 def test_modified_spool_records_rejected():

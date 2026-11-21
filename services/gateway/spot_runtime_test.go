@@ -113,7 +113,7 @@ func TestPipelineSpotRuntimeTransfer(t *testing.T) {
 		t.Fatal("absence signed over timely record")
 	}
 	var full bytes.Buffer
-	if err = WritePipelineSpotAudit(&full, indexed, delivery, "escalation"); err != nil {
+	if err = WritePipelineSpotAudit(&full, indexed, delivery, "escalation_full"); err != nil {
 		t.Fatal(err)
 	}
 	var fullJob map[string]json.RawMessage
@@ -125,7 +125,7 @@ func TestPipelineSpotRuntimeTransfer(t *testing.T) {
 		t.Fatal("full channel lost invocations", err)
 	}
 	var ordinary bytes.Buffer
-	if err = WritePipelineSpotAudit(&ordinary, indexed, delivery, "normal"); err != nil {
+	if err = WritePipelineSpotAudit(&ordinary, indexed, delivery, "escalation"); err != nil {
 		t.Fatal(err)
 	}
 	var ordinaryJob map[string]json.RawMessage

@@ -48,6 +48,10 @@ def context_for(agent, frame, hold, job=None, query=None):
                    history_heights=[c['challenge_height'] for c in challenge.get('history', [])],
                    verdict_deadline=challenge.get('verdict_deadline') or (challenge['deadline']
                        if challenge['round'] == 'esc' else challenge['deadline'] + SPOT_FIRST_VERDICT_BLOCKS))
+    context['version'] = query('/state').get('version', 14) if query else 14
+    if context['version'] >= 15 and challenge['round'] == 'esc':
+        first = SpotVerdict.FromString(base64.b64decode(challenge['first_verdict']))
+        context['first_per_step'] = [dict(step=p.step, outcome=p.outcome) for p in first.per_step]
     context['segment_deadlines'] = dict(open=context['open_deadline'],
         first_verdict=context['verdict_deadline'],
         substitute_blocks=SPOT_SUBSTITUTE_BLOCKS, escalation_blocks=SPOT_ESCALATION_BLOCKS)
@@ -123,7 +127,7 @@ def execute(agent, frame, job, hold, query):
                                job.get('spool_attestation') or spool.absence(context, query('/state')['height']), query('/state')['height'])
     if (mode == 'escalation') != (context['round'] == 'esc'):
         raise ValueError('mode differs from finalized escalation assignment')
-    if mode == 'escalation':
+    if mode == 'escalation' and context['version'] < 15:
         if not job.get('pipeline_full') and context.get('kind') == 'pipeline':
             raise ValueError('pipeline escalation requires the existing full package')
         if context.get('kind') == 'pipeline':

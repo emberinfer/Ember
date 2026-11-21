@@ -53,7 +53,7 @@ def setup(tmp_path, metric='legacy-ranked-v1'):
         spot_step_count=2, commitment_root=base64.b64encode(bytes.fromhex(manifest['commitment_root'])).decode(),
         spot=dict(request_id=request_id, step_set=[1], round='first', challenge_height=10, deadline=40)))
     def query(path):
-        return {'/model/model':dict(signed_profile=base64.b64encode(genesis_raw).decode()),
+        return {'/state': dict(version=14), '/model/model':dict(signed_profile=base64.b64encode(genesis_raw).decode()),
                 '/parameters':dict(audit_equality=dict(enabled=True, epsilon=1.0))}[path]
     return agent, frame, job, hold, query, packages
 

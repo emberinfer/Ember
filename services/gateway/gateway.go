@@ -599,8 +599,11 @@ func promptFor(model string, messages []message) (string, error) {
 	// inline <think> blocks, no reliable stop) instead of answering
 	// the last message (production chat bug, 2026-11-16). The
 	// fallback stays for mock/test profiles, whose tests pin its
-	// exact shape.
-	isQwen := strings.HasPrefix(model, "ember-qwen2.5-1.5b") || strings.HasPrefix(model, "ember-qwen3.6-35b")
+	// exact shape. The Qwen3.8-27B profile hit the same fallback on
+	// 2026-11-22 (fabricated "user:"/"assistant:" turns in production
+	// chat) and is covered below; its model ships the same ChatML
+	// template (<|im_start|>/<|im_end|>, ids 248045/248046).
+	isQwen := strings.HasPrefix(model, "ember-qwen2.5-1.5b") || strings.HasPrefix(model, "ember-qwen3.6-35b") || strings.HasPrefix(model, "ember-qwen3.8-27b")
 	isSmolLM := strings.HasPrefix(model, "ember-smollm2-360m")
 	if isQwen && messages[0].Role != "system" {
 		prompt.WriteString("<|im_start|>system\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>\n")

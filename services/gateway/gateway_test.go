@@ -52,7 +52,7 @@ func TestPromptForQwen36(t *testing.T) {
 		"<|im_start|>assistant\n你好！有什么我可以帮助你的吗？<|im_end|>\n" +
 		"<|im_start|>user\ngood<|im_end|>\n" +
 		"<|im_start|>assistant\n"
-	for _, model := range []string{"ember-qwen3.6-35b-a3b-fp8-unified-v1", "ember-qwen3.6-35b-a3b-fp8-v1"} {
+	for _, model := range []string{"ember-qwen3.6-35b-a3b-fp8-unified-v1", "ember-qwen3.6-35b-a3b-fp8-v1", "ember-qwen3.8-27b-heretic-uncensored-v1"} {
 		prompt, err := promptFor(model, msgs)
 		if err != nil {
 			t.Fatal(err)

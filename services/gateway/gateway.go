@@ -185,6 +185,10 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		account = "consumer"
 	}
+	if r.URL.Path == "/v1/chat/completions" && !tokenCanSign(g.Ledger, token) {
+		http.Error(w, "bearer has no signing capability", http.StatusForbidden)
+		return
+	}
 	if !g.allowIdentity(account, time.Now()) {
 		atomic.AddUint64(&g.rejected, 1)
 		w.Header().Set("Retry-After", "60")
@@ -661,4 +665,12 @@ func (g *Gateway) admit(w http.ResponseWriter) (func(), bool) {
 		http.Error(w, "inference capacity exhausted", http.StatusTooManyRequests)
 		return nil, false
 	}
+}
+
+// Backends without custody capabilities retain their existing authorization.
+func tokenCanSign(book any, token string) bool {
+	if auth, ok := book.(interface{ TokenCanSign(string) bool }); ok {
+		return auth.TokenCanSign(token)
+	}
+	return true
 }

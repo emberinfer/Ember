@@ -91,7 +91,7 @@ func main() {
 	livenessThreshold := flags.Int64("liveness-threshold", 300, "prove when remaining liveness window is below this many blocks")
 	livenessPoll := flags.Duration("liveness-poll", 10*time.Second, "auditor liveness poll interval")
 	chainAuditorKey := flags.String("chain-auditor-key", "", "mode-0600 auditor Ed25519 key")
-	chainAuthFile := flags.String("chain-auth-file", "", "mode-0600 gateway bearer-token/account-key mapping")
+	chainAuthFile := flags.String("chain-auth-file", "", "mode-0600 bearer mappings: {token,key} custody or {token,address} authorization only")
 	faucetHTTP := flags.String("faucet-http", "", "optional separate faucet-only listener; expose this instead of the gateway")
 	faucetKey := flags.String("faucet-key", "", "optional mode-0600 testnet faucet account key")
 	faucetAmount := flags.Int64("faucet-amount", 0, "valueless testnet Spark subunits per rate-limited claim (0 disables)")

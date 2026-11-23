@@ -33,20 +33,22 @@ type ChainConfig struct {
 }
 
 type chainAuthEntry struct {
-	Token string `json:"token"`
-	Key   string `json:"key"`
+	Token   string `json:"token"`
+	Key     string `json:"key"`
+	Address string `json:"address"`
 }
 
 type ChainLedger struct {
-	pricing     pricingResolver
-	mu          sync.Mutex
-	rpc         *rpchttp.HTTP
-	chainID     string
-	coordinator ed25519.PrivateKey
-	auditor     ed25519.PrivateKey
-	faucet      ed25519.PrivateKey
-	accounts    map[string]ed25519.PrivateKey
-	tokens      map[[32]byte]string
+	pricing       pricingResolver
+	mu            sync.Mutex
+	rpc           *rpchttp.HTTP
+	chainID       string
+	coordinator   ed25519.PrivateKey
+	auditor       ed25519.PrivateKey
+	faucet        ed25519.PrivateKey
+	accounts      map[string]ed25519.PrivateKey
+	tokens        map[[32]byte]string
+	signingTokens map[[32]byte]bool
 }
 
 func OpenChain(config ChainConfig) (*ChainLedger, error) {
@@ -73,7 +75,7 @@ func OpenChain(config ChainConfig) (*ChainLedger, error) {
 	if json.Unmarshal(raw, &entries) != nil || len(entries) == 0 {
 		return nil, errors.New("invalid chain auth file")
 	}
-	ledger := &ChainLedger{rpc: client, chainID: config.ChainID, coordinator: coordinator, auditor: auditor, accounts: map[string]ed25519.PrivateKey{}, tokens: map[[32]byte]string{}}
+	ledger := &ChainLedger{rpc: client, chainID: config.ChainID, coordinator: coordinator, auditor: auditor, accounts: map[string]ed25519.PrivateKey{}, tokens: map[[32]byte]string{}, signingTokens: map[[32]byte]bool{}}
 	if config.FaucetKey != "" {
 		ledger.faucet, err = readPrivateKey(config.FaucetKey)
 		if err != nil {
@@ -84,16 +86,30 @@ func OpenChain(config ChainConfig) (*ChainLedger, error) {
 		if len(entry.Token) < 32 {
 			return nil, errors.New("chain auth tokens must be at least 32 bytes")
 		}
-		key, keyErr := readPrivateKey(entry.Key)
-		if keyErr != nil {
-			return nil, keyErr
+		if (entry.Key == "") == (entry.Address == "") {
+			return nil, errors.New("chain auth entry requires exactly one of key or address")
 		}
-		id := chainapp.AccountID(key.Public().(ed25519.PublicKey))
 		digest := sha256.Sum256([]byte(entry.Token))
 		if ledger.tokens[digest] != "" {
 			return nil, errors.New("duplicate auth token")
 		}
-		ledger.tokens[digest], ledger.accounts[id] = id, key
+		id := entry.Address
+		if entry.Key != "" {
+			key, keyErr := readPrivateKey(entry.Key)
+			if keyErr != nil {
+				return nil, keyErr
+			}
+			id = chainapp.AccountID(key.Public().(ed25519.PublicKey))
+			ledger.accounts[id] = key
+			ledger.signingTokens[digest] = true
+		} else {
+			decoded, err := hex.DecodeString(id)
+			if err != nil || len(decoded) != sha256.Size {
+				return nil, errors.New("chain auth address must be 64 hex characters")
+			}
+			id = hex.EncodeToString(decoded)
+		}
+		ledger.tokens[digest] = id
 	}
 	if len(ledger.faucet) != 0 {
 		id := chainapp.AccountID(ledger.faucet.Public().(ed25519.PublicKey))
@@ -151,6 +167,12 @@ func (l *ChainLedger) TokenAccount(token string) (string, error) {
 		return "", errors.New("invalid token")
 	}
 	return id, nil
+}
+
+// TokenCanSign is a credential capability, independent of other tokens for
+// the same address. Address bindings never grant access to custody keys.
+func (l *ChainLedger) TokenCanSign(token string) bool {
+	return l.signingTokens[sha256.Sum256([]byte(token))]
 }
 func (l *ChainLedger) Balance(id string) (int64, int64, error) {
 	var account chainapp.Account

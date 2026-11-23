@@ -196,6 +196,10 @@ func (g *Gateway) serveImage(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "POST required", 405)
 			return
 		}
+		if path == "generations" && !tokenCanSign(g.Ledger, token) {
+			http.Error(w, "bearer has no signing capability", http.StatusForbidden)
+			return
+		}
 		if !g.allowIdentity(account, time.Now()) {
 			http.Error(w, "identity rate limit exceeded", 429)
 			return

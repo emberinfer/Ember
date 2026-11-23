@@ -60,7 +60,7 @@ func freezePayload(a Action) []byte {
 }
 
 func isFreeze(a Action) bool {
-	return a.Type == "freeze" || a.Type == "freeze_pipeline" || a.Type == "freeze_moe"
+	return a.Type == "freeze" || a.Type == "freeze_pipeline" || a.Type == "freeze_moe" || a.Type == "image_request"
 }
 
 // Freeze identifiers used by existing clients remain lookup aliases. The
@@ -244,6 +244,10 @@ func (s *State) drawAuditor(h *Hold, ids []string, at ...int64) (string, []byte,
 			}
 		}
 		r.EligibleMask[i] = s.livenessEligible(id) && s.ContributionAvailable(id, model, height, 1)
+		if s.Version >= 16 && h.Image != nil {
+			p := s.ActiveProfile(id, height)
+			r.EligibleMask[i] = r.EligibleMask[i] && p != nil && p.ChainId == h.ModelID && p.ShardTotalLayers == 0 && p.ExecutionProfileVer == s.Models[h.ModelID].ImageProfile.ExecutionProfile
+		}
 		if s.Version >= 8 {
 			for _, executor := range executors {
 				if id == executor {

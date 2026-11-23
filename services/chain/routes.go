@@ -52,6 +52,9 @@ func (s *State) EligibleAuditorProfile(id, producer string, p *pb.ResourceProfil
 	if p == nil || r == nil || id == producer || !s.ReviewAllowed(id, height) || !bytes.Equal(r.SchemeHash, p.SchemeHash) {
 		return false
 	}
+	if s.Version >= 16 && s.Models[p.ChainId].Kind == "text-to-image" {
+		return r.ChainId == p.ChainId && r.ExecutionProfileVer == p.ExecutionProfileVer && r.ShardTotalLayers == 0 && p.ShardTotalLayers == 0 && bytes.Equal(r.ManifestRoot, p.ManifestRoot)
+	}
 	c := r.EngineCapabilities
 	if s.Parameters.AuditEquality.Enabled {
 		if s.Version < 7 {

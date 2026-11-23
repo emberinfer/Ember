@@ -76,12 +76,12 @@
   "execution_profile": "diffusers-sd1.5-fp32-v2",
   "range_band": {
     "metric": "relative-l2-v1",
-    "base": 0,
-    "step_coef": 0,
+    "base": 4.5211e-06,
+    "step_coef": 1.23262e-05,
     "hard_multiplier": 100,
-    "precision_min": 0,
-    "precision_max": 0,
-    "calibration_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+    "precision_min": 0.043,
+    "precision_max": 0.06,
+    "calibration_hash": "e9f29b91715a7f0772475d542128f5e8b5ea3186013a961b9895ac6aa8c95221"
   },
   "arch_manifest": {
     "text_encoder": [

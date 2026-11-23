@@ -1,0 +1,189 @@
+{
+  "schema": "ember-sd15-paired-calibration-v2",
+  "model_profile_id": "ember-stable-diffusion-1.5-v1",
+  "execution_profile": "diffusers-sd1.5-fp32-v2",
+  "range_band": {
+    "metric": "relative-l2-v1",
+    "base": 4.5211e-06,
+    "step_coef": 1.23262e-05,
+    "hard_multiplier": 100,
+    "precision_min": 0.043,
+    "precision_max": 0.06,
+    "calibration_hash": "e9f29b91715a7f0772475d542128f5e8b5ea3186013a961b9895ac6aa8c95221"
+  },
+  "summary": {
+    "base": 4.5211e-06,
+    "step_coef": 1.23262e-05,
+    "raw_intercept": 4.110069901616711e-06,
+    "raw_slope": 1.120555670456998e-05,
+    "maximum_point": {
+      "case": "euler-20-2",
+      "step": 20,
+      "distance": 0.0002185717235767231,
+      "cpu_sha256": "6a9656e650cd4c4c020738b14b8a208d66cd93597ebe463353ae4ebbc48d2639",
+      "gpu_sha256": "d7ac482d67d81f7e97c2965077ec16ef10ed6d8e5f68ff5eab11efdd5b26f3e9"
+    },
+    "paired_points": 732,
+    "positive_steps": 720,
+    "fit_method": "maximum first-step intercept; minimum nonnegative (distance-intercept)/step envelope slope; independently +10%, upward rounding 1e-10",
+    "pixel_policy": {
+      "mode": "within_one",
+      "min_within_one_fraction": 0.999,
+      "max_relative_l2": 0.0012371411
+    },
+    "vae": [
+      {
+        "case": "ddim-100-0",
+        "relative_l2": 4.583714540508299e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "ddim-100-1",
+        "relative_l2": 3.6471573504335456e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "ddim-100-2",
+        "relative_l2": 5.6341057241862686e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "ddim-20-0",
+        "relative_l2": 5.6872965437981066e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "ddim-20-1",
+        "relative_l2": 4.2804825788307816e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "ddim-20-2",
+        "relative_l2": 6.629958626115293e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "euler-100-0",
+        "relative_l2": 4.848531604869194e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "euler-100-1",
+        "relative_l2": 4.0990111366528343e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "euler-100-2",
+        "relative_l2": 5.222706008173284e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "euler-20-0",
+        "relative_l2": 5.651045287906486e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "euler-20-1",
+        "relative_l2": 3.6820896179971056e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      },
+      {
+        "case": "euler-20-2",
+        "relative_l2": 6.6039955130405e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0
+      }
+    ],
+    "precision": {
+      "ddim": {
+        "1": {
+          "count": 3,
+          "min": 3.8585613391518416e-05,
+          "max": 3.971237605393371e-05,
+          "inside_new_region": 0
+        },
+        "20": {
+          "count": 60,
+          "min": 7.468447501645044e-05,
+          "max": 0.0012430930865316417,
+          "inside_new_region": 0
+        },
+        "observed_feature_region": null,
+        "reverse_F16_on_F32_20": {
+          "min": 7.38038161258596e-05,
+          "max": 0.0012171616065004157
+        }
+      },
+      "euler": {
+        "1": {
+          "count": 3,
+          "min": 0.04825613132709468,
+          "max": 0.05686495403659337,
+          "inside_new_region": 3
+        },
+        "20": {
+          "count": 60,
+          "min": 0.00016953800231693923,
+          "max": 0.0011815389741601416,
+          "inside_new_region": 0
+        },
+        "observed_feature_region": [
+          0.043,
+          0.06
+        ],
+        "reverse_F16_on_F32_20": {
+          "min": 0.0001746002724200258,
+          "max": 0.0011962269341766868
+        }
+      }
+    },
+    "precision_interval": [
+      0.043,
+      0.06
+    ],
+    "calibration_hash": "e9f29b91715a7f0772475d542128f5e8b5ea3186013a961b9895ac6aa8c95221",
+    "ledger_random_replay": {
+      "sampler": "euler",
+      "prompt_index": 2,
+      "selection": "OS CSPRNG uniform among six 20-step cases"
+    },
+    "ledger_repeat_bitwise_equal": true
+  },
+  "matrix": {
+    "seed": 42,
+    "samplers": [
+      "ddim",
+      "euler"
+    ],
+    "steps": [
+      20,
+      100
+    ],
+    "width": 512,
+    "height": 512,
+    "guidance": 7500,
+    "negative_prompt": ""
+  },
+  "safety": {
+    "allocator_budget_MiB": 6800,
+    "resident_limit_MiB": 7500,
+    "vllm_delta_tripwire_MiB": 64,
+    "minimum_free_before_deployment_MiB": 7168
+  },
+  "prompts": [
+    "a photograph of an astronaut riding a horse on Mars, detailed",
+    "a red cube on a blue table next to a green plant, studio lighting",
+    "portrait of an old fisherman, weathered face, golden hour light, photorealistic"
+  ]
+}

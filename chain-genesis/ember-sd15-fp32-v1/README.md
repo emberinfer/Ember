@@ -1,3 +1,5 @@
+> **REVOKED / 作废（2026-11-23，T2H）**：本目录仅保留历史证据，执行型档 v1 禁止新发布。错误数值语义及旧标定带不可用于 v2。替代材料位于 `../ember-sd15-fp32-v2/`，详见 `REVOKED.md`。
+
 # SD1.5 fp32 paired calibration
 
 The image profile and pixel policy bind the T4 GPU/CPU measurements. All raw

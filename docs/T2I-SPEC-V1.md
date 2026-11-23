@@ -1,9 +1,9 @@
-# T2I v1：初始锚、prompt、latent 与确定性采样器
+# T2I 数值规范（T2H 勘误，执行型档 v2）：初始锚、prompt、latent 与确定性采样器
 
-状态：**T0 冻结规范**，2026-11-23。规范 ID `philox-gauss-v1`；首发型档
-`ember-stable-diffusion-1.5-v1`，执行型档 `diffusers-sd1.5-fp32-v1`。
+状态：**T0 规范，经 T2H 批准勘误**，2026-11-23。规范 ID `philox-gauss-v1`；首发型档
+`ember-stable-diffusion-1.5-v1`，执行型档 `diffusers-sd1.5-fp32-v2`。
 后续工作包必须遵守本文件；任何字节、舍入、常数、序列或公式的变化必须另起规范版本，
-不得通过重算本版向量来接受变化。本文只定义参考语义，不激活协议、不改链上状态。
+本次督导批准的 v2 勘误及 init 向量重生例外，见末节。本文只定义参考语义，不激活协议、不改链上状态。
 
 设计依据：施工图 DESIGN-t2i §1.3、§2.1–2.3、§3.2–3.3；实验报告仅证明
 同精度跨硬件单步复算可行。实验的 torch RNG 哈希不属于本版向量；实验测得的
@@ -35,7 +35,7 @@ RangeBand 也不能替代新型档的发布标定。SD1.5 / fp32 / 无内容审�
 | TWO_PI | `40c90fdb` | 2π |
 | HALF_PI | `3fc90fdb` | π/2 |
 | LN2 | `3f317218` | ln 2 |
-| INIT_SCALE | `3e3a8588` | F(0.18215) |
+| INIT_SCALE | `3f800000` | F(1.0) |
 
 ## 2. `philox-gauss-v1`
 
@@ -109,10 +109,10 @@ GPU 内建函数的别名。钉死基本运算顺序仍不足以钉死库函数�
 行优先 NCHW，最右 w 连续。`i=(((n*C+c)*h+y)*w+x)`，n 恒为 0。
 按 i 从零升序生成 fp32 z；初始 latent 元素是 `init_i=z ⊗ INIT_SCALE`。
 **先在 fp32 完成缩放，然后且仅然后按执行型档 dtype 转换**；当前 f32 是恒等转换。
-禁止先将 z 转低精度、禁止 torch/numpy RNG 替代、禁止再乘 scheduler 的
-`init_noise_sigma`。型档在本版钉死 `init_noise_sigma=1`；这不是 diffusers Euler
-的默认管线初始化。SD1.5 的 0.18215 是本规范明确要求的 init 缩放，不能因为某库
-通常只在 VAE 边界使用它而删除、移位或重复应用。
+禁止先将 z 转低精度、禁止 torch/numpy RNG 替代。链第 0 快照是标准正态
+init（×1.0）。DDIM 直接使用；Euler 在首个 transition 内、UNet 前将其乘
+`init_noise_sigma=σ_0`，首步审计必须执行同样准备过程。不得将 sigma 缩放后的
+张量冒充链第 0 叶；后续 transition 不再重复乘 sigma。0.18215 仅为 VAE 边界常数。
 
 ## 3. Prompt 编码
 
@@ -158,45 +158,34 @@ GPU 内建函数的别名。钉死基本运算顺序仍不足以钉死库函数�
 `raw_sha256` 仅用于诊断，不得误作承诺。张量描述符沿用
 `f32|1,4,h,w|raw-le-v1`；shape 不省 batch。
 
-## 5. SD1.5 scheduler 静态配置与整数序列
+## 5. SD1.5 scheduler 配置与时间步（v2）
 
-以下配置对 DDIM 与 Euler 共同生效，覆盖任何库默认：
+唯一配置真源为固定 SD1.5 资产 `scheduler/scheduler_config.json`。
+逐方法参考 diffusers 0.32.2，源码证据在外部 `t2g-logs/`：
+`DDIMScheduler-__init__.py`、`DDIMScheduler-set_timesteps.py`、
+`DDIMScheduler-step.py` 及 Euler 对应文件和 `scale_model_input` 文件。
 
-| 字段 | 冻结值 |
-|---|---|
-| num_train_timesteps | 1000，下标 0..999 |
-| beta_schedule | `linear`，直接对 β 线性插值；不是 `scaled_linear`、不是 cosine |
-| beta_start / beta_end | fp32 位模式 `3a5ed289` / `3c449ba6`（F(0.00085) / F(0.012)） |
-| trained_betas | 无外部数组覆盖 |
-| prediction_type | `epsilon` |
-| rescale_betas_zero_snr | false |
-| steps_offset | 0 |
-| timestep_spacing | 本节整数端点规则，不调用 linspace/round 的库默认 |
-| clip_sample / thresholding / guidance_rescale | false / false / 0 |
-| DDIM eta / set_alpha_to_one / use_clipped_model_output | 0 / true / false |
-| Euler interpolation / churn / noise injection | 无插值 / 0 / 无 |
-| init_noise_sigma | 1；init 已由 §2.4 构造 |
-| model dtype / scheduler state dtype | f32 / f32 |
-
-训练 β 与累积 α 也按 §1 的操作边界产生，b0=F(0.00085)、b1=F(0.012)：
-对整数 j=0..999，`β_j=b0 ⊕ ((b1 ⊖ b0) ⊗ (F(j) ⊘ F(999)))`；
-`α_j=1 ⊖ β_j`；`A_0=α_0`；j=1..999 依次 `A_j=A_{j-1} ⊗ α_j`。
-不得先用 float64 算完整数组再一次转 f32，或将累积乘法换成 log/exp。
-这里的 linear β 是设计稿要求，不沿用某 SD1.5 仓库可能附带的 scaled_linear 配置。
-
-请求步数 N 必须是整数 1..100。推理步号 i=0..N-1：
-
-- N=1 时 `t_0=999`。
-- N≥2 时 `t_i=((N-1-i)*999) div (N-1)`，`div` 是非负整数向下整除。
-- 例：N=2 → `[999,0]`；N=3 → `[999,499,0]`；N=20 →
-  `[999,946,893,841,788,736,683,630,578,525,473,420,368,315,262,210,157,105,52,0]`。
-- DDIM 直接使用当前 `A_{t_i}` 和下一步 `A_{t_{i+1}}`，末步的下一 A=1。
-  不能用某库的固定 step_ratio 推导一个并不在列表里的前一步。
-- Euler 的 `σ_i=sqrt32((1 ⊖ A_{t_i}) ⊘ A_{t_i})`，末尾追加 `σ_N=+0`。
-  不用 log-linear/karras/exponential/beta σ、不做 σ 插值、不从 σ 反推 timestep。
-  UNet 收到的 timestep 是精确整数 t_i（可无损转换 fp32）。
+- 训练步 1000；beta_start=0.00085、beta_end=0.012；`scaled_linear`：
+  `β = torch.linspace(sqrt(0.00085),sqrt(0.012),1000,dtype=float32)**2`。
+  `A=torch.cumprod(1-β, dim=0)`，fp32；不采用旧逐项标量近似构造。
+- prediction_type=epsilon；clip_sample=false；rescale_betas_zero_snr=false。
+- DDIM leading：`r=1000//N`，`t_i=(N-1-i)*r+1`，steps_offset=1。
+  20步为 `[951,901,…,51,1]`；N=1 为 `[1]`。
+  `a=A[t_i]`，`b=A[t_i-r]` 若下标非负，否则 `b=A[0]`。
+  set_alpha_to_one=false、eta=0、use_clipped_model_output=false。
+- Euler：`t=np.linspace(0,999,N,dtype=float32)[::-1]`，保留浮点时间步；
+  N=1 为 `[0.0]`。训练 sigma 为 `sqrt((1-A)/A)`，通过
+  `np.interp(t,arange(1000),training_sigma).astype(float32)` 插值，末尾追加0。
+  init_noise_sigma 为首 sigma（该序列最大值），20步为14.614646911621094。
+  interpolation_type=linear；final_sigmas_type=zero；churn=0；不用 Karras、
+  ancestral、exponential 或额外噪声。UNet 接收该浮点 t。
+- scheduler 状态、模型与更新均 fp32；生成与审计共用 Formula 实现。
+  beta/alpha 的 torch CPU 数组构造、Euler numpy 插值舍入沿参考源码；
+  Philox 的有限级数规则仅用于初始标准正态样本，不替代 scheduler 原生平方根。
 
 ## 6. CFG、DDIM 与 Euler 逐步更新
+
+本节 `sqrt_fp32` 表示参考 scheduler 系数的 fp32 平方根，不使用 §2 的有限级数近似。
 
 每步依次执行 uncond 和 cond **两次独立 UNet 前向**，不拼接成批前向；使用相同
 当前 model_input、t_i 和对应 prompt embedding。记输出为 ε_u、ε_c。
@@ -207,11 +196,11 @@ GPU 内建函数的别名。钉死基本运算顺序仍不足以钉死库函数�
 ### 6.1 DDIM，eta=0
 
 当前输入 x_i 就是 model_input（不额外缩放）。设 `a=A_{t_i}`、
-`b=A_{t_{i+1}}`，末步 b=1；所有下列操作对元素独立，标量共享：
+`b=A_{t_i-1000//N}`，负下标时 b=A_0；所有下列操作对元素独立，标量共享：
 
-1. `sa=sqrt32(a)`；`sna=sqrt32(1 ⊖ a)`；
+1. `sa=sqrt_fp32(a)`；`sna=sqrt_fp32(1 ⊖ a)`；
    `pred_x0=(x_i ⊖ (sna ⊗ ε)) ⊘ sa`。
-2. `sb=sqrt32(b)`；`snb=sqrt32(1 ⊖ b)`。
+2. `sb=sqrt_fp32(b)`；`snb=sqrt_fp32(1 ⊖ b)`。
 3. `x_{i+1}=(sb ⊗ pred_x0) ⊕ (snb ⊗ ε)`。
 
 等价实数公式：`x̂_0=(x_i−√(1−a)ε)/√a`；
@@ -221,7 +210,7 @@ GPU 内建函数的别名。钉死基本运算顺序仍不足以钉死库函数�
 ### 6.2 Euler，确定性 ODE
 
 记 s=σ_i>0、s_next=σ_{i+1}。先算
-`denom=sqrt32((s ⊗ s) ⊕ 1)`；每元素 `model_input=x_i ⊘ denom`。
+`denom=sqrt_fp32((s ⊗ s) ⊕ 1)`；每元素 `model_input=x_i ⊘ denom`。
 用该 model_input 做两次 UNet、CFG，随后用**未归一化的 x_i**更新：
 
 1. `pred_x0=x_i ⊖ (s ⊗ ε)`。
@@ -231,7 +220,7 @@ GPU 内建函数的别名。钉死基本运算顺序仍不足以钉死库函数�
 等价实数公式：`x̂_0=x_i−sε`、`d=(x_i−x̂_0)/s`、
 `x_{i+1}=x_i+d(s_next−s)`。不能因为实数代数上 d=ε 就省去第 1、2 步；
 fp32 舍入不同。不执行 ancestral 分解，不使用历史状态，不用 s_hat/churn。
-初始化之后不再乘 σ_max；本节更新严格接收 §2.4 的 init。
+首个 transition 先按 §2.4 将标准正态 init 乘 σ_0；随后仅接收上一步输出。
 
 两采样器都保存 `x_0=init` 及每步更新后的 `x_1..x_N` 共 N+1 个 latent 快照。
 本包不定义叶结构或实现链状态机。
@@ -283,3 +272,22 @@ init latent SHA-256。首算工具 `testdata/vectors/generate_t2i.py` 使用 Pyt
 - 运行 Go 跨语言测试可设 `EMBER_AUDIT_TEST_PYTHON` 指向 Python 解释器；RNG helper
   只需标准库。仓库其他跨语言测试还要求该解释器装有既有测试依赖。
 - 首发仅 f32。本包不引入网络请求、模型下载、生产服务调用、链交易、发布或激活。
+
+
+## 勘误与执行型档升版（2026-11-23 UTC，T2H）
+
+T2G 证实以下五处冻结错误。督导裁定修正规范并升版；原 v1 不再接受新发布。
+
+| 原错误 | v2 正确语义 |
+|---|---|
+| Gaussian init ×0.18215 | ×1.0；Philox 原始样本算法不变 |
+| linear beta | float32 sqrt 端点 linspace 平方，scaled_linear |
+| DDIM floor 端点、offset=0 | leading ratio，offset=1；20步951至1 |
+| DDIM 下一列表 alpha、末端1 | t−1000//N 索引，末端A[0] |
+| Euler 整数时间步、无插值及无初始sigma缩放 | 浮点linspace、训练sigma插值、首transition先乘首sigma、末尾0 |
+
+执行型档由 `diffusers-sd1.5-fp32-v1` 升为 `diffusers-sd1.5-fp32-v2`；
+模型型档 ID `ember-stable-diffusion-1.5-v1` 不变。旧型档目录保留作废记录；
+旧 Base/StepCoef、VAE 数值及精度特征区不得沿用为 v2 标定证据。
+两采样器链第0叶仍是可独立重建的标准正态哨兵；Euler 首transition包含准备缩放，
+因此生成/审计的入证边界一致。本勘误替代正文中对应旧数值冻结要求。

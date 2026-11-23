@@ -334,7 +334,7 @@ func imageLayerFLOPs(layers []ImageLayer, r ImageResolution) (uint64, error) {
 	return sum.Uint64(), nil
 }
 func ValidateImageProfile(p *ImageProfile, shapes map[string][]TensorShape) error {
-	if p == nil || p.RNGSpecID != "philox-gauss-v1" || p.ExecutionProfile != "diffusers-sd1.5-fp32-v1" || p.LatentSpec.Channels != 4 || p.LatentSpec.VAEScaleFactor != 8 || p.LatentSpec.Distribution != "standard-normal" || p.MaxSteps < 1 || p.MaxSteps > 100 || p.GuidanceRange[0] < 1000 || p.GuidanceRange[1] > 30000 || p.GuidanceRange[0] > p.GuidanceRange[1] || p.RangeBand.Validate() != nil {
+	if p == nil || p.RNGSpecID != "philox-gauss-v1" || p.ExecutionProfile != "diffusers-sd1.5-fp32-v2" || p.LatentSpec.Channels != 4 || p.LatentSpec.VAEScaleFactor != 8 || p.LatentSpec.Distribution != "standard-normal" || p.MaxSteps < 1 || p.MaxSteps > 100 || p.GuidanceRange[0] < 1000 || p.GuidanceRange[1] > 30000 || p.GuidanceRange[0] > p.GuidanceRange[1] || p.RangeBand.Validate() != nil {
 		return errors.New("invalid image profile")
 	}
 	if len(p.AllowedResolutions) == 0 || len(p.AllowedResolutions) != len(p.PriceTable) || len(p.ArchManifest) != 3 {

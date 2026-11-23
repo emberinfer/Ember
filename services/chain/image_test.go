@@ -16,7 +16,7 @@ import (
 
 func imageProfileFixture(t *testing.T) (*core.ImageProfile, map[string][]byte, map[string]int64) {
 	t.Helper()
-	p := &core.ImageProfile{ExecutionProfile: "diffusers-sd1.5-fp32-v1", RNGSpecID: "philox-gauss-v1", MaxSteps: 100, GuidanceRange: [2]uint32{1000, 30000}, AllowedResolutions: []core.ImageResolution{{Width: 512, Height: 512}}, AllowedSamplers: []string{"ddim", "euler"}, RangeBand: core.ImageStepBand{Metric: "relative-l2-v1", Base: 3e-6, StepCoef: 1e-6, HardMultiplier: 100, PrecisionMin: .005, PrecisionMax: .06, CalibrationHash: fmt.Sprintf("%064d", 1)}, ArchManifest: map[string][]core.ImageLayer{}}
+	p := &core.ImageProfile{ExecutionProfile: "diffusers-sd1.5-fp32-v2", RNGSpecID: "philox-gauss-v1", MaxSteps: 100, GuidanceRange: [2]uint32{1000, 30000}, AllowedResolutions: []core.ImageResolution{{Width: 512, Height: 512}}, AllowedSamplers: []string{"ddim", "euler"}, RangeBand: core.ImageStepBand{Metric: "relative-l2-v1", Base: 3e-6, StepCoef: 1e-6, HardMultiplier: 100, PrecisionMin: .005, PrecisionMax: .06, CalibrationHash: fmt.Sprintf("%064d", 1)}, ArchManifest: map[string][]core.ImageLayer{}}
 	p.LatentSpec.Channels = 4
 	p.LatentSpec.VAEScaleFactor = 8
 	p.LatentSpec.Distribution = "standard-normal"
@@ -77,12 +77,14 @@ func imagePublication(t *testing.T, who actor) Action {
 	return resignPublication(t, who, a, m)
 }
 func TestImagePublicationV16(t *testing.T) {
-	for _, tc := range []string{"good", "buffer", "buffer-short", "plus5", "minus5", "channel", "params", "scale", "header", "v15"} {
+	for _, tc := range []string{"good", "buffer", "buffer-short", "plus5", "minus5", "channel", "params", "scale", "header", "v15", "execution-v1"} {
 		t.Run(tc, func(t *testing.T) {
 			s, a := testState(t)
 			s.Version = 16
 			action := imagePublication(t, a["payer"])
 			switch tc {
+			case "execution-v1":
+				action.ImageProfile.ExecutionProfile = "diffusers-sd1.5-fp32-v1"
 			case "buffer", "buffer-short":
 				name := "text_encoder/model.safetensors"
 				body := []byte(`{"text_model.embeddings.position_ids":{"dtype":"I64","shape":[1,77],"data_offsets":[0,616]},"emb.weight":{"dtype":"F32","shape":[64,64],"data_offsets":[616,17000]}}`)

@@ -533,3 +533,10 @@ func (l *ChainLedger) ExecExitedNodes() (map[string]bool, error) {
 	}
 	return out, nil
 }
+
+// ImageTransport exposes the existing daemon transport to its optional image
+// host. All signed writes must hold the returned lock, shared with text writes.
+// Credentials remain daemon-local and must never be sent over HTTP.
+func (l *ChainLedger) ImageTransport() (*rpchttp.HTTP, string, ed25519.PrivateKey, map[string]ed25519.PrivateKey, *sync.Mutex) {
+	return l.rpc, l.chainID, l.coordinator, l.accounts, &l.mu
+}

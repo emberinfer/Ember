@@ -79,6 +79,9 @@ func main() {
 		log.Fatal("mode: all|gateway|scheduler|tracker|ledger|verifier|cert|token")
 	}
 	flags := flag.NewFlagSet("emberd", flag.ExitOnError)
+	imageEnabled := flags.Bool("image-enabled", false, "enable chain-backed image HTTP service")
+	imageSpool := flags.String("image-spool-dir", "", "persistent image spool (defaults to <db>.image-spool)")
+	imageKey := flags.String("image-key", "", "persistent mode-0600 image gateway Ed25519 key (defaults to <db>.image.key)")
 	database := flags.String("db", "ember.db", "SQLite ledger file")
 	ledgerBackend := flags.String("ledger-backend", "sqlite", "ledger backend: sqlite or chain")
 	chainRPC := flags.String("chain-rpc", "", "CometBFT RPC URL for chain ledger")
@@ -290,6 +293,9 @@ func main() {
 	api := &gateway.Gateway{SpeedStats: speedStats, Ledger: book, Tunnel: relay, Profile: "v1", Manifest: make([]byte, 32), Price: 1, Dispute: 0, DemoBootstrap: *demo,
 		Admission: make(chan struct{}, *maxConcurrent), RequestTimeout: *requestTimeout, MaxBodyBytes: 1 << 20,
 		ContextLimit: *contextLimit, RateLimit: *rateLimit, RateWindow: time.Minute}
+	if err := wireImages(api, chainBook, *imageEnabled, *database, *imageSpool, *imageKey); err != nil {
+		log.Fatal(err)
+	}
 	if chainBook != nil {
 		api.ChainExecExited = chainBook.ExecExitedNodes
 	}
@@ -1194,6 +1200,7 @@ func main() {
 	var faucetServer *http.Server
 	errCh := make(chan error, 2)
 	mux := http.NewServeMux()
+	mountImages(mux, api)
 	mux.Handle("/v1/spot/", spotQuery(chainBook, spotStore))
 	mux.Handle("/v1/chat/completions", api)
 	mux.Handle("/v1/quote", api)
@@ -1280,6 +1287,17 @@ func main() {
 	log.Printf("emberd %s http=%s grpc=%s", mode, *httpAddr, *grpcAddr)
 	httpServer := &http.Server{Addr: *httpAddr, Handler: mux, ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout: 15 * time.Second, WriteTimeout: *requestTimeout + 30*time.Second, IdleTimeout: 60 * time.Second}
+	if api.Image != nil {
+		imageCtx, cancelImages := context.WithCancel(context.Background())
+		defer cancelImages()
+		ready := make(chan struct{})
+		go func() { errCh <- watchImages(imageCtx, api, func() { close(ready) }) }()
+		select {
+		case <-ready:
+		case err := <-errCh:
+			log.Fatal(err)
+		}
+	}
 	go func() {
 		if *httpCert != "" {
 			errCh <- httpServer.ListenAndServeTLS(*httpCert, *httpKey)

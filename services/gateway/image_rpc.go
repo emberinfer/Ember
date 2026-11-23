@@ -21,7 +21,7 @@ type ImageRPCBackend struct {
 	domain      string
 	coordinator ed25519.PrivateKey
 	accounts    map[string]ed25519.PrivateKey
-	mu          sync.Mutex
+	mu          *sync.Mutex
 }
 
 func NewImageRPCBackend(url, domain string, coordinator ed25519.PrivateKey, accounts map[string]ed25519.PrivateKey) (*ImageRPCBackend, error) {
@@ -39,8 +39,18 @@ func NewImageRPCBackend(url, domain string, coordinator ed25519.PrivateKey, acco
 		}
 		keys[id] = append(ed25519.PrivateKey(nil), key...)
 	}
-	return &ImageRPCBackend{rpc: rpc, domain: domain, coordinator: append(ed25519.PrivateKey(nil), coordinator...), accounts: keys}, nil
+	return &ImageRPCBackend{rpc: rpc, domain: domain, coordinator: append(ed25519.PrivateKey(nil), coordinator...), accounts: keys, mu: &sync.Mutex{}}, nil
 }
+
+// NewImageRPCBackendOn shares the daemon's RPC client and transaction lock.
+// The host retains ownership of the client and signing credentials.
+func NewImageRPCBackendOn(rpc *rpchttp.HTTP, domain string, coordinator ed25519.PrivateKey, accounts map[string]ed25519.PrivateKey, mu *sync.Mutex) (*ImageRPCBackend, error) {
+	if rpc == nil || mu == nil || domain == "" || len(coordinator) != ed25519.PrivateKeySize {
+		return nil, errors.New("image chain transport required")
+	}
+	return &ImageRPCBackend{rpc: rpc, domain: domain, coordinator: coordinator, accounts: accounts, mu: mu}, nil
+}
+
 func (b *ImageRPCBackend) query(ctx context.Context, path string, out any) (int64, error) {
 	result, e := b.rpc.ABCIQuery(ctx, path, nil)
 	if e != nil {
@@ -122,6 +132,12 @@ func (b *ImageRPCBackend) Apply(ctx context.Context, a chain.Action) error {
 // each service, including before accepting requests after a restart. Errors
 // are surfaced to its supervisor; reconnect must replay FinalizedBlock.
 func (b *ImageRPCBackend) WatchFinalized(ctx context.Context, s *ImageService) error {
+	return b.WatchBlocks(ctx, s.FinalizedBlock)
+}
+
+// WatchBlocks exposes the same finalized subscription to a host that serializes
+// block callbacks with image request completion.
+func (b *ImageRPCBackend) WatchBlocks(ctx context.Context, finalized func(context.Context) error, ready ...func()) error {
 	if e := b.rpc.Start(); e != nil {
 		return e
 	}
@@ -130,8 +146,11 @@ func (b *ImageRPCBackend) WatchFinalized(ctx context.Context, s *ImageService) e
 	if e != nil {
 		return e
 	}
-	if e = s.FinalizedBlock(ctx); e != nil {
+	if e = finalized(ctx); e != nil {
 		return e
+	}
+	for _, notify := range ready {
+		notify()
 	}
 	for {
 		select {
@@ -141,7 +160,7 @@ func (b *ImageRPCBackend) WatchFinalized(ctx context.Context, s *ImageService) e
 			if !ok {
 				return errors.New("image block subscription closed")
 			}
-			if e = s.FinalizedBlock(ctx); e != nil {
+			if e = finalized(ctx); e != nil {
 				return e
 			}
 		}

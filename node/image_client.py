@@ -260,7 +260,13 @@ class ImageClient:
         metrics = None
         if delivered is not None:
             import numpy as np
-            decoded = self.engine.decode(final_recomputed)
+            final_row = next(row for row in rows if row['step_index'] == n)
+            # The declaration comes from finalized submission state, never the opening.
+            precision_binding = (context.get('actual_dtype') == 'F16'
+                and final_row['outcome'] == 'mismatch'
+                and band.get('precision_min', math.inf) <= final_row['distance']
+                    <= band.get('precision_max', -math.inf))
+            decoded = self.engine.decode(tensors[n] if precision_binding else final_recomputed)
             delta = np.abs(decoded.astype('int16')-delivered.astype('int16'))
             metrics = dict(relative_l2=relative_l2(decoded, delivered),
                            within_one_fraction=float(np.mean(np.all(delta <= 1, axis=2))))
@@ -272,11 +278,18 @@ class ImageClient:
             if mode not in ('relative_l2', 'within_one', 'either', 'both'):
                 raise RuntimeError('unconfigured pixel policy')
             metrics['pass'] = checks[0] if mode == 'relative_l2' else checks[1] if mode == 'within_one' else any(checks) if mode == 'either' else all(checks)
+            if precision_binding:
+                metrics['pass'] = metrics['within_one_fraction'] >= max(0.999, fraction)
         if metrics is not None and not metrics['pass']:
             next(row for row in rows if row['step_index'] == n)['outcome'] = 'binding_fail'
         result = dict(request_id=context['request_id'], root=context['root'], challenge_steps=steps,
                       distance=max(row['distance'] for row in rows), per_step=rows, pixels=metrics,
                       verdict='reject' if any(row['outcome'] != 'match' for row in rows) else 'accept')
+        if (context.get('actual_dtype') == 'F16' and all(
+                row['outcome'] == 'mismatch'
+                and band.get('precision_min', math.inf) <= row['distance']
+                    <= band.get('precision_max', -math.inf) for row in rows)):
+            result['precision_mismatch'] = True
         payload = b'EMBER-IMAGE-AUDIT-V1\0' + canonical(result)
         return dict(result=result, signature=base64.b64encode(sign(payload)).decode())
 
@@ -320,12 +333,12 @@ def chain_verdict_action(agent, hold_id, hold, result, evidence_hash):
     if mode == 'escalation':
         first = SpotVerdict.FromString(base64.b64decode(challenge_record['first_verdict']))
         ctx['first_per_step'] = [dict(step=p.step, outcome=p.outcome) for p in first.per_step]
-    kind = verdict_kind(ctx, rows, mode)
+    kind = 'precision_mismatch' if result.get('precision_mismatch') else verdict_kind(ctx, rows, mode)
     challenge = AuditChallenge(receipt_ref=bytes.fromhex(hold['receipt_ref']), positions=steps,
                                vrf_proof=bytes.fromhex(hold['audit_proof']))
     sign(challenge, agent.key)
     v = SpotVerdict(challenge_ref=digest(challenge), auditor_id=agent.node_id,
-                   verdict='reject' if 'reject' in kind else 'accept',
+                   verdict='reject' if 'reject' in kind or kind == 'precision_mismatch' else 'accept',
                    evidence_ref=bytes.fromhex(evidence_hash), distances=[result['distance']],
                    verdict_distance=result['distance'], verdict_kind=kind)
     for row in rows:

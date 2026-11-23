@@ -59,6 +59,7 @@ def execute(agent, frame, job):
     sub = hold['image']['submission']
     ctx = dict(request=r, request_id=request_id, model_id=hold['model_id'],
                root=base64.b64decode(hold['pipeline']['commitment_root']).hex(),
+               actual_dtype=sub.get('actual_dtype', 'F32'),
                **{k: sub[k] for k in ('image_sha256','pixel_sha256','image_bytes','final_latent_hash')})
     # Pixel policy is an operator-pinned T4 artifact, never accepted in a job.
     policy = json.loads(Path(args.image_pixel_policy).read_text())

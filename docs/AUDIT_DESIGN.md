@@ -86,3 +86,15 @@ collectible stake; a nominal multiplier cannot prove it. Testnet credit has no
 monetary value. Compensation is bounded by protocol allocations and does not
 guarantee coverage of real replay costs. See [compensation](AUDIT_COMPENSATION.md)
 and [threat model](THREAT_MODEL.md).
+
+### T2F final image binding (2026-11-23)
+
+For a finalized pre-challenge F16 submission whose final-step mismatch falls
+inside the profile's inclusive precision range, decode the executor's proven
+committed final latent for pixel binding. Require the profile's within-one
+fraction (at least 0.999). Preserve mismatch on success and binding_fail on
+failure. Other cases retain the existing recomputed-latent pixel check. Only
+all-mismatch challenges entirely inside the precision range receive the
+precision_mismatch verdict kind. The dtype declaration comes from finalized
+chain state, never from the opening. See DESIGN-t2i.md appendix T2F in the train
+work package for the supervisory ruling.

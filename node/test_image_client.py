@@ -321,3 +321,51 @@ def test_chain_audit_envelope_uses_signed_protobufs(generated):
     verify_message(challenge);verify_message(verdict)
     assert verdict.verdict=='accept' and [r.step for r in verdict.per_step]==[1,3]
     assert verdict.verdict_distance==0 and verdict.evidence_ref==bytes.fromhex('dd'*32)
+
+
+@pytest.mark.parametrize('dtype,in_band,bound,expected', [
+    ('F16', True, True, 'mismatch'),
+    ('F16', True, False, 'binding_fail'),
+    (None, True, True, 'binding_fail'),
+    ('F32', True, True, 'binding_fail'),
+    ('F16', False, True, 'binding_fail'),
+])
+def test_final_precision_pixel_binding(generated, dtype, in_band, bound, expected):
+    import numpy as np
+    e, c, ctx, _ = generated
+    if dtype is not None:
+        ctx['actual_dtype'] = dtype
+    opened = c.opening(ctx['request_id'], [3])
+    original_step = e.step
+    # Audit recomputation drifts; the committed tensors and PNG remain unchanged.
+    e.step = lambda *args: original_step(*args) + 1
+    committed = e.load(opened['tensors']['3'], (1, 4, 64, 64))
+    e.decode = lambda x: np.full((512, 512, 3),
+        123 if bound and e.torch.equal(x, committed) else 130, dtype='uint8')
+    result = c.audit(ctx, opened, [3],
+        dict(base=0, step_coef=0, hard_multiplier=1,
+             precision_min=0 if in_band else 100, precision_max=101),
+        dict(mode='within_one', max_relative_l2=0, min_within_one_fraction=.999),
+        lambda p: b'signed')['result']
+    assert result['per_step'][0]['outcome'] == expected
+    assert result['pixels']['pass'] == (expected == 'mismatch')
+
+
+def test_precision_verdict_uses_reject_kind(generated):
+    from image_client import chain_verdict_action
+    from ember_core import node_id
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+    from types import SimpleNamespace
+    from auditor.spot_wire import SpotVerdict
+    import base64
+    key = Ed25519PrivateKey.generate()
+    pub = key.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
+    _, _, ctx, _ = generated
+    hold = dict(pipeline=dict(commitment_root=base64.b64encode(bytes.fromhex(ctx['root'])).decode(),
+        spot=dict(step_set=[3], round='spot')), receipt_ref='11'*32, audit_proof='22'*32)
+    result = dict(root=ctx['root'], challenge_steps=[3], distance=.02,
+        precision_mismatch=True, per_step=[dict(step_index=3, outcome='mismatch', distance=.02)])
+    action = chain_verdict_action(SimpleNamespace(key=key, node_id=node_id(pub)), 'hold', hold, result, '33'*32)
+    v = SpotVerdict.FromString(base64.b64decode(action['verdict']))
+    assert (v.verdict, v.verdict_kind) == ('reject', 'precision_mismatch')

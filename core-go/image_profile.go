@@ -105,6 +105,43 @@ func ImageSpotK(n uint64, qPPM uint32) uint64 {
 	return k
 }
 
+// SafeTensorDtypeSize is the v1 byte-addressable safetensors dtype table.
+// Recognition here does not authorize a tensor for image publication.
+func SafeTensorDtypeSize(dtype string) (uint64, error) {
+	switch dtype {
+	case "F64", "I64", "U64":
+		return 8, nil
+	case "F32", "I32", "U32":
+		return 4, nil
+	case "F16", "BF16", "I16", "U16":
+		return 2, nil
+	case "BOOL", "I8", "U8", "F8_E4M3", "F8_E5M2", "F8_E8M0":
+		return 1, nil
+	default:
+		return 0, errors.New("unknown safetensors dtype")
+	}
+}
+
+const imageV1TextSequenceLength = 77
+const imageV1BufferSuffix = ".position_ids"
+const imageV1BufferDtype = "I64"
+
+// imageWeightTensor enforces the complete v1 buffer allowlist. Buffers never
+// enter the parameter inventory or the reconstructed weight hierarchy.
+func imageWeightTensor(role string, t TensorShape) (bool, error) {
+	if _, err := SafeTensorDtypeSize(t.Dtype); err != nil {
+		return false, err
+	}
+	switch t.Dtype {
+	case "F64", "F32", "F16", "BF16", "F8_E4M3", "F8_E5M2", "F8_E8M0":
+		return true, nil
+	}
+	if role == "text_encoder" && strings.HasSuffix(t.Name, imageV1BufferSuffix) && len(t.Name) > len(imageV1BufferSuffix) && t.Dtype == imageV1BufferDtype && len(t.Shape) == 2 && t.Shape[0] == 1 && t.Shape[1] == imageV1TextSequenceLength {
+		return false, nil
+	}
+	return false, fmt.Errorf("unapproved image buffer: %s", t.Name)
+}
+
 // ParseSafeTensorHeader accepts the 8-byte LE length and JSON header, without
 // tensor payload. Offsets, dtype and all names must be unique and contiguous.
 func ParseSafeTensorHeader(raw []byte) ([]TensorShape, error) {
@@ -145,14 +182,9 @@ func ParseSafeTensorHeader(raw []byte) ([]TensorShape, error) {
 		if json.Unmarshal(value, &t) != nil || len(t.Offsets) != 2 || len(t.Shape) == 0 {
 			return nil, errors.New("invalid tensor")
 		}
-		size := uint64(0)
-		switch t.Dtype {
-		case "F32":
-			size = 4
-		case "F16", "BF16":
-			size = 2
-		default:
-			return nil, errors.New("unsupported weight dtype")
+		size, err := SafeTensorDtypeSize(t.Dtype)
+		if err != nil {
+			return nil, err
 		}
 		for _, d := range t.Shape {
 			if d == 0 || d > math.MaxUint64/size {
@@ -189,6 +221,13 @@ func ParseSafeTensorHeader(raw []byte) ([]TensorShape, error) {
 func ReconstructImageLayers(role string, tensors []TensorShape) ([]ImageLayer, error) {
 	var out []ImageLayer
 	for _, t := range tensors {
+		weight, err := imageWeightTensor(role, t)
+		if err != nil {
+			return nil, err
+		}
+		if !weight {
+			continue
+		}
 		l := ImageLayer{Name: t.Name, Shape: t.Shape, Op: "ignored", Scale: 1, Positions: "spatial"}
 		if role == "unet" {
 			l.Scale = 8
@@ -345,10 +384,20 @@ func ValidateImageProfile(p *ImageProfile, shapes map[string][]TensorShape) erro
 		names := map[string]bool{}
 		var total uint64
 		for _, t := range ts {
-			if names[t.Name] || t.Dtype != c.Dtype {
+			if names[t.Name] {
 				return errors.New("duplicate/dtype tensor")
 			}
 			names[t.Name] = true
+			weight, err := imageWeightTensor(c.Role, t)
+			if err != nil {
+				return err
+			}
+			if !weight {
+				continue
+			}
+			if t.Dtype != c.Dtype {
+				return errors.New("weight dtype mismatch")
+			}
 			n := uint64(1)
 			for _, d := range t.Shape {
 				if d == 0 || d > math.MaxUint64/n {

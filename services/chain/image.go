@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"strings"
 	"unicode/utf8"
 )
@@ -108,13 +109,19 @@ func (s *State) validateImagePublication(a Action, m *pb.ModelManifest) (*core.I
 			}
 			var size uint64
 			for _, t := range ts {
-				n := uint64(4)
+				n, err := core.SafeTensorDtypeSize(t.Dtype)
+				if err != nil {
+					return nil, err
+				}
 				for _, d := range t.Shape {
 					n *= d
 				}
+				if n > math.MaxUint64-size {
+					return nil, errors.New("artifact size overflow")
+				}
 				size += n
 			}
-			if size+uint64(len(header)) != uint64(f.Size) {
+			if size > math.MaxUint64-uint64(len(header)) || size+uint64(len(header)) != uint64(f.Size) {
 				return nil, errors.New("header/payload artifact size mismatch")
 			}
 			shapes[c.Role] = append(shapes[c.Role], ts...)

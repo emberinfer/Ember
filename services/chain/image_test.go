@@ -77,12 +77,27 @@ func imagePublication(t *testing.T, who actor) Action {
 	return resignPublication(t, who, a, m)
 }
 func TestImagePublicationV16(t *testing.T) {
-	for _, tc := range []string{"good", "plus5", "minus5", "channel", "params", "scale", "header", "v15"} {
+	for _, tc := range []string{"good", "buffer", "buffer-short", "plus5", "minus5", "channel", "params", "scale", "header", "v15"} {
 		t.Run(tc, func(t *testing.T) {
 			s, a := testState(t)
 			s.Version = 16
 			action := imagePublication(t, a["payer"])
 			switch tc {
+			case "buffer", "buffer-short":
+				name := "text_encoder/model.safetensors"
+				body := []byte(`{"text_model.embeddings.position_ids":{"dtype":"I64","shape":[1,77],"data_offsets":[0,616]},"emb.weight":{"dtype":"F32","shape":[64,64],"data_offsets":[616,17000]}}`)
+				action.ImageHeaders[name] = append(binary.LittleEndian.AppendUint64(nil, uint64(len(body))), body...)
+				manifest := &pb.ModelManifest{}
+				proto.Unmarshal(action.Manifest, manifest)
+				for _, artifact := range manifest.Artifacts {
+					if artifact.Name == name {
+						artifact.Size = int64(len(action.ImageHeaders[name])) + 17000
+						if tc == "buffer-short" {
+							artifact.Size -= 77 * 6
+						}
+					}
+				}
+				action.Manifest, _ = proto.Marshal(manifest)
 			case "plus5":
 				action.ImageProfile.PriceTable[0].Step = action.ImageProfile.PriceTable[0].Step * 105 / 100
 			case "minus5":
@@ -104,7 +119,7 @@ func TestImagePublicationV16(t *testing.T) {
 			h := imageProfileHash(action.ImageProfile)
 			m.GraphHash = h[:]
 			action = resignPublication(t, a["payer"], action, m)
-			if tc != "good" {
+			if tc != "good" && tc != "buffer" {
 				rejected(t, s, a["payer"], action, 1)
 				return
 			}

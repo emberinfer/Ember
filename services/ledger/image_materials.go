@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 )
 
 // VerifyImageMaterials is the publication ingestion boundary. It streams the
@@ -53,12 +54,15 @@ func VerifyImageMaterials(p *core.ImageProfile, files map[string]io.Reader) (map
 					return nil, e
 				}
 				for _, tensor := range tensors {
-					n := uint64(4)
-					if tensor.Dtype != "F32" {
-						n = 2
+					n, e := core.SafeTensorDtypeSize(tensor.Dtype)
+					if e != nil {
+						return nil, e
 					}
 					for _, d := range tensor.Shape {
 						n *= d
+					}
+					if n > math.MaxUint64-payloadBytes {
+						return nil, errors.New("payload size overflow")
 					}
 					payloadBytes += n
 				}

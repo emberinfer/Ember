@@ -108,3 +108,44 @@ func TestImageCalibrationAndMultiplierRounding(t *testing.T) {
 		t.Fatal("multiplier differs from text", got, want, e)
 	}
 }
+
+func TestSafeTensorDtypeSizesAndBufferValidation(t *testing.T) {
+	for dtype, want := range map[string]uint64{"F64": 8, "F32": 4, "F16": 2, "BF16": 2, "I64": 8, "U64": 8, "I32": 4, "U32": 4, "I16": 2, "U16": 2, "I8": 1, "U8": 1, "BOOL": 1, "F8_E4M3": 1, "F8_E5M2": 1, "F8_E8M0": 1} {
+		size, e := SafeTensorDtypeSize(dtype)
+		if e != nil || size != want {
+			t.Fatal(dtype, size, e)
+		}
+		body := fmt.Sprintf(`{"x":{"dtype":%q,"shape":[2],"data_offsets":[0,%d]}}`, dtype, 2*want)
+		raw := append(binary.LittleEndian.AppendUint64(nil, uint64(len(body))), []byte(body)...)
+		if _, e := ParseSafeTensorHeader(raw); e != nil {
+			t.Fatal(dtype, e)
+		}
+	}
+	for _, body := range []string{
+		`{"x":{"dtype":"UNKNOWN","shape":[1],"data_offsets":[0,1]}}`,
+		`{"x":{"dtype":"I64","shape":[1,77],"data_offsets":[0,154]}}`,
+		`{"x":{"dtype":"I64","shape":[18446744073709551615],"data_offsets":[0,8]}}`,
+		`{"x":{"dtype":"I64","shape":[1],"data_offsets":[0,8]},"y":{"dtype":"F32","shape":[1],"data_offsets":[4,8]}}`,
+	} {
+		raw := append(binary.LittleEndian.AppendUint64(nil, uint64(len(body))), []byte(body)...)
+		if _, e := ParseSafeTensorHeader(raw); e == nil {
+			t.Fatal(body)
+		}
+	}
+	good := TensorShape{Name: "text_model.embeddings.position_ids", Dtype: "I64", Shape: []uint64{1, 77}}
+	if layers, e := ReconstructImageLayers("text_encoder", []TensorShape{good}); e != nil || len(layers) != 0 {
+		t.Fatal(layers, e)
+	}
+	for _, role := range []string{"unet", "vae"} {
+		if _, e := ReconstructImageLayers(role, []TensorShape{good}); e == nil {
+			t.Fatal("buffer outside text_encoder")
+		}
+	}
+	for _, shape := range [][]uint64{{77}, {1, 76}, {1, 77, 1}, {0, 77}} {
+		bad := good
+		bad.Shape = shape
+		if _, e := ReconstructImageLayers("text_encoder", []TensorShape{bad}); e == nil {
+			t.Fatal(shape)
+		}
+	}
+}

@@ -124,6 +124,10 @@ func (s *State) checkContributionAction(a Action, height int64) error {
 	switch a.Type {
 	case "freeze":
 		counts[a.Node] = 1
+	case "image_request":
+		if s.Version >= 16 {
+			counts[a.Node] = 1
+		}
 	case "freeze_pipeline":
 		for _, auth := range a.PipelineAuthorizations {
 			counts[auth.NodeID]++

@@ -59,6 +59,9 @@ func (s *State) validateLatencyWitnesses(h *Hold, r *pb.PipelineExecutionReceipt
 }
 
 func (s *State) collectLatency(h *Hold) error {
+	if s.Version >= 16 && h.Image != nil {
+		return nil
+	}
 	if h.Unaudited {
 		return nil
 	}

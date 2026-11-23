@@ -1,0 +1,1 @@
+{"beta_end_bits":"3c449ba6","beta_start_bits":"3a5ed289","eta":0,"implementation_sha256":"bbeebbd25af70ec3464a2c13c7f49c2fb190339041021943f032c106f1bcc527","samplers":["ddim","euler"],"spec":"T2I-SPEC-V1","train_steps":1000}

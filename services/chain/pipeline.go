@@ -120,7 +120,7 @@ func (s *State) freezePipeline(signer string, a Action, height int64) error {
 
 func (s *State) submitPipeline(signer string, a Action, height int64) error {
 	h := s.Holds[a.HoldID]
-	if h == nil || h.Pipeline == nil || h.State != "frozen" || height >= h.ExpireHeight || !s.Coordinators[signer] || a.Actual <= 0 || a.Actual > h.Amount {
+	if h == nil || (s.Version >= 16 && h.Image != nil) || h.Pipeline == nil || h.State != "frozen" || height >= h.ExpireHeight || !s.Coordinators[signer] || a.Actual <= 0 || a.Actual > h.Amount {
 		return errors.New("invalid pipeline submission")
 	}
 	if s.Version >= 14 {
@@ -288,10 +288,10 @@ func (s *State) settlePipeline(h *Hold, outcome string, height int64) error {
 		}
 		credits := h.Pipeline.Credits
 		policy := s.Models[h.ModelID].Pricing
-		if h.AuditCompPolicy != nil || policy != nil {
+		if h.AuditCompPolicy != nil || policy != nil || (s.Version >= 16 && h.Image != nil) {
 			parts := allocateFee(h.Actual, [3]int64{80, 15, 5})
 			h.Shares = &SettlementShares{Fee: h.Actual, Executor: parts[0], Auditor: parts[1], Consumer: parts[2]}
-			if policy != nil {
+			if policy != nil && h.Image == nil {
 				priced := *h
 				if len(h.Pipeline.Authorizations) > 0 {
 					priced.Node = h.Pipeline.Authorizations[0].NodeID
@@ -349,7 +349,7 @@ func (s *State) settlePipeline(h *Hold, outcome string, height int64) error {
 				}
 			}
 		}
-		if h.AuditCompPolicy != nil || policy != nil {
+		if h.AuditCompPolicy != nil || policy != nil || (s.Version >= 16 && h.Image != nil) {
 			h.Pipeline.Credits = credits
 		}
 		for _, share := range credits {

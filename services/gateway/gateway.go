@@ -27,6 +27,7 @@ import (
 )
 
 type Gateway struct {
+	Image                *ImageService
 	execExitedDone       chan struct{}
 	ChainExecExited      func() (map[string]bool, error)
 	execExitedMu         sync.Mutex
@@ -96,6 +97,7 @@ type message struct {
 	Content string `json:"content"`
 }
 type request struct {
+	Kind            string    `json:"kind,omitempty"`
 	ThinkingEnabled *bool     `json:"thinking_enabled,omitempty"`
 	ThinkingBudget  uint32    `json:"thinking_budget,omitempty"`
 	AnswerBudget    uint32    `json:"answer_budget,omitempty"`
@@ -143,6 +145,10 @@ func (g *Gateway) checkContext(inputTokens uint32, maxTokens int) error {
 	return nil
 }
 func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if strings.HasPrefix(r.URL.Path, "/v1/images/") {
+		g.serveImage(w, r)
+		return
+	}
 	if r.URL.Path == "/v2/requests" {
 		if g.Privacy == nil {
 			http.Error(w, "privacy endpoint unavailable", 503)
@@ -194,6 +200,11 @@ func (g *Gateway) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid request", 400)
 		return
 	}
+	if q.Kind == "text-to-image" {
+		http.Error(w, "text-to-image requires /v1/images/generations or /v1/images/quote", 400)
+		return
+	}
+
 	if q.MaxTokens == 0 {
 		q.MaxTokens = DefaultMaxTokens
 	}

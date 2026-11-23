@@ -45,10 +45,11 @@ func weightedMedian(values []weightedValue) float64 {
 }
 
 type SpeedStats struct {
-	mu          sync.Mutex
-	samples     []speedSample
-	ttftSamples []speedSample
-	degraded    map[string]bool
+	imageTimings []ImageTiming
+	mu           sync.Mutex
+	samples      []speedSample
+	ttftSamples  []speedSample
+	degraded     map[string]bool
 }
 type CohortNodeStat struct {
 	Cohort, NodeID               string
@@ -218,4 +219,74 @@ func (s *SpeedStats) Snapshot(now time.Time) []CohortNodeStat {
 		return out[i].NodeID < out[j].NodeID
 	})
 	return out
+}
+
+// Image timings are kept in separate cohorts and fields from token/TTFT stats.
+// Step latency is normalized to one frozen denoising step by the host. Upload
+// and receipt/TX delivery must never be passed as step observations.
+type ImageTiming struct {
+	Node, Cohort                        string
+	StepLatencySeconds, DeliverySeconds float64
+	At                                  time.Time
+}
+
+func (s *SpeedStats) RecordImageStep(node, cohort string, latency time.Duration, at time.Time) {
+	if s == nil || latency <= 0 {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.imageTimings = append(s.imageTimings, ImageTiming{Node: node, Cohort: cohort, StepLatencySeconds: latency.Seconds(), At: at})
+	s.pruneImages(at)
+}
+func (s *SpeedStats) RecordImageDelivery(node, cohort string, latency time.Duration, at time.Time) {
+	if s == nil || latency <= 0 {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.imageTimings = append(s.imageTimings, ImageTiming{Node: node, Cohort: cohort, DeliverySeconds: latency.Seconds(), At: at})
+	s.pruneImages(at)
+}
+func (s *SpeedStats) pruneImages(at time.Time) {
+	out := s.imageTimings[:0]
+	for _, v := range s.imageTimings {
+		if !v.At.Before(at.Add(-72 * time.Hour)) {
+			out = append(out, v)
+		}
+	}
+	s.imageTimings = out
+}
+func (s *SpeedStats) ImageTimings(at time.Time) []ImageTiming {
+	if s == nil {
+		return nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.pruneImages(at)
+	return append([]ImageTiming(nil), s.imageTimings...)
+}
+func (s *SpeedStats) ImageScore(node, cohort string, at time.Time) (float64, bool, bool, int) {
+	if s == nil {
+		return 1, true, false, 0
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.pruneImages(at)
+	values := map[string][]weightedValue{}
+	for _, v := range s.imageTimings {
+		if v.Cohort == cohort && v.StepLatencySeconds > 0 && !v.At.After(at) {
+			values[v.Node] = append(values[v.Node], weightedValue{v.StepLatencySeconds, 1})
+		}
+	}
+	group := []weightedValue{}
+	for _, vs := range values {
+		group = append(group, weightedValue{weightedMedian(vs), 1})
+	}
+	median, baseline := weightedMedian(values[node]), weightedMedian(group)
+	n := len(values[node])
+	if n < 5 || median <= 0 || baseline <= 0 {
+		return 1, true, false, n
+	}
+	return math.Max(.5, math.Min(2, baseline/median)), false, n >= 10 && median > baseline/.35, n
 }

@@ -350,6 +350,7 @@ func (s *State) finalizeMembership(h int64) []abci.ValidatorUpdate {
 // MembershipUpgrade is a coordinated hard-fork manifest, identical on every
 // validator. Version-4 bytes/hashes remain untouched until ActivationHeight.
 type MembershipUpgrade struct {
+	T2IV16           bool                     `json:"t2i_v16,omitempty"`
 	MembershipInit   *MembershipInit          `json:"membership_init,omitempty"`
 	AuditSampling    *AuditSamplingParameters `json:"audit_sampling,omitempty"`
 	MoeEnabled       *bool                    `json:"moe_enabled,omitempty"`
@@ -396,7 +397,7 @@ func (app *Application) ConfigureMembershipUpgrade(u MembershipUpgrade) error {
 		app.upgradeFromVersion = app.committed.Version
 		return nil
 	}
-	if app.committed.Version == 6 || app.committed.Version == 7 || app.committed.Version == 8 || app.committed.Version == 9 || app.committed.Version == 10 || app.committed.Version == 11 || app.committed.Version == 12 || app.committed.Version == 13 || app.committed.Version == 14 {
+	if app.committed.Version == 6 || app.committed.Version == 7 || app.committed.Version == 8 || app.committed.Version == 9 || app.committed.Version == 10 || app.committed.Version == 11 || app.committed.Version == 12 || app.committed.Version == 13 || app.committed.Version == 14 || (app.committed.Version == 15 && u.T2IV16) {
 		raw, _ := json.Marshal(u)
 		var cp MembershipUpgrade
 		_ = json.Unmarshal(raw, &cp)
@@ -434,6 +435,16 @@ func (app *Application) activateMembershipTrial(s *State, height int64) error {
 }
 
 func (app *Application) activateMembership(s *State, req *abci.FinalizeBlockRequest) error {
+	if s.Version == 15 {
+		if app.upgrade == nil || app.upgradeFromVersion != 15 || !app.upgrade.T2IV16 || req.Height < app.upgrade.ActivationHeight {
+			return nil
+		}
+		if req.Height != app.upgrade.ActivationHeight {
+			return errors.New("v16 activation height missed")
+		}
+		s.Version = 16
+		return nil
+	}
 	if s.Version == 14 {
 		if app.upgrade == nil || app.upgradeFromVersion != 14 || req.Height < app.upgrade.ActivationHeight {
 			return nil

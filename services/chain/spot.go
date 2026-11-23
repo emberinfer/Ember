@@ -56,6 +56,7 @@ type AvailabilityRecord struct {
 	Auditor    AvailabilityCounters `json:"auditor"`
 }
 type SpotChallenge struct {
+	ObjectHash       []byte            `json:"object_hash,omitempty"`
 	EvidenceResolved bool              `json:"evidence_resolved,omitempty"`
 	RequestID        string            `json:"request_id"`
 	Auditor          string            `json:"auditor"`
@@ -301,7 +302,12 @@ func (s *State) startSpot(h *Hold, height int64) error {
 	if h.SamplingPolicy != nil {
 		tier = uint32(h.SamplingPolicy.Tier)
 	}
-	steps, err := DeriveSpotSteps(seed, h.Pipeline.SpotStepCount, SpotK(tier, h.Pipeline.SpotStepCount))
+	k := SpotK(tier, h.Pipeline.SpotStepCount)
+	if s.Version >= 16 && h.Image != nil {
+		q := []uint32{300000, 50000, 20000}[tier]
+		k = core.ImageSpotK(h.Pipeline.SpotStepCount, q)
+	}
+	steps, err := DeriveSpotSteps(seed, h.Pipeline.SpotStepCount, k)
 	if err != nil {
 		return err
 	}
@@ -316,7 +322,7 @@ func (s *State) verifySpool(h *Hold, a *SpoolAttestation, height int64) error {
 	return s.verifySpotSpool(h.Pipeline.Spot, a, height)
 }
 func (s *State) verifySpotSpool(c *SpotChallenge, a *SpoolAttestation, height int64) error {
-	if a == nil || a.RequestID != c.RequestID || a.ChallengeHeight != c.ChallengeHeight || !bytes.Equal(a.StepSetHash, SpotStepSetHash(c.StepSet)) || a.Height > height || a.Height < c.ChallengeHeight {
+	if a == nil || a.RequestID != c.RequestID || a.ChallengeHeight != c.ChallengeHeight || !bytes.Equal(a.StepSetHash, spotObjectHash(c)) || a.Height > height || a.Height < c.ChallengeHeight {
 		return errors.New("spool challenge binding mismatch")
 	}
 	p := s.ActiveProfile(a.Gateway, height)
@@ -366,18 +372,30 @@ func (s *State) spotAction(signer string, a Action, height int64) error {
 	if s.Version < 14 || h == nil || h.State != "dispute" || h.Pipeline == nil || h.Pipeline.Spot == nil || h.AuditVerdict != "" {
 		return errors.New("invalid spot transition")
 	}
-	c := h.Pipeline.Spot
+	return s.spoolEvidenceAction(h, h.Pipeline.Spot, signer, a, height)
+}
+func spotObjectHash(c *SpotChallenge) []byte {
+	if len(c.ObjectHash) > 0 {
+		return c.ObjectHash
+	}
+	return SpotStepSetHash(c.StepSet)
+}
+func (s *State) spoolEvidenceAction(h *Hold, c *SpotChallenge, signer string, a Action, height int64) error {
 	switch a.Type {
 	case "spot_received":
-		if signer != h.Auditor || c.Accusation != nil || height > c.VerdictDeadline {
+		if signer != c.Auditor || c.Accusation != nil || height > c.VerdictDeadline {
 			return errors.New("invalid receipt attestation")
 		}
-		s.spotReceived(h, height)
+		if s.Version >= 16 && h.Image != nil && c == h.Image.Delivery {
+			c.Received = true
+		} else {
+			s.spotReceived(h, height)
+		}
 	case "spot_unopened":
-		if signer != h.Auditor || c.Received || c.Accusation != nil || c.ReplaceAfter != 0 || height <= c.Deadline {
+		if signer != c.Auditor || c.Received || c.Accusation != nil || c.ReplaceAfter != 0 || height <= c.Deadline {
 			return errors.New("invalid unopened accusation")
 		}
-		if err := s.verifySpool(h, a.Spool, height); err != nil {
+		if err := s.verifySpotSpool(c, a.Spool, height); err != nil {
 			return err
 		}
 		if a.Spool.Received || a.Spool.Height < c.Deadline {
@@ -394,14 +412,22 @@ func (s *State) spotAction(signer string, a Action, height int64) error {
 		if !found || c.Accusation == nil || height > c.AccusedAt+SPOT_FIRST_VERDICT_BLOCKS {
 			return errors.New("invalid counterproof")
 		}
-		if err := s.verifySpool(h, a.Spool, height); err != nil {
+		if err := s.verifySpotSpool(c, a.Spool, height); err != nil {
 			return err
 		}
 		if !a.Spool.Received || a.Spool.Height > c.Deadline {
 			return errors.New("not a timely spool receipt")
 		}
 		s.availabilityEvent(c.Auditor, true, height)
-		s.spotReceived(h, height)
+		if s.Version >= 16 && h.Image != nil && c == h.Image.Delivery {
+			c.Received = true
+			c.Accusation = nil
+			c.AccusedAt = 0
+		} else {
+			s.spotReceived(h, height)
+		}
+	default:
+		return errors.New("unknown spool evidence action")
 	}
 	return nil
 }
@@ -445,6 +471,11 @@ func (s *State) advanceSpot(height int64) error {
 	sort.Strings(ids)
 	for _, id := range ids {
 		h := s.Holds[id]
+		if s.Version >= 16 && h.Image != nil {
+			if err := s.advanceImageDelivery(h, height); err != nil {
+				return err
+			}
+		}
 		if h.State == "dispute" && h.Pipeline != nil && len(h.Pipeline.CommitmentRoot) == 32 && h.AuditVerdict == "" && height >= h.SettleHeight {
 			h.AuditVerdict = "service_failure"
 			if err := s.settleAt(h, "service_failure", height); err != nil {
@@ -549,6 +580,15 @@ func (s *State) validateSpotVerdict(h *Hold, raw []byte, height int64) error {
 		if p.Step != expected[i] || math.IsNaN(p.FirstDivergenceDistance) || math.IsInf(p.FirstDivergenceDistance, 0) || p.FirstDivergenceDistance < 0 {
 			return errors.New("invalid step result")
 		}
+		if s.Version >= 16 && h.Image != nil {
+			soft, _, e := s.Models[h.ModelID].ImageProfile.RangeBand.Thresholds(uint32(p.Step))
+			if e != nil {
+				return e
+			}
+			if (p.Outcome == "match" && p.FirstDivergenceDistance > soft) || (p.Outcome == "mismatch" && p.FirstDivergenceDistance <= soft) {
+				return errors.New("step outcome outside immutable image band")
+			}
+		}
 		switch p.Outcome {
 		case "match":
 		case "mismatch", "binding_fail", "format_fail":
@@ -582,6 +622,13 @@ func (s *State) validateSpotVerdict(h *Hold, raw []byte, height int64) error {
 			verdict, kind = "reject", "escalation_bounded_reject"
 		}
 	}
+	if s.Version >= 16 && h.Image != nil && v.VerdictKind == "precision_mismatch" {
+		if !s.imagePrecisionMismatch(h, v) {
+			return errors.New("invalid precision mismatch proof")
+		}
+		kind = "precision_mismatch"
+		verdict = "reject"
+	}
 	if v.VerdictKind != kind || v.VerdictDistance != max || v.Verdict != verdict {
 		return errors.New("inconsistent spot verdict")
 	}
@@ -593,6 +640,15 @@ func (s *State) spotOutcome(h *Hold, signer, outcome, evidence string, at ...int
 		height = at[0]
 	}
 	c := h.Pipeline.Spot
+	if s.Version >= 16 && h.Image != nil {
+		v := &pb.AuditVerdict{}
+		if proto.Unmarshal(h.VerdictBytes, v) == nil && v.VerdictKind == "precision_mismatch" && s.imagePrecisionMismatch(h, v) {
+			h.Image.PrecisionMismatch = true
+			h.AuditVerdict = "reject_configuration"
+			s.availabilityEvent(h.Node, true, height)
+			return s.settleAt(h, "service_failure", height)
+		}
+	}
 	if c.Round == "esc" {
 		if outcome == "accept" {
 			c.GoodFaithAuditor = h.FirstAuditor

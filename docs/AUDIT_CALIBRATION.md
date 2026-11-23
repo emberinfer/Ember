@@ -86,3 +86,15 @@ metadata before reproducing tests; do not infer measurements from placeholder
 scores. Current text equality audits use their own first-divergence epsilon rule
 and default teacher forcing; see [audit design](AUDIT_DESIGN.md) and
 [teacher forcing](TEACHER-FORCING-AUDITS.md).
+
+
+## SD1.5 image profile
+
+The paired GPU/CPU calibration is pinned in
+`chain-genesis/ember-sd15-fp32-v1/calibration.json`. Its additive soft band is
+`7.7563e-05 + 0 * step`, with hard multiplier 100.
+The pixel criterion is fixed to `within_one >= 0.999`.
+The conditional precision feature interval is
+`[0.005, 0.045]`; declaring F16 alone does not
+qualify measurements outside that interval for configuration-error treatment.
+See the package README and signed source manifests for the measurement scope.

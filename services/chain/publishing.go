@@ -143,8 +143,24 @@ func (s *State) publish(signer string, a Action, height int64) error {
 			return errors.New("previous profile anchor not found")
 		}
 	}
+	if s.Version >= 16 && a.Kind != "" && a.Kind != "text" && a.Kind != "text-to-image" {
+		return errors.New("unknown profile kind")
+	}
+	if s.Version >= 16 && a.Kind == "text-to-image" {
+		p, e := s.validateImagePublication(a, manifest)
+		if e != nil {
+			return e
+		}
+		if g.ExecutionProfileVer != p.ExecutionProfile {
+			return errors.New("execution profile mismatch")
+		}
+		m.Kind = a.Kind
+		m.ImageProfile = p
+	} else if s.Version >= 16 && a.ImageProfile != nil {
+		return errors.New("image profile requires image kind")
+	}
 	m.WeightRoot = weightRoot(manifest)
-	if s.Version >= 11 && m.WeightRoot != "" {
+	if s.Version >= 11 && m.WeightRoot != "" && m.ImageProfile == nil {
 		verified, err := derivePublicationCompute(manifest, a, true, s.Version)
 		if err != nil {
 			return err
@@ -152,8 +168,10 @@ func (s *State) publish(signer string, a Action, height int64) error {
 		m.VerifiedCompute = verified
 	}
 	var identityErr error
-	m.Identity, identityErr = identityFor(g, manifest)
-	if m.WeightRoot != "" && m.Identity == nil && identityErr == nil {
+	if m.ImageProfile == nil {
+		m.Identity, identityErr = identityFor(g, manifest)
+	}
+	if m.WeightRoot != "" && m.Identity == nil && identityErr == nil && m.ImageProfile == nil {
 		return errors.New("new weight publication requires canonical model configuration and tokenizer identity")
 	}
 	if identityErr != nil {
@@ -268,6 +286,12 @@ func validateModelArtifacts(m Model) error {
 	if err := validateComputeRangeRules(manifest, m.VerifiedCompute != nil); err != nil {
 		return err
 	}
+	if m.ImageProfile != nil {
+		h := imageProfileHash(m.ImageProfile)
+		if m.Kind != "text-to-image" || !bytes.Equal(h[:], manifest.GraphHash) || g.ExecutionProfileVer != m.ImageProfile.ExecutionProfile {
+			return errors.New("stored image profile anchor mismatch")
+		}
+	}
 	root, _ := core.Digest(manifest)
 	gh := sha256.Sum256(graw)
 	mh := sha256.Sum256(mraw)
@@ -281,6 +305,9 @@ func validateModelArtifacts(m Model) error {
 }
 func (s *State) validatePublishedNode(p *pb.ResourceProfile) error {
 	m := s.Models[p.ChainId]
+	if s.Version >= 16 && m.Kind == "text-to-image" && (p.ShardTotalLayers != 0 || p.ExecutionProfileVer != m.ImageProfile.ExecutionProfile) {
+		return errors.New("image registration requires whole execution profile")
+	}
 	graw, mraw := modelArtifacts(m)
 	if len(graw) == 0 {
 		return nil

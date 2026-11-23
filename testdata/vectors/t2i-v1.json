@@ -1,0 +1,321 @@
+{
+  "spec": "philox-gauss-v1",
+  "dtype": "f32",
+  "vectors": [
+    {
+      "seed": "0",
+      "shape": [
+        1,
+        4,
+        64,
+        64
+      ],
+      "raw_sha256": "b476c29745a3dfd0fc5952c31270f543bbba8d8e19fe6af18e70de1dc4eee1e1",
+      "sha256": "e98e2a594e16b852712167b09b3cf46894e2def67360df61a0456f2ab9d12b3c",
+      "first_bits": [
+        "3e09a39c",
+        "bea1acfa",
+        "bc79fa6c",
+        "be8d4f4a",
+        "be16f823",
+        "3e48f683",
+        "3dd01d28",
+        "3e83f0b9"
+      ]
+    },
+    {
+      "seed": "0",
+      "shape": [
+        1,
+        4,
+        64,
+        96
+      ],
+      "raw_sha256": "3dfe349c51e33d0d1db6b8172d8d85e0298833ec5acde036d076d5a24645c885",
+      "sha256": "b1202b8e92d0c7b002724daccaf64f9075422b899930b63d9e475c6b3517f756",
+      "first_bits": [
+        "3e09a39c",
+        "bea1acfa",
+        "bc79fa6c",
+        "be8d4f4a",
+        "be16f823",
+        "3e48f683",
+        "3dd01d28",
+        "3e83f0b9"
+      ]
+    },
+    {
+      "seed": "0",
+      "shape": [
+        1,
+        4,
+        96,
+        64
+      ],
+      "raw_sha256": "3dfe349c51e33d0d1db6b8172d8d85e0298833ec5acde036d076d5a24645c885",
+      "sha256": "05ccd64d2f0ed2ebf0902ce2dc92b03f509c5c524885ee81afae5215b572b0d1",
+      "first_bits": [
+        "3e09a39c",
+        "bea1acfa",
+        "bc79fa6c",
+        "be8d4f4a",
+        "be16f823",
+        "3e48f683",
+        "3dd01d28",
+        "3e83f0b9"
+      ]
+    },
+    {
+      "seed": "1",
+      "shape": [
+        1,
+        4,
+        64,
+        64
+      ],
+      "raw_sha256": "fe1e3a8f3ab77c8d89c03fdbd2f142f01d55eec56e2c3b74631b122724b80622",
+      "sha256": "d06a29c9f027a214634ac91cd3d1606df357125d3ba8aafec43c65ef794f8725",
+      "first_bits": [
+        "3e9aac97",
+        "3e43d45c",
+        "be03dc25",
+        "3e98e4e9",
+        "bd91e999",
+        "bcf9230b",
+        "3e129062",
+        "be5114b7"
+      ]
+    },
+    {
+      "seed": "1",
+      "shape": [
+        1,
+        4,
+        64,
+        96
+      ],
+      "raw_sha256": "e9822b7acd147e9b35dffbce356c2ec1cc36c1cfa34d293419602ce6964b341b",
+      "sha256": "9a9d73dbf8c1ac4718b052b2d8943571bf1ab833be3d321a47bcdc2a2c1bf2b4",
+      "first_bits": [
+        "3e9aac97",
+        "3e43d45c",
+        "be03dc25",
+        "3e98e4e9",
+        "bd91e999",
+        "bcf9230b",
+        "3e129062",
+        "be5114b7"
+      ]
+    },
+    {
+      "seed": "1",
+      "shape": [
+        1,
+        4,
+        96,
+        64
+      ],
+      "raw_sha256": "e9822b7acd147e9b35dffbce356c2ec1cc36c1cfa34d293419602ce6964b341b",
+      "sha256": "f5ef51cfc4b16c0c049483f3d5c63c8cd72925c1e389d36b4c59b456a580c759",
+      "first_bits": [
+        "3e9aac97",
+        "3e43d45c",
+        "be03dc25",
+        "3e98e4e9",
+        "bd91e999",
+        "bcf9230b",
+        "3e129062",
+        "be5114b7"
+      ]
+    },
+    {
+      "seed": "42",
+      "shape": [
+        1,
+        4,
+        64,
+        64
+      ],
+      "raw_sha256": "66270b4234a6ed961f2bafcfe618ddea1b201e9a9951a8f59684a5f752db6a03",
+      "sha256": "c0335c8fdcd134b8b392a485e30488ab3bde90a0d539d24a6f6a1f90aa93ef37",
+      "first_bits": [
+        "be7c0205",
+        "be80c795",
+        "be3df8f0",
+        "be104387",
+        "3db0035e",
+        "bd2f0146",
+        "bbb7ebcf",
+        "be133740"
+      ]
+    },
+    {
+      "seed": "42",
+      "shape": [
+        1,
+        4,
+        64,
+        96
+      ],
+      "raw_sha256": "e7536c230607371a3a8eedd4b3cc0649cf7a4b0740fae424a9b635c024597aa1",
+      "sha256": "0548d34296507f4297e397378584dcc2240ceaf56bb17855438b234d8c583b72",
+      "first_bits": [
+        "be7c0205",
+        "be80c795",
+        "be3df8f0",
+        "be104387",
+        "3db0035e",
+        "bd2f0146",
+        "bbb7ebcf",
+        "be133740"
+      ]
+    },
+    {
+      "seed": "42",
+      "shape": [
+        1,
+        4,
+        96,
+        64
+      ],
+      "raw_sha256": "e7536c230607371a3a8eedd4b3cc0649cf7a4b0740fae424a9b635c024597aa1",
+      "sha256": "916014aac06af0cca809296f8127bf2bfc1acf7b707aa26143d79fc07c692973",
+      "first_bits": [
+        "be7c0205",
+        "be80c795",
+        "be3df8f0",
+        "be104387",
+        "3db0035e",
+        "bd2f0146",
+        "bbb7ebcf",
+        "be133740"
+      ]
+    },
+    {
+      "seed": "9223372036854775808",
+      "shape": [
+        1,
+        4,
+        64,
+        64
+      ],
+      "raw_sha256": "6d4e2ae8c524fa1d0ded2ad93de61677a0746108f9f8d16992c75682d4633bef",
+      "sha256": "5768625a26a487a632d7968665887603b22758e63688a16ac79ba6f7be88dcb3",
+      "first_bits": [
+        "be8569e6",
+        "3e4f8009",
+        "3e51319f",
+        "3cb4860d",
+        "be6c64cd",
+        "3d8578a3",
+        "be668583",
+        "bd327f7c"
+      ]
+    },
+    {
+      "seed": "9223372036854775808",
+      "shape": [
+        1,
+        4,
+        64,
+        96
+      ],
+      "raw_sha256": "026b2b34e16539538e246a57205235d3a35f9f5f0f7f1f47760350daffa792df",
+      "sha256": "5f75b6d41a2cda60d7dc396a4d138cd1aa927a5d88c0b7e2405d580ddeef74a2",
+      "first_bits": [
+        "be8569e6",
+        "3e4f8009",
+        "3e51319f",
+        "3cb4860d",
+        "be6c64cd",
+        "3d8578a3",
+        "be668583",
+        "bd327f7c"
+      ]
+    },
+    {
+      "seed": "9223372036854775808",
+      "shape": [
+        1,
+        4,
+        96,
+        64
+      ],
+      "raw_sha256": "026b2b34e16539538e246a57205235d3a35f9f5f0f7f1f47760350daffa792df",
+      "sha256": "f0438a99ff1aab279592609c10e4b7a933a14f8755b4f112b93ec860bdccb261",
+      "first_bits": [
+        "be8569e6",
+        "3e4f8009",
+        "3e51319f",
+        "3cb4860d",
+        "be6c64cd",
+        "3d8578a3",
+        "be668583",
+        "bd327f7c"
+      ]
+    },
+    {
+      "seed": "18446744073709551615",
+      "shape": [
+        1,
+        4,
+        64,
+        64
+      ],
+      "raw_sha256": "2ca536aac119cb5418e0abcceea6e639fb25b4b2d8242a10cd22e1a57e446d4b",
+      "sha256": "53aa7546ed613bb49087cf24394e3966c2eb342cb1907b326df44cde81654a15",
+      "first_bits": [
+        "3e302ec6",
+        "bcbecaf0",
+        "bd95a8ca",
+        "bdc81c4b",
+        "3d470700",
+        "3dd75200",
+        "bce7bf74",
+        "3bc25319"
+      ]
+    },
+    {
+      "seed": "18446744073709551615",
+      "shape": [
+        1,
+        4,
+        64,
+        96
+      ],
+      "raw_sha256": "25f0e45622dcf364823b30fe219b289ae63bc690330db9884c3ba652b6630ae9",
+      "sha256": "70f48c2dc6a998ec182eabd794aa109cdfe1ac2a8fb9c4826654fee3ad019db5",
+      "first_bits": [
+        "3e302ec6",
+        "bcbecaf0",
+        "bd95a8ca",
+        "bdc81c4b",
+        "3d470700",
+        "3dd75200",
+        "bce7bf74",
+        "3bc25319"
+      ]
+    },
+    {
+      "seed": "18446744073709551615",
+      "shape": [
+        1,
+        4,
+        96,
+        64
+      ],
+      "raw_sha256": "25f0e45622dcf364823b30fe219b289ae63bc690330db9884c3ba652b6630ae9",
+      "sha256": "ea505965e259306331a4f5d47da4ced226497dd25dd01140f424ce870b9bbca4",
+      "first_bits": [
+        "3e302ec6",
+        "bcbecaf0",
+        "bd95a8ca",
+        "bdc81c4b",
+        "3d470700",
+        "3dd75200",
+        "bce7bf74",
+        "3bc25319"
+      ]
+    }
+  ]
+}

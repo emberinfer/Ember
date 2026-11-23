@@ -1,0 +1,202 @@
+{
+  "schema": "ember-sd15-paired-calibration-v1",
+  "range_band": {
+    "metric": "relative-l2-v1",
+    "base": 7.7563e-05,
+    "step_coef": 0.0,
+    "hard_multiplier": 100,
+    "precision_min": 0.005,
+    "precision_max": 0.045,
+    "calibration_hash": "ee69aa579c932cc710741c199a3b079d189f1e7a2d2ac4488886c17c52143ca4"
+  },
+  "pixel_policy": {
+    "mode": "within_one",
+    "max_relative_l2": 7.7563e-05,
+    "min_within_one_fraction": 0.999
+  },
+  "summary": {
+    "base": 7.7563e-05,
+    "step_coef": 0.0,
+    "hard_multiplier": 100,
+    "calibration_hash": "ee69aa579c932cc710741c199a3b079d189f1e7a2d2ac4488886c17c52143ca4",
+    "paired_points": 732,
+    "positive_steps": 720,
+    "maximum_point": {
+      "case": "euler-20-2",
+      "step": 1,
+      "distance": 7.051176081100021e-05,
+      "cpu_source": "cpu-worker2",
+      "cpu_sha256": "33803454ff46fa98cfc11dfd29575c86ca55590e1e02f05b48a15bea923818a6",
+      "gpu_sha256": "036e7e516eaf339c1737c5d84a7c550356ee4fbde5a61e7904ab10f86e8deaff"
+    },
+    "fit_method": "intercept pinned to maximum first-step distance; minimum nonnegative slope enveloping all points; independent 10 percent padding and upward 1e-10 rounding",
+    "pixel_policy": {
+      "mode": "within_one",
+      "max_relative_l2": 7.7563e-05,
+      "min_within_one_fraction": 0.999
+    },
+    "vae": [
+      {
+        "case": "ddim-100-0",
+        "relative_l2": 0.00010722473555952284,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 6.866455078125e-05
+      },
+      {
+        "case": "ddim-100-1",
+        "relative_l2": 8.19739452680548e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 6.230672200520833e-05
+      },
+      {
+        "case": "ddim-100-2",
+        "relative_l2": 8.493981371968048e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 5.2134195963541664e-05
+      },
+      {
+        "case": "ddim-20-0",
+        "relative_l2": 8.439988617213614e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 4.3233235677083336e-05
+      },
+      {
+        "case": "ddim-20-1",
+        "relative_l2": 7.248143275506003e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 4.8319498697916664e-05
+      },
+      {
+        "case": "ddim-20-2",
+        "relative_l2": 7.999981924955375e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 4.3233235677083336e-05
+      },
+      {
+        "case": "euler-100-0",
+        "relative_l2": 0.00012556768665961487,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 8.0108642578125e-05
+      },
+      {
+        "case": "euler-100-1",
+        "relative_l2": 8.219091025043377e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 5.2134195963541664e-05
+      },
+      {
+        "case": "euler-100-2",
+        "relative_l2": 9.316870597938843e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 5.5948893229166664e-05
+      },
+      {
+        "case": "euler-20-0",
+        "relative_l2": 9.955645458603382e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 5.2134195963541664e-05
+      },
+      {
+        "case": "euler-20-1",
+        "relative_l2": 8.139722207158373e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 4.9591064453125e-05
+      },
+      {
+        "case": "euler-20-2",
+        "relative_l2": 8.926809669352138e-05,
+        "within_one_fraction": 1.0,
+        "max_channel_difference": 1.0,
+        "different_channel_fraction": 4.8319498697916664e-05
+      }
+    ],
+    "precision_min": 0.005,
+    "precision_max": 0.045,
+    "precision_audit_min": 0.0005914344527662748,
+    "precision_audit_max": 0.04018924286833177,
+    "precision_eligible_points": 15,
+    "precision_total_points": 120,
+    "ledger_random_replay": {
+      "sampler": "ddim",
+      "steps": 20,
+      "prompt_index": 0,
+      "selected_unix": 1795401719.7471392,
+      "method": "OS CSPRNG, uniform among six 20-step calibration configurations"
+    },
+    "ledger_repeat_bitwise_equal": true
+  },
+  "prompts": [
+    "a photograph of an astronaut riding a horse on Mars, detailed",
+    "a red cube on a blue table next to a green plant, studio lighting",
+    "portrait of an old fisherman, weathered face, golden hour light, photorealistic"
+  ],
+  "matrix": {
+    "seed": 42,
+    "samplers": [
+      "ddim",
+      "euler"
+    ],
+    "steps": [
+      20,
+      100
+    ],
+    "width": 512,
+    "height": 512,
+    "guidance": 7500,
+    "negative_prompt": ""
+  },
+  "devices": {
+    "gpu": {
+      "adapter_sha256": "bbeebbd25af70ec3464a2c13c7f49c2fb190339041021943f032c106f1bcc527",
+      "cuda_runtime": "13.0",
+      "device": "gpu",
+      "domain": "EMBER-T4T-CALIBRATION-SOURCE-V1",
+      "files": "see gpu-source.json",
+      "host": "autodl-pro-794971e979d2",
+      "nice": 15,
+      "per_worker_torch_threads": 4,
+      "python": "3.12.3",
+      "torch": "2.14.0+cu130"
+    },
+    "cpu": {
+      "adapter_sha256": "bbeebbd25af70ec3464a2c13c7f49c2fb190339041021943f032c106f1bcc527",
+      "cuda_runtime": "12.4",
+      "device": "cpu",
+      "domain": "EMBER-T4T-CALIBRATION-SOURCE-V1",
+      "files": "see cpu-source.json",
+      "host": "autodl-container-352c469ce5-74be3a00",
+      "nice": 15,
+      "per_worker_torch_threads": 4,
+      "python": "3.12.3",
+      "torch": "2.5.1+cu124"
+    }
+  },
+  "safety": {
+    "allocator_budget_MiB": 6800,
+    "resident_limit_MiB": 7500,
+    "total_used_tripwire_MiB": 97000,
+    "vllm_delta_tripwire_MiB": 64,
+    "minimum_free_before_deployment_MiB": 7168,
+    "baseline": "measure vLLM PID and memory at each preflight"
+  },
+  "artifacts": {
+    "image-profile.json": "bf0d3e2d1dca20dc1ad823f64ff4aa8cc93d540ded6608d71bf7295dfd5eb540",
+    "pixel-policy.json": "b45433c6fdf99ca3d496861748a66d18794d6bce26423c5695c2767b031ab054",
+    "calibration-manifest.json": "ee69aa579c932cc710741c199a3b079d189f1e7a2d2ac4488886c17c52143ca4",
+    "gpu-source.json": "606f3dd5f026c8cad20c8e79ff794cde70f81ef549a06c4c735b12b94018fed5",
+    "cpu-source.json": "d15a6c823b7881497299f4cd74b1d9a571a03701e3f7f35c19c2c9c948c60f1d",
+    "scheduler_cfg.json": "18c64b45104484c8b56891a017ac659caad653d08a8f11c16419b6ee236b33e8",
+    "arch_manifest.json": "c75187e2f59ebcae4d1e460bcb5b6e005a5d19f6e15d23a39f6e9cbadfb8c90a"
+  }
+}

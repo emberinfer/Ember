@@ -59,6 +59,8 @@ type GenesisAccount struct {
 }
 
 type Model struct {
+	Kind               string               `json:"kind,omitempty"`
+	ImageProfile       *core.ImageProfile   `json:"image_profile,omitempty"`
 	VerifiedCompute    *VerifiedCompute     `json:"verified_compute,omitempty"`
 	ComputeCorrections []ComputeCorrection  `json:"compute_corrections,omitempty"`
 	Identity           *ModelIdentity       `json:"identity,omitempty"`
@@ -101,6 +103,7 @@ type Unbond struct {
 }
 
 type Hold struct {
+	Image                *ImageHold                  `json:"image,omitempty"`
 	NoAuditor            bool                        `json:"no_auditor,omitempty"`
 	FateHeight           int64                       `json:"fate_height,omitempty"`
 	Adjudication         *AdjudicationCase           `json:"adjudication,omitempty"`
@@ -235,6 +238,11 @@ type State struct {
 }
 
 type Action struct {
+	Kind                   string                      `json:"kind,omitempty"`
+	ImageProfile           *core.ImageProfile          `json:"image_profile,omitempty"`
+	ImageHeaders           map[string][]byte           `json:"image_headers,omitempty"`
+	ImageRequest           *ImageRequest               `json:"image_request,omitempty"`
+	ImageSubmission        *ImageSubmission            `json:"image_submission,omitempty"`
 	SpotStepCount          uint64                      `json:"spot_step_count,omitempty"`
 	CommitmentRoot         []byte                      `json:"commitment_root,omitempty"`
 	Spool                  *SpoolAttestation           `json:"spool,omitempty"`
@@ -670,6 +678,9 @@ func (s *State) applyAction(signer string, action Action, height int64) error {
 }
 
 func (s *State) applyActionInternal(signer string, action Action, height int64) error {
+	if s.Version < 16 && (action.Kind != "" || action.ImageProfile != nil || action.ImageRequest != nil || action.ImageSubmission != nil || len(action.ImageHeaders) > 0) {
+		return errors.New("image fields require v16")
+	}
 	if err := s.checkContributionAction(action, height); err != nil {
 		return err
 	}
@@ -893,6 +904,12 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		}
 		s.Accounts[signer].Unbondings = pending
 		return add(&s.Accounts[signer].Balance, matured)
+	case "image_received", "image_unopened", "image_counterproof":
+		return s.imageSpoolAction(signer, action, height)
+	case "image_request":
+		return s.freezeImage(signer, action, height)
+	case "submit_image":
+		return s.submitImage(signer, action, height)
 	case "freeze":
 		if s.Version >= 10 && !s.ExecutionAllowed(action.Node, height) {
 			return errors.New("executor registration unavailable or opted out")
@@ -912,6 +929,9 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		s.Holds[action.HoldID] = &Hold{Marked: marked, SubsidyDebit: s.takeInferenceDebit(), PrivacyTier: "P0", ID: action.HoldID, Payer: signer, Node: action.Node, Amount: action.Amount, State: "frozen", FreezeHeight: height, ExpireHeight: height + s.Parameters.HoldTimeout}
 		s.freezeConsumerGray(s.Holds[action.HoldID], height)
 		p := s.ActiveProfile(action.Node, height)
+		if s.Version >= 16 && p != nil && s.Models[p.ChainId].Kind == "text-to-image" {
+			return errors.New("use image_request")
+		}
 		if p != nil {
 			if err := s.validatePublishedNode(p); err != nil {
 				return err
@@ -930,7 +950,7 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		}
 	case "submit":
 		hold := s.Holds[action.HoldID]
-		if hold == nil || hold.State != "frozen" || height >= hold.ExpireHeight || action.Actual < 0 || action.Actual > hold.Amount {
+		if hold == nil || (s.Version >= 16 && hold.Image != nil) || hold.State != "frozen" || height >= hold.ExpireHeight || action.Actual < 0 || action.Actual > hold.Amount {
 			return errors.New("invalid receipt transition")
 		}
 		ref, node, err := verifyReceipt(action.Receipt, action.HoldID)
@@ -1095,6 +1115,9 @@ func (s *State) applyActionInternal(signer string, action Action, height int64) 
 		if action.Outcome == "accept" && height < hold.SettleHeight && !s.earlySettlementReady(hold, height) {
 			return errors.New("dispute window open")
 		}
+		if s.Version >= 16 && hold.Image != nil && action.Actual != 0 {
+			return errors.New("image settlement has no reported Actual")
+		}
 		if hold.TokenFee != nil && action.Actual != 0 && action.Actual != hold.Actual {
 			return errors.New("settlement amount differs from verified fee")
 		}
@@ -1242,6 +1265,20 @@ func (s *State) recordAuditOutcome(hold *Hold, signer, outcome, evidenceRef stri
 }
 
 func (s *State) selectAuditor(hold *Hold, exclude string, at ...int64) (string, []byte, error) {
+	if s.Version >= 16 && hold.Image != nil {
+		ids := []string{}
+		source := s.finalizedState()
+		producer := &pb.ResourceProfile{}
+		if proto.Unmarshal(hold.ProducerProfile, producer) != nil {
+			return "", nil, errors.New("invalid image producer")
+		}
+		for id := range source.Nodes {
+			if id != exclude && id != hold.Payer && source.EligibleAuditorProfile(id, hold.Node, producer, source.Height) {
+				ids = append(ids, id)
+			}
+		}
+		return s.drawAuditor(hold, ids, at...)
+	}
 	if hold.Pipeline != nil {
 		return s.selectPipelineAuditor(hold, exclude, at...)
 	}
@@ -1301,6 +1338,16 @@ func (s *State) settle(hold *Hold, outcome string) error {
 }
 
 func (s *State) settleAt(hold *Hold, outcome string, height int64) (err error) {
+	if s.Version >= 16 && hold.Image != nil {
+		r := hold.Image.Request
+		fee, e := core.ImageActual(s.Models[hold.ModelID].ImageProfile, r.Resolution, r.Steps, hold.Image.MultiplierPPM)
+		if e != nil || fee != hold.Actual || fee != hold.Amount {
+			return errors.New("image frozen fee invariant violated")
+		}
+	}
+	if s.Version >= 16 && hold.Image != nil && outcome == "accept" && (hold.Image.Delivery == nil || !hold.Image.Delivery.Received) {
+		return errors.New("image spool delivery unconfirmed")
+	}
 	defer func() {
 		if err == nil {
 			s.recordSettledStats(hold, height)
@@ -1485,6 +1532,9 @@ func (s *State) settledWorkCount(node string) int {
 // earlySettlementReady requires a recorded fate; the dispute height remains
 // an unconditional fallback. Subtraction avoids overflow of fate + grace.
 func (s *State) earlySettlementReady(h *Hold, height int64) bool {
+	if s.Version >= 16 && h.Image != nil && (height <= h.SubmitHeight || h.FateHeight == 0) {
+		return false
+	}
 	if s.Version < 15 || !(h.NoAuditor || (h.Sampling != nil && !h.Sampling.Sampled) || h.AuditVerdict != "") {
 		return false
 	}
@@ -1495,6 +1545,12 @@ func (s *State) earlySettlementReady(h *Hold, height int64) bool {
 func (s *State) exposure(node string) int64 {
 	var total int64
 	for _, hold := range s.Holds {
+		if s.Version >= 16 && hold.Image != nil && (hold.State == "frozen" || hold.State == "dispute") {
+			if hold.Node == node {
+				total += hold.Actual
+			}
+			continue
+		}
 		if s.Version >= 15 && hold.State == "dispute" {
 			switch {
 			case hold.Pipeline != nil:
@@ -1687,7 +1743,7 @@ func LoadStateWithUpgrade(path string, upgrade *MembershipUpgrade) (*State, erro
 	if state.Version == 2 && upgrade != nil {
 		return MigrateV2State(raw, *upgrade)
 	}
-	if state.Version != 15 && state.Version != 14 && state.Version != 13 && state.Version != 12 && state.Version != 11 && state.Version != 10 && state.Version != 9 && state.Version != 8 && state.Version != 7 && state.Version != 6 && state.Version != 5 && state.Version != 4 {
+	if state.Version != 16 && state.Version != 15 && state.Version != 14 && state.Version != 13 && state.Version != 12 && state.Version != 11 && state.Version != 10 && state.Version != 9 && state.Version != 8 && state.Version != 7 && state.Version != 6 && state.Version != 5 && state.Version != 4 {
 		return nil, errors.New("unsupported state version")
 	}
 	if err = loadArchive(path, &state, raw); err != nil {

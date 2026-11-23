@@ -9,6 +9,12 @@ from .adapters.http import LlamaCppEngine, VLLMEngine
 
 
 def load_engine(name, **config):
+    if name == 'diffusers-t2i':
+        from .adapters.diffusers_t2i import DiffusersT2I, RESOLUTIONS
+        engine = DiffusersT2I(config['model_path'], config.get('device', 'cpu'),
+                              config.get('resolutions', RESOLUTIONS))
+        engine.self_test(config['calibration'])
+        return engine
     if name == 'mock':
         return MockEngine()
     if name == 'transformers':

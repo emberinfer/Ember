@@ -118,7 +118,7 @@ class Agent:
                                 self.session_status(True)
                         elif frame.kind in ('run', 'audit', 'tokenize', 'audit_begin', 'audit_chunk', 'audit_commit'):
                             # Refresh authenticated runtime fields, not stub.
-                            for name in ('engine', 'contribution', 'chain_args', 'genesis_bytes', 'check_trust', 'content_policy'):
+                            for name in ('engine', 'contribution', 'chain_args', 'genesis_bytes', 'check_trust', 'content_policy', 'image_transport'):
                                 if hasattr(self, name):
                                     setattr(connection, name, getattr(self, name))
                             connection._run(frame, outgoing)
@@ -250,6 +250,16 @@ class Agent:
                 if not acquired:
                     send('unavailable', b'contribution cap or qualification; no work accepted')
                     return
+            if getattr(self.engine, 'execution_profile', '') == 'diffusers-sd1.5-fp32-v1':
+                from .image_runtime import execute as execute_image
+                # Generation already owns execution_lock above; audit owns it here.
+                if not executing:
+                    self.execution_lock.acquire()
+                    executing = True
+                result = execute_image(self, frame, job)
+                send('image_result' if frame.kind == 'run' else 'audit_result', result)
+                self.completed_requests += 1
+                return
             if frame.kind in ('audit', 'audit_commit'):
                 from .audit_engine import execute
                 result = execute(self, frame, job)

@@ -6,6 +6,10 @@ from engine import load_engine
 
 def main():
     import sys
+    if len(sys.argv) > 1 and sys.argv[1] == 'image-conformance':
+        from image_conformance import main as image_main
+        image_main(sys.argv[2:])
+        return
     if len(sys.argv) > 1 and sys.argv[1] == 'version':
         print((Path(__file__).resolve().parents[2] / 'VERSION').read_text().strip())
         return
@@ -44,8 +48,11 @@ def main():
             cli.add_argument('--tls-fingerprint')
             cli.add_argument('--insecure-localhost', action='store_true')
             cli.add_argument('--chain', required=True)
-            cli.add_argument('--engine', choices=('mock', 'transformers', 'pipeline', 'llamacpp', 'vllm'), required=True)
+            cli.add_argument('--engine', choices=('mock', 'transformers', 'pipeline', 'llamacpp', 'vllm', 'diffusers-t2i'), required=True)
             cli.add_argument('--model-path')
+            cli.add_argument('--image-pixel-policy', help='pinned T4 pixel audit policy JSON')
+            cli.add_argument('--image-retention-seconds', type=int, default=3600)
+            cli.add_argument('--image-calibration', help='operator-pinned image reference trajectory and signed profile limits JSON')
             cli.add_argument('--scheme-hash', help='pinned layout scheme hash (64 hex)')
             cli.add_argument('--generation-timeout', type=float, default=300,
                              help='SPI generation deadline in seconds (default 300)')

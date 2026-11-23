@@ -134,6 +134,8 @@ def _join_single(args, shared):
     agent = Agent(ident, MockEngine(), key=key,
                   authorized_schedulers=getattr(args, 'scheduler_id', ()),
                   scheduler_nonce_path=Path(args.state_dir) / 'scheduler-nonces.json')
+    if getattr(args, 'image_transport', None) is not None:
+        agent.image_transport = args.image_transport
     with shared['nonce_lock']:
         if shared['nonces'] is None:
             shared['nonces'] = agent.scheduler_nonces
@@ -178,7 +180,30 @@ def _join_single(args, shared):
                 check_model_trust(current, args.chain, getattr(args, 'trust_policy', None))
             agent.check_trust = refresh_trust
         def initialize_runtime():
-            if args.engine == 'transformers':
+            if args.engine == 'diffusers-t2i':
+                if not args.model_path or not getattr(args, 'image_calibration', None):
+                    raise ValueError('image JOIN requires pinned weights and calibration references')
+                if not getattr(args, 'image_transport', None) and not (
+                        getattr(args, 'no_exec', False) and getattr(args, 'no_audit', False)):
+                    raise ValueError('image JOIN requires operator-pinned gateway transport')
+                if not getattr(args, 'no_audit', False) and not getattr(args, 'image_pixel_policy', None):
+                    raise ValueError('image audit JOIN requires pinned T4 pixel policy')
+                from engine.adapters.diffusers_t2i import ASSETS
+                pins = json.loads(ASSETS.read_text())['files']
+                published = {a.name: a.sha256.hex() for a in manifest.artifacts}
+                if any(published.get(n) != h for n, h in pins.items()):
+                    raise ValueError('signed image manifest differs from pinned SD1.5 assets')
+                calibration = json.loads(Path(args.image_calibration).read_text())
+                if genesis.execution_profile_ver != 'diffusers-sd1.5-fp32-v1':
+                    raise ValueError('image execution profile differs from signed genesis')
+                if not getattr(args, 'chain_rpc', None):
+                    raise ValueError('image JOIN requires finalized published profile')
+                image_model = _chain_json(args.chain_cli, args.chain_rpc, '/model/' + args.chain)
+                resolutions = [(r['height'], r['width']) for r in image_model['image_profile']['allowed_resolutions']]
+                agent.engine = load_engine('diffusers-t2i', model_path=args.model_path,
+                    device='cpu' if args.device == 'auto' else args.device, calibration=calibration,
+                    resolutions=resolutions)
+            elif args.engine == 'transformers':
                 root = Path(args.model_path).expanduser() if args.model_path else Path.home() / 'models/Qwen2.5-1.5B-Instruct'
                 for artifact in manifest.artifacts:
                     try:
@@ -213,7 +238,7 @@ def _join_single(args, shared):
                     eos_token_ids=_model_eos_token_ids(getattr(args, 'model_path', None)))
             elif manifest.artifacts:
                 raise ValueError('mock engine cannot claim a real-weight chain')
-            if manifest.artifacts:
+            if manifest.artifacts and args.engine != 'diffusers-t2i':
                 caps = agent.engine.capabilities()
                 if 'full' in caps.evidence_levels:
                     require_full_evidence(agent.engine)

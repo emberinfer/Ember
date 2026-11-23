@@ -95,7 +95,7 @@ func T2IInitLatent(seed uint64, shape [4]uint64) ([]float32, error) {
 		u0, u1 := float32(words[0]>>8)*0x1p-24, float32(words[1]>>8)*0x1p-24
 		radius := t2sqrt(t2mul(-2, t2log(t2sub(1, u0))))
 		theta := t2mul(math.Float32frombits(0x40c90fdb), u1)
-		out[i] = t2mul(t2mul(radius, t2cos(theta)), math.Float32frombits(0x3e3a8588))
+		out[i] = t2mul(radius, t2cos(theta))
 	}
 	return out, nil
 }

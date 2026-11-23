@@ -29,7 +29,7 @@ import (
 )
 
 func imageModel() chain.Model {
-	return chain.Model{ID: "ember-image", Kind: "text-to-image", ImageProfile: &core.ImageProfile{ExecutionProfile: "diffusers-sd1.5-fp32-v1", MaxSteps: 100, PriceTable: []core.ImagePrice{{Step: 560000000000, Text: 38000000000, VAE: 400000000000}}, Components: []core.ImageComponent{{Role: "unet", Params: 860000000}, {Role: "text_encoder", Params: 123000000}, {Role: "vae", Params: 83700000}}}}
+	return chain.Model{ID: "ember-image", Kind: "text-to-image", ImageProfile: &core.ImageProfile{ExecutionProfile: "diffusers-sd1.5-fp32-v2", MaxSteps: 100, PriceTable: []core.ImagePrice{{Step: 560000000000, Text: 38000000000, VAE: 400000000000}}, Components: []core.ImageComponent{{Role: "unet", Params: 860000000}, {Role: "text_encoder", Params: 123000000}, {Role: "vae", Params: 83700000}}}}
 }
 func imageHold() *chain.Hold {
 	return &chain.Hold{ID: "hold", ModelID: "ember-image", Node: "executor", Payer: "payer", Amount: 858, Actual: 858, State: "frozen", FreezeHeight: 1, ExpireHeight: 7001, Image: &chain.ImageHold{MultiplierPPM: 1000000, Request: chain.ImageRequest{Steps: 20}}}

@@ -250,7 +250,7 @@ class Agent:
                 if not acquired:
                     send('unavailable', b'contribution cap or qualification; no work accepted')
                     return
-            if getattr(self.engine, 'execution_profile', '') == 'diffusers-sd1.5-fp32-v1':
+            if getattr(self.engine, 'execution_profile', '') == 'diffusers-sd1.5-fp32-v2':
                 from .image_runtime import execute as execute_image
                 # Generation already owns execution_lock above; audit owns it here.
                 if not executing:

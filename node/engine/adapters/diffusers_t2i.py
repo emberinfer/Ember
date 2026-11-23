@@ -10,7 +10,7 @@ import struct
 
 from ember_core.t2i import f32, sqrt32, init_latent, serialize_latent, encode_prompts
 
-PROFILE = 'diffusers-sd1.5-fp32-v1'
+PROFILE = 'diffusers-sd1.5-fp32-v2'
 ASSETS = Path(__file__).resolve().parents[1] / 'assets/sd15-fp32-v1.json'
 RESOLUTIONS = ((512, 512), (512, 768), (768, 512))
 
@@ -50,28 +50,40 @@ class Formula:
         if type(guidance) is not int or not 1000 <= guidance <= 30000:
             raise ValueError('unsupported guidance')
         self.sampler, self.g = sampler, f32(f32(guidance) / f32(1000))
-        self.ts = [999] if steps == 1 else [(steps-1-i)*999//(steps-1) for i in range(steps)]
-        a, accum = [], 1.0
-        b0, b1 = struct.unpack('<ff', bytes.fromhex('89d25e3aa69b443c'))
-        for j in range(1000):
-            beta = f32(b0 + f32(f32(b1-b0) * f32(f32(j)/f32(999))))
-            accum = f32(accum * f32(1-beta))
-            a.append(accum)
-        self.a = [a[t] for t in self.ts] + [1.0]
-        self.s = [sqrt32(f32(f32(1-v)/v)) for v in self.a]
+        # Match diffusers 0.32.2 CPU scheduler construction exactly; no scheduler
+        # execution is delegated to diffusers. Asset scheduler_config is truth.
+        import torch
+        import numpy as np
+        beta = torch.linspace(0.00085 ** 0.5, 0.012 ** 0.5, 1000,
+                              dtype=torch.float32) ** 2
+        alpha = torch.cumprod(1.0 - beta, dim=0)
+        self.init_noise_sigma = 1.0
+        if sampler == 'ddim':
+            self.ts = (np.arange(steps) * (1000 // steps))[::-1].copy() + 1
+            self.ts = self.ts.tolist()
+            self.a = [float(alpha[t]) for t in self.ts]
+            self.prev_a = [float(alpha[t - 1000 // steps] if t - 1000 // steps >= 0
+                                       else alpha[0]) for t in self.ts]
+            self.s = []
+        else:
+            self.ts = np.linspace(0, 999, steps, dtype=np.float32)[::-1].copy().tolist()
+            train_sigma = ((1 - alpha) / alpha) ** 0.5
+            self.s = np.interp(self.ts, np.arange(1000), train_sigma.numpy()).astype(np.float32).tolist() + [0.0]
+            self.init_noise_sigma = max(self.s)
+            self.a = []
 
     def model_input(self, x, i):
         if self.sampler == 'ddim':
             return x
         s = self.s[i]
-        return divide(x, sqrt32(f32(f32(s*s)+1)))
+        return divide(x, f32(f32(f32(s*s)+1) ** 0.5))
 
     def update(self, x, i, uncond, cond):
         eps = uncond + self.g * (cond - uncond)
         if self.sampler == 'ddim':
-            a, b = self.a[i:i+2]
-            pred = divide(x - sqrt32(f32(1-a)) * eps, sqrt32(a))
-            return sqrt32(b) * pred + sqrt32(f32(1-b)) * eps
+            a, b = self.a[i], self.prev_a[i]
+            pred = divide(x - f32((1-a) ** 0.5) * eps, f32(a ** 0.5))
+            return f32(b ** 0.5) * pred + f32((1-b) ** 0.5) * eps
         s, sn = self.s[i:i+2]
         pred = x - s * eps
         d = divide(x - pred, s)
@@ -161,6 +173,10 @@ class DiffusersT2I:
 
     def step(self, x, formula, index, embeddings):
         with self.torch.inference_mode(), self.torch.autocast(device_type=self.device.split(':')[0], enabled=False):
+            # Leaf zero is the chain-reconstructible unit Gaussian sentinel.
+            # Euler preparation belongs to transition one, including audit replay.
+            if index == 0 and formula.sampler == 'euler':
+                x = x * formula.init_noise_sigma
             model_input = formula.model_input(x, index)
             u, c = [self.unet(model_input, formula.ts[index], encoder_hidden_states=e).sample
                     for e in embeddings]

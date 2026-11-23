@@ -194,7 +194,7 @@ def _join_single(args, shared):
                 if any(published.get(n) != h for n, h in pins.items()):
                     raise ValueError('signed image manifest differs from pinned SD1.5 assets')
                 calibration = json.loads(Path(args.image_calibration).read_text())
-                if genesis.execution_profile_ver != 'diffusers-sd1.5-fp32-v1':
+                if genesis.execution_profile_ver != 'diffusers-sd1.5-fp32-v2':
                     raise ValueError('image execution profile differs from signed genesis')
                 if not getattr(args, 'chain_rpc', None):
                     raise ValueError('image JOIN requires finalized published profile')

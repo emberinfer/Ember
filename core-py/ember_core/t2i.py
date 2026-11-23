@@ -16,7 +16,7 @@ def _float(x):
 
 
 PI, TWO_PI, HALF_PI = map(_float, (0x40490fdb, 0x40c90fdb, 0x3fc90fdb))
-LN2, INIT_SCALE = map(_float, (0x3f317218, 0x3e3a8588))
+LN2, INIT_SCALE = map(_float, (0x3f317218, 0x3f800000))
 MASK = 0xffffffff
 
 
@@ -86,7 +86,7 @@ def init_latent(seed, shape):
         u0, u1 = (x0 >> 8) * 2**-24, (x1 >> 8) * 2**-24
         radius = sqrt32(f32(-2 * log32(f32(1 - u0))))
         theta = f32(TWO_PI * u1)
-        result.append(f32(f32(radius * cos32(theta)) * INIT_SCALE))
+        result.append(f32(radius * cos32(theta)))
     return result
 
 

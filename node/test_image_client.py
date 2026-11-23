@@ -119,35 +119,27 @@ def test_gate_and_overlong(generated):
 
 
 @pytest.mark.parametrize('sampler', ['ddim', 'euler'])
-def test_formula_against_scalar_operation_reference(sampler):
+@pytest.mark.parametrize('steps', [1, 3, 20, 100])
+def test_formula_against_diffusers_reference(sampler, steps):
     import torch
-    # Independent scalar beta accumulation, using decimal constants rounded to fp32.
-    f = Formula(3, sampler, 7500)
-    assert f.ts == [999, 499, 0]
-    a, acc = [], 1.0
-    for j in range(1000):
-        beta = f32(f32(.00085)+f32(f32(f32(.012)-f32(.00085))*f32(f32(j)/999)))
-        acc = f32(acc*f32(1-beta)); a.append(acc)
-    assert f.a == [a[999], a[499], a[0], 1]
-    for i in range(3):
-        for x, u, c in ((.137, -.013, .007), (-.1, .3, -.9), (0., 1., 1.)):
-            x,u,c = map(f32,(x,u,c))
-            eps = f32(u+f32(f32(7.5)*f32(c-u)))
-            if sampler == 'ddim':
-                aa, bb = f.a[i:i+2]
-                pred = f32(f32(x-f32(sqrt32(f32(1-aa))*eps))/sqrt32(aa))
-                expected = f32(f32(sqrt32(bb)*pred)+f32(sqrt32(f32(1-bb))*eps))
-                model_input = x
-            else:
-                s, sn = f.s[i:i+2]
-                pred = f32(x-f32(s*eps))
-                d = f32(f32(x-pred)/s)
-                expected = f32(x+f32(d*f32(sn-s)))
-                model_input = f32(x/sqrt32(f32(f32(s*s)+1)))
-            tensors = [torch.tensor(v, dtype=torch.float32) for v in (x,u,c)]
-            actual = f.update(tensors[0],i,tensors[1],tensors[2]).item()
-            assert struct.pack('<f',actual) == struct.pack('<f',expected)
-            assert f.model_input(tensors[0],i).item() == model_input
+    from diffusers import DDIMScheduler, EulerDiscreteScheduler
+    cls = DDIMScheduler if sampler == 'ddim' else EulerDiscreteScheduler
+    ref = cls(beta_start=.00085, beta_end=.012, beta_schedule='scaled_linear',
+              steps_offset=1, **({'clip_sample': False, 'set_alpha_to_one': False}
+                                 if sampler == 'ddim' else {}))
+    ref.set_timesteps(steps)
+    f = Formula(steps, sampler, 7500)
+    assert f.ts == ref.timesteps.tolist()
+    assert f.init_noise_sigma == float(ref.init_noise_sigma)
+    x = torch.linspace(-2, 2, 120).reshape(1, 4, 5, 6)
+    for i, t in enumerate(f.ts):
+        u, c = x * .11, x * .17
+        torch.testing.assert_close(f.model_input(x, i), ref.scale_model_input(x, t),
+                                   rtol=2e-7, atol=2e-7)
+        actual = f.update(x, i, u, c)
+        expected = ref.step(u + 7.5 * (c - u), t, x).prev_sample
+        torch.testing.assert_close(actual, expected, rtol=2e-6, atol=2e-6)
+        x = actual
 
 
 def test_merkle_odd_and_directions(generated):

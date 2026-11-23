@@ -88,7 +88,7 @@ and default teacher forcing; see [audit design](AUDIT_DESIGN.md) and
 [teacher forcing](TEACHER-FORCING-AUDITS.md).
 
 
-## SD1.5 image profile
+## SD1.5 image profile (v1, revoked by T2H)
 
 The paired GPU/CPU calibration is pinned in
 `chain-genesis/ember-sd15-fp32-v1/calibration.json`. Its additive soft band is
@@ -98,3 +98,33 @@ The conditional precision feature interval is
 `[0.005, 0.045]`; declaring F16 alone does not
 qualify measurements outside that interval for configuration-error treatment.
 See the package README and signed source manifests for the measurement scope.
+
+
+## SD1.5 execution v2 — T2H, 2026-11-23
+
+The v1 numerical semantics, band and precision interval above are revoked.
+The model profile ID remains `ember-stable-diffusion-1.5-v1`; the only accepted
+new execution profile is `diffusers-sd1.5-fp32-v2`. New material lives in
+`chain-genesis/ember-sd15-fp32-v2/`.
+
+All 12 paired trajectories were regenerated: 3 prompts × DDIM/Euler × 20/100
+steps, seed 42, 512×512, guidance 7.5. All 732 paired points and independent
+21-point CPU replay were verified against both device signatures.
+The new soft band is `4.5211e-06 + 1.23262e-05 * step`; hard is
+100 times soft. Fit uses the maximum first-step intercept and minimum nonnegative
+envelope slope, each padded 10% and rounded upward to 1e-10 (T4T convention).
+Largest paired distance: 0.000218571723577,
+euler-20-2, step 20. Ledger verified
+720 positive paired steps plus 20 independent replay steps.
+
+VAE policy remains `within_one >= 0.999`, newly verified on the same 12 GPU
+final latents: every fraction was 1.0 and every maximum channel difference was 1.
+The new conditional precision region is `[0.043, 0.06]`, derived from actual F16
+Euler N=1 execution audited by F32. The three distances were 0.048256–0.056865.
+DDIM N=1 and N=20, and Euler N=20 did not enter this region; DDIM has no observed
+feature region. Both same-input audit directions are retained separately;
+cumulative drift does not establish precision-error eligibility.
+
+Calibration manifest SHA-256: `e9f29b91715a7f0772475d542128f5e8b5ea3186013a961b9895ac6aa8c95221`. Raw artifacts,
+per-step distances, device signatures, VAE/precision measurements and resource
+monitoring remain in the external `t2h-logs/` evidence directory.

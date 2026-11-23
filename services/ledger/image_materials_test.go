@@ -87,7 +87,7 @@ func TestRealCLIPHeaderMaterialsAndBufferPolicy(t *testing.T) {
 				}
 				ch = append(binary.LittleEndian.AppendUint64(nil, uint64(len(body))), []byte(body)...)
 			}
-			p := &core.ImageProfile{ExecutionProfile: "diffusers-sd1.5-fp32-v1", RNGSpecID: "philox-gauss-v1", MaxSteps: 100, GuidanceRange: [2]uint32{1000, 30000}, AllowedResolutions: []core.ImageResolution{{Width: 512, Height: 512}}, AllowedSamplers: []string{"ddim"}, RangeBand: core.ImageStepBand{Metric: "relative-l2-v1", Base: 3e-6, StepCoef: 1e-6, HardMultiplier: 100, PrecisionMin: .005, PrecisionMax: .06, CalibrationHash: strings.Repeat("1", 64)}, ArchManifest: map[string][]core.ImageLayer{}}
+			p := &core.ImageProfile{ExecutionProfile: "diffusers-sd1.5-fp32-v2", RNGSpecID: "philox-gauss-v1", MaxSteps: 100, GuidanceRange: [2]uint32{1000, 30000}, AllowedResolutions: []core.ImageResolution{{Width: 512, Height: 512}}, AllowedSamplers: []string{"ddim"}, RangeBand: core.ImageStepBand{Metric: "relative-l2-v1", Base: 3e-6, StepCoef: 1e-6, HardMultiplier: 100, PrecisionMin: .005, PrecisionMax: .06, CalibrationHash: strings.Repeat("1", 64)}, ArchManifest: map[string][]core.ImageLayer{}}
 			p.LatentSpec.Channels = 4
 			p.LatentSpec.VAEScaleFactor = 8
 			p.LatentSpec.Distribution = "standard-normal"

@@ -9,6 +9,7 @@ import (
 
 	core "ember/core-go"
 	pb "ember/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestRegister(t *testing.T) {
@@ -164,6 +165,47 @@ func TestGPUProfileRequiresExplicitCUDA(t *testing.T) {
 		mutate(p)
 		if ValidateCapabilities(p) == nil {
 			t.Fatal("incompatible GPU runtime admitted")
+		}
+	}
+}
+
+func TestImageCapabilities(t *testing.T) {
+	image := &pb.ResourceProfile{Gpu: "cpu", EngineVer: "diffusers-sd1.5-fp32-v2", ExecutionProfileVer: "diffusers-sd1.5-fp32-v2",
+		EngineCapabilities: &pb.EngineCapabilities{SpiVersion: "ember-engine-spi-v1", EngineName: "diffusers-t2i", EngineVersion: "diffusers-sd1.5-fp32-v2", NumericalFormat: "f32", DeviceClass: "cpu", EvidenceLevels: []string{"image-latent"}, ScoreKind: "latent", MaxTopK: 0, Roles: []string{"model", "auditor"}}}
+	if err := ValidateCapabilities(image); err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*pb.EngineCapabilities){
+		"spi":      func(c *pb.EngineCapabilities) { c.SpiVersion = "unknown" },
+		"engine":   func(c *pb.EngineCapabilities) { c.EngineName = "unknown" },
+		"dtype":    func(c *pb.EngineCapabilities) { c.NumericalFormat = "unknown" },
+		"device":   func(c *pb.EngineCapabilities) { c.DeviceClass = "unknown" },
+		"evidence": func(c *pb.EngineCapabilities) { c.EvidenceLevels = []string{"unknown"} },
+		"score":    func(c *pb.EngineCapabilities) { c.ScoreKind = "unknown" },
+		"mixed":    func(c *pb.EngineCapabilities) { c.EvidenceLevels = []string{"image-latent", "none"} },
+		"topk":     func(c *pb.EngineCapabilities) { c.MaxTopK = 1025 },
+	} {
+		t.Run(name, func(t *testing.T) {
+			p := proto.Clone(image).(*pb.ResourceProfile)
+			mutate(p.EngineCapabilities)
+			if ValidateCapabilities(p) == nil {
+				t.Fatal("invalid image declaration accepted")
+			}
+		})
+	}
+}
+
+func TestTextCapabilityRulesUnchanged(t *testing.T) {
+	for _, level := range []string{"full", "shard-layer", "topk-logprobs", "none", "mock"} {
+		for _, score := range []string{"raw-logits", "logprobs", "latent", "unknown"} {
+			for _, topk := range []uint32{0, 1, 15, 16, 1024, 1025} {
+				p := &pb.ResourceProfile{Gpu: "cpu", EngineCapabilities: &pb.EngineCapabilities{SpiVersion: "ember-engine-spi-v1", EngineName: "fixture", EngineVersion: "1", NumericalFormat: "f32", DeviceClass: "cpu", EvidenceLevels: []string{level}, ScoreKind: score, MaxTopK: topk, Roles: []string{"model"}, ForcedPrefixReplay: level == "full"}}
+				// Shard declarations require a real stage and are covered by the existing stage tests.
+				want := topk > 0 && topk <= 1024 && (score == "raw-logits" || score == "logprobs") && level != "shard-layer" && (level != "full" || (score == "raw-logits" && topk >= 16))
+				if got := ValidateCapabilities(p) == nil; got != want {
+					t.Fatalf("%s/%s/%d got %v want %v", level, score, topk, got, want)
+				}
+			}
 		}
 	}
 }

@@ -139,7 +139,7 @@ func ValidateCapabilities(p *pb.ResourceProfile) error {
 		}
 		return nil // existing S1-S13 signed profiles and vectors
 	}
-	if c.SpiVersion != "ember-engine-spi-v1" || c.EngineName == "" || c.EngineVersion == "" || c.DeviceClass != p.Gpu || c.NumericalFormat == "" || len(c.EvidenceLevels) == 0 || len(c.Roles) == 0 || c.MaxTopK == 0 || c.MaxTopK > 1024 {
+	if c.SpiVersion != "ember-engine-spi-v1" || c.EngineName == "" || c.EngineVersion == "" || c.DeviceClass != p.Gpu || c.NumericalFormat == "" || len(c.EvidenceLevels) == 0 || len(c.Roles) == 0 || (c.MaxTopK == 0 && !contains(c.EvidenceLevels, "image-latent")) || c.MaxTopK > 1024 {
 		return errors.New("invalid engine capabilities")
 	}
 	hasFull, hasShard := false, false
@@ -149,12 +149,17 @@ func ValidateCapabilities(p *pb.ResourceProfile) error {
 			hasFull = true
 		case "shard-layer":
 			hasShard = true
-		case "topk-logprobs", "none", "mock":
+		case "topk-logprobs", "none", "mock", "image-latent":
 		default:
 			return errors.New("unknown evidence level")
 		}
 	}
-	if (c.ScoreKind != "raw-logits" && c.ScoreKind != "logprobs") || (hasFull && (c.ScoreKind != "raw-logits" || !c.ForcedPrefixReplay || c.MaxTopK < 16)) ||
+	image := contains(c.EvidenceLevels, "image-latent")
+	if image && (len(c.EvidenceLevels) != 1 || c.EngineName != "diffusers-t2i" || c.NumericalFormat != "f32" ||
+		(c.DeviceClass != "cpu" && c.DeviceClass != "cuda") || c.ScoreKind != "latent" || c.ForcedPrefixReplay) {
+		return errors.New("inconsistent image capabilities")
+	}
+	if (!image && c.ScoreKind != "raw-logits" && c.ScoreKind != "logprobs") || (hasFull && (c.ScoreKind != "raw-logits" || !c.ForcedPrefixReplay || c.MaxTopK < 16)) ||
 		(hasShard && (c.ScoreKind != "raw-logits" || c.MaxTopK < 16 || c.ForcedPrefixReplay)) {
 		return errors.New("inconsistent evidence capabilities")
 	}

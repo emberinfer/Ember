@@ -32,7 +32,7 @@ const (
 	SubsidyActivationInput      uint32 = 128
 	SubsidyDaySeconds           int64  = 86400
 	SubsidyActivationSeconds           = 7 * SubsidyDaySeconds
-	SubsidyNotice                      = "补贴是消费券，只能用于支付推理费，不能转给他人。"
+	SubsidyNotice                      = "The subsidy is a consumption voucher. It can only be used to pay inference fees and cannot be transferred to anyone else."
 )
 
 // The conservative forecast is supplied once in genesis, not revised at runtime.

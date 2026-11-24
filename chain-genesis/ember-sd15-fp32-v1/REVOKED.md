@@ -1,1 +1,1 @@
-作废（2026-11-23，T2H）：本目录仅保留历史证据。执行型档v1禁止新发布；init与scheduler语义错误，旧标定带和精度区不可用于v2。替代目录 ember-sd15-fp32-v2。
+Revoked (2026-11-23, T2H): This directory is retained as historical evidence only. Execution profile v1 must not be published again; its init and scheduler semantics are wrong, and the old calibration band and precision zone must not be used for v2. Replacement directory: ember-sd15-fp32-v2.

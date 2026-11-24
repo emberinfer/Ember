@@ -10,7 +10,7 @@ node/.cache/
 deploy/.demo-*/
 deploy/.join-*/
 deploy/.real-*/
-/IDN边缘集群设备信息(1).docx
+/*.docx
 docs/IDN_CLUSTER.md
 
 # --- Internal operations: never part of the public tree ---

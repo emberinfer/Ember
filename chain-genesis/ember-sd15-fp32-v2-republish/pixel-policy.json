@@ -1,0 +1,5 @@
+{
+  "mode": "within_one",
+  "min_within_one_fraction": 0.999,
+  "max_relative_l2": 0.0012371411
+}

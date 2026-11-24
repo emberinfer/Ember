@@ -120,6 +120,27 @@ def join(args):
         thread.join()
 
 
+def _validate_image_pins(manifest, pins):
+    """Match signed assets, allowing only the legacy bare UNet config name."""
+    error = 'signed image manifest differs from pinned SD1.5 assets'
+    published = {}
+    for artifact in manifest.artifacts:
+        if artifact.name in published:
+            raise ValueError(error)
+        published[artifact.name] = artifact.sha256.hex()
+    for name, expected in pins.items():
+        if name in published:
+            if published[name] != expected:
+                raise ValueError(error)
+            continue
+        if (Path(name).name != 'config.json' or
+                published.get('config.json') != expected):
+            raise ValueError(error)
+        config_hash = getattr(manifest, 'config_hash', None)
+        if config_hash is not None and published['config.json'] != config_hash.hex():
+            raise ValueError(error)
+
+
 def _join_single(args, shared):
     if getattr(args, 'liveness_threshold', 300) <= 0 or not math.isfinite(getattr(args, 'liveness_poll', 10)) or getattr(args, 'liveness_poll', 10) <= 0:
         raise ValueError('liveness threshold and poll must be positive and finite')
@@ -190,9 +211,7 @@ def _join_single(args, shared):
                     raise ValueError('image audit JOIN requires pinned T4 pixel policy')
                 from engine.adapters.diffusers_t2i import ASSETS
                 pins = json.loads(ASSETS.read_text())['files']
-                published = {a.name: a.sha256.hex() for a in manifest.artifacts}
-                if any(published.get(n) != h for n, h in pins.items()):
-                    raise ValueError('signed image manifest differs from pinned SD1.5 assets')
+                _validate_image_pins(manifest, pins)
                 calibration = json.loads(Path(args.image_calibration).read_text())
                 if genesis.execution_profile_ver != 'diffusers-sd1.5-fp32-v2':
                     raise ValueError('image execution profile differs from signed genesis')

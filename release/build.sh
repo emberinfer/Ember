@@ -25,7 +25,7 @@ for arch in $arches; do
   install -m 0755 release/ember-node "$root/bin/ember-node"
   cp -a core-py proto "$root/lib/ember/"
   cp -a node/agent node/auditor node/engine node/evidence node/fetcher node/privacy \
-    node/conformance.py node/pinned_tls.py node/pipeline_client.py node/shard_rpc.py \
+    node/conformance.py node/pinned_tls.py node/pipeline_client.py node/shard_rpc.py node/tokenization.py node/tokenize_prompt.py \
     "$root/lib/ember/node/"
   cp node/requirements-spi.txt VERSION "$root/lib/ember/"
   cp "node/requirements-cpu-$arch.txt" "$root/lib/ember/requirements-cpu.txt"

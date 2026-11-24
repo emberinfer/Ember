@@ -361,3 +361,127 @@ def test_precision_verdict_uses_reject_kind(generated):
     action = chain_verdict_action(SimpleNamespace(key=key, node_id=node_id(pub)), 'hold', hold, result, '33'*32)
     v = SpotVerdict.FromString(base64.b64decode(action['verdict']))
     assert (v.verdict, v.verdict_kind) == ('reject', 'precision_mismatch')
+
+
+def test_received_after_binding_before_replay(generated):
+    e, c, ctx, _ = generated
+    steps = [0, 1, 3]
+    opened = c.opening(ctx['request_id'], steps)
+    before = e.forwards
+    acknowledgements = []
+    def received():
+        assert e.forwards == before
+        acknowledgements.append(True)
+    c.audit(ctx, opened, steps, dict(base=0, step_coef=0, hard_multiplier=1),
+            dict(mode='both', max_relative_l2=0, min_within_one_fraction=1),
+            lambda p: b'signed', received=received)
+    assert acknowledgements == [True] and e.forwards > before
+    opened['tensors']['1'] = b'corrupt'
+    with pytest.raises(ValueError):
+        c.audit(ctx, opened, steps, {}, {}, lambda p: b'signed', received=received)
+    assert acknowledgements == [True]
+
+
+def test_received_commit_failure_stops_replay(generated):
+    e, c, ctx, _ = generated
+    before = e.forwards
+    def failed():
+        raise RuntimeError('commit failed')
+    with pytest.raises(RuntimeError, match='commit failed'):
+        c.audit(ctx, c.opening(ctx['request_id'], [1]), [1], {}, {},
+                lambda p: b'signed', received=failed)
+    assert e.forwards == before
+
+
+def test_image_runtime_received_is_durable_and_challenge_bound(generated, tmp_path, monkeypatch):
+    import base64
+    import threading
+    from types import SimpleNamespace as NS
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+    from ember_core import node_id
+    from agent.image_runtime import execute
+    e, c, ctx, _ = generated
+    key = Ed25519PrivateKey.generate()
+    auditor = node_id(key.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw))
+    challenge = dict(challenge_height=10, round='1', auditor=auditor,
+                     step_set=[1, 3], verdict_deadline=100, received=False)
+    hold = dict(state='dispute', model_id='model', request_id=ctx['request_id'],
+                auditor=auditor, receipt_ref=ctx['root'], audit_proof='cc'*32,
+                image=dict(request=ctx['request'], submission=ctx['submission']),
+                pipeline=dict(spot=challenge, commitment_root=base64.b64encode(bytes.fromhex(ctx['root'])).decode()))
+    def query(cli, rpc, path):
+        if path.startswith('/hold/'): return hold
+        if path == '/state': return dict(height=11)
+        if path == '/account/' + auditor: return dict(nonce=0)
+        if path == '/model/model': return dict(image_profile=dict(
+            allowed_resolutions=[dict(height=h, width=w) for h,w in e.resolutions],
+            range_band=dict(base=0, step_coef=0, hard_multiplier=1)))
+        raise AssertionError(path)
+    monkeypatch.setattr('agent.join._chain_json', query)
+    policy = tmp_path/'policy.json'
+    policy.write_text(json.dumps(dict(mode='both', max_relative_l2=0, min_within_one_fraction=1)))
+    opened = c.opening(ctx['request_id'], [1, 3])
+    agent = NS(key=key, node_id=auditor, engine=e, spot_tx_lock=threading.Lock(),
+               chain_args=NS(chain_rpc='isolated', chain_cli='unused', chain='model',
+                             ledger_chain_id='isolated', state_dir=str(tmp_path), image_pixel_policy=str(policy)),
+               image_transport=NS(opening=lambda job, context: opened))
+    before=e.forwards
+    commits=[]
+    def commit(a, raw):
+        env=json.loads(base64.b64decode(json.loads(raw)['envelope']))
+        action=env['action']
+        assert list(action) == ['spool', 'type', 'hold_id']
+        assert action['type']=='spot_received' and action['spool']['challenge_height']==10
+        assert (tmp_path/'image-opening'/'hold'/'10-1.json').is_file()
+        assert e.forwards==before
+        challenge['received']=True
+        commits.append(action)
+    monkeypatch.setattr('auditor.spot_patrol.broadcast',commit)
+    frame=NS(kind='audit',request_id='hold')
+    job=dict(challenge_height=10,round='1')
+    result=json.loads(execute(agent,frame,job))
+    assert result['verdict']=='accept' and len(commits)==1 and e.forwards>before
+    with pytest.raises(ValueError,match='challenge changed'):
+        execute(agent,frame,dict(challenge_height=9,round='1'))
+
+
+def test_image_agent_caches_by_finalized_challenge(generated, monkeypatch):
+    import queue
+    from agent import Agent
+    from ember_pb2 import TunnelFrame
+    from auditor.spot_worker import envelope_result
+    from types import SimpleNamespace as NS
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+    from ember_core import node_id
+    engine, _, _, _ = generated
+    engine.execution_profile = 'diffusers-sd1.5-fp32-v2'
+    key = Ed25519PrivateKey.generate()
+    identity = node_id(key.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw))
+    agent = Agent(identity, engine, key)
+    agent.chain_args = NS(chain_cli='unused', chain_rpc='isolated', ledger_chain_id='isolated')
+    c = dict(auditor=identity, challenge_height=10, round='1')
+    hold = dict(state='dispute', auditor=identity, pipeline=dict(spot=c))
+    monkeypatch.setattr('agent.join._chain_json', lambda *args: hold)
+    monkeypatch.setattr('auditor.worker._fresh_audit_nonce', lambda *args: 0)
+    executions=[]
+    def execute(a, f, job):
+        executions.append(job)
+        return envelope_result(a, dict(type='audit', hold_id=f.request_id), dict(verdict='accept'))
+    monkeypatch.setattr('agent.image_runtime.execute', execute)
+    outgoing=queue.Queue()
+    def run(height, round):
+        frame=TunnelFrame(kind='audit', request_id='hold', attempt_id=str(height),
+                          payload=json.dumps(dict(kind='text-to-image', challenge_height=height, round=round)).encode())
+        agent._run(frame, outgoing)
+        return outgoing.get_nowait()
+    assert run(10,'1').kind=='audit_result'
+    assert run(10,'1').kind=='audit_result'
+    assert len(executions)==1
+    c.update(challenge_height=12,round='2')
+    assert run(12,'2').kind=='audit_result'
+    assert run(12,'2').kind=='audit_result'
+    assert len(executions)==2
+    assert run(10,'1').kind=='error'
+    assert len(executions)==2

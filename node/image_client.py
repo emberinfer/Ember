@@ -182,7 +182,7 @@ class ImageClient:
                     tensors={str(i): (directory/f'{i}.etv').read_bytes() for i in indices},
                     png=(directory/'final.png').read_bytes())
 
-    def audit(self, context, opening, steps, band, pixels_policy, sign):
+    def audit(self, context, opening, steps, band, pixels_policy, sign, received=None):
         """context is authenticated chain state; steps are chain challenge leaf IDs 0..N.
 
         sign(payload bytes) returns signature; caller routes envelope to chain's
@@ -239,6 +239,8 @@ class ImageClient:
             delivered = np.asarray(im)
             if sha(delivered.tobytes(order='C')) != context['pixel_sha256']:
                 raise ValueError('binding failure: pixel anchor')
+        if received is not None:
+            received()
         # Encode exactly once per challenged request, after all binding checks.
         embeddings = self.engine.embeddings(r)
         formula, rows = Formula(n, r['sampler'], r['guidance']), []

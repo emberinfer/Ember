@@ -10,6 +10,20 @@ from pathlib import Path
 from image_client import ImageClient, canonical, sha, chain_verdict_action
 
 
+def audit_task(agent, frame, job):
+    """Use finalized challenge identity for ownership and retransmission caches."""
+    from .join import _chain_json
+    args = agent.chain_args
+    hold = _chain_json(args.chain_cli, args.chain_rpc, '/hold/' + frame.request_id)
+    c = hold['pipeline']['spot']
+    if (hold['state'] != 'dispute' or hold['auditor'] != agent.node_id
+            or c['auditor'] != agent.node_id
+            or job.get('challenge_height') != c['challenge_height']
+            or job.get('round') != c['round']):
+        raise ValueError('image job challenge changed')
+    return (frame.request_id, c['challenge_height'], c['round'], 'image')
+
+
 def execute(agent, frame, job):
     from .join import _chain_json
     from auditor.spot_worker import envelope_result
@@ -56,6 +70,9 @@ def execute(agent, frame, job):
     state = query('/state')
     if state['height'] > challenge['verdict_deadline']:
         raise ValueError('image challenge expired')
+    if (job.get('challenge_height') != challenge['challenge_height']
+            or job.get('round') != challenge['round']):
+        raise ValueError('image job challenge changed')
     sub = hold['image']['submission']
     ctx = dict(request=r, request_id=request_id, model_id=hold['model_id'],
                root=base64.b64decode(hold['pipeline']['commitment_root']).hex(),
@@ -64,9 +81,44 @@ def execute(agent, frame, job):
     # Pixel policy is an operator-pinned T4 artifact, never accepted in a job.
     policy = json.loads(Path(args.image_pixel_policy).read_text())
     steps = challenge['step_set']
+    def received():
+        from image_client import durable
+        from auditor.spot_patrol import broadcast
+        identity = (challenge['challenge_height'], challenge['round'], challenge['auditor'])
+        def current():
+            latest = query('/hold/' + frame.request_id)
+            c = latest['pipeline']['spot']
+            if (latest['state'] != 'dispute' or
+                    (c['challenge_height'], c['round'], c['auditor']) != identity):
+                raise RuntimeError('image challenge changed before received')
+            return c
+        # Keep the verified opening, including exact ETV1/PNG bytes, before ACK.
+        directory = Path(args.state_dir)/'image-opening'/frame.request_id
+        directory.mkdir(parents=True, exist_ok=True)
+        serialized = dict(opened, tensors={k: base64.b64encode(v).decode()
+                                         for k, v in opened['tensors'].items()},
+                          png=base64.b64encode(opened['png']).decode())
+        durable(directory/f"{identity[0]}-{identity[1]}.json", canonical(serialized))
+        with agent.spot_tx_lock:
+            c = current()
+            if not c.get('received'):
+                # Existing chain routes a rotated challenge height to historical
+                # evidence, where spot_received is rejected instead of ACKing round 2.
+                action = dict(spool=dict(request_id=frame.request_id,
+                                        challenge_height=identity[0], step_set_hash=None,
+                                        gateway='', received=False, height=0),
+                              type='spot_received', hold_id=frame.request_id)
+                broadcast(agent, envelope_result(agent, action, {}))
+            if not current().get('received'):
+                raise RuntimeError('image received not finalized')
+    def confirm_received():
+        try:
+            received()
+        except Exception as exc:
+            raise RuntimeError('image received confirmation failed') from exc
     try:
         opened = transport.opening(job, ctx)
-        signed = client.audit(ctx, opened, steps, profile['range_band'], policy, agent.key.sign)
+        signed = client.audit(ctx, opened, steps, profile['range_band'], policy, agent.key.sign, received=confirm_received)
         result = signed['result']
     except (ValueError, KeyError) as exc:
         result = dict(request_id=request_id, root=ctx['root'], challenge_steps=steps,

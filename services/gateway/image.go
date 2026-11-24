@@ -10,8 +10,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -38,7 +40,10 @@ type ImageService struct {
 	Backend ImageBackend
 	Store   *ImageStore
 	// Run uses T2's run tunnel operation and returns its JSON envelope result.
-	Run ImageRunner
+	Run     ImageRunner
+	Audit   ImageRunner
+	auditMu sync.Mutex
+	audits  map[string]*imageAuditAttempt
 	// ChainID is the transaction domain, distinct from the model ID.
 	ChainID string
 }
@@ -151,7 +156,7 @@ func (s *ImageService) Finalized(ctx context.Context, id string) error {
 		if e = s.Backend.Apply(ctx, chain.Action{Type: "assign_audit", HoldID: id}); e != nil {
 			return e
 		}
-		h, _, e = s.Backend.Hold(ctx, id)
+		h, height, e = s.Backend.Hold(ctx, id)
 		if e != nil {
 			return e
 		}
@@ -161,6 +166,7 @@ func (s *ImageService) Finalized(ctx context.Context, id string) error {
 		outcome = "accept"
 	}
 	if outcome == "" {
+		s.dispatchAudit(ctx, id, h, height)
 		return nil
 	}
 	if h.Image.Delivery == nil || !h.Image.Delivery.Received {
@@ -422,4 +428,91 @@ func (g *Gateway) runImageTunnel(ctx context.Context, node, hold string, job []b
 		e = nil
 	}
 	return result, e
+}
+
+// imageAuditAttempt serializes retries for a finalized challenge, never a job hint.
+type imageAuditAttempt struct {
+	running, done bool
+	retry         time.Time
+	failures      uint
+}
+
+func (s *ImageService) dispatchAudit(ctx context.Context, id string, h *chain.Hold, height int64) {
+	if s.Audit == nil || h.Unaudited || h.NoAuditor || h.Pipeline == nil || h.Pipeline.Spot == nil {
+		return
+	}
+	c := h.Pipeline.Spot
+	if h.Auditor == "" || c.Auditor != h.Auditor || c.ChallengeHeight <= 0 || height < c.ChallengeHeight || height > c.VerdictDeadline || len(c.StepSet) == 0 {
+		return
+	}
+	key := fmt.Sprintf("%s/%s/%d", id, c.Round, c.ChallengeHeight)
+	s.auditMu.Lock()
+	if s.audits == nil {
+		s.audits = map[string]*imageAuditAttempt{}
+	}
+	a := s.audits[key]
+	if a == nil {
+		a = &imageAuditAttempt{}
+		s.audits[key] = a
+	}
+	if a.running || a.done || time.Now().Before(a.retry) {
+		s.auditMu.Unlock()
+		return
+	}
+	a.running = true
+	s.auditMu.Unlock()
+	auditor, round, challenge := h.Auditor, c.Round, c.ChallengeHeight
+	job, _ := json.Marshal(map[string]any{"kind": "text-to-image", "hold_id": id, "challenge_height": challenge, "round": round})
+	go func() {
+		// Block callbacks must stay available for rotation and received commits.
+		task, cancel := context.WithTimeout(context.WithoutCancel(ctx), 20*time.Minute)
+		defer cancel()
+		log.Printf("IMAGE AUDIT send hold=%s auditor=%s round=%s challenge=%d", id, auditor, round, challenge)
+		raw, err := s.Audit(task, auditor, id, job)
+		if err == nil {
+			var result struct {
+				Envelope string `json:"envelope"`
+			}
+			err = json.Unmarshal(raw, &result)
+			var envelope []byte
+			if err == nil {
+				envelope, err = base64.StdEncoding.DecodeString(result.Envelope)
+			}
+			if err == nil {
+				var signer string
+				var env chain.Envelope
+				env, signer, err = chain.DecodeAndVerifyVersion(envelope, 16)
+				if err == nil && (env.ChainID != s.ChainID || signer != auditor || env.Action.Type != "audit" || env.Action.HoldID != id) {
+					err = errors.New("invalid image auditor envelope")
+				}
+			}
+			if err == nil {
+				current, at, readErr := s.Backend.Hold(task, id)
+				err = readErr
+				if err == nil && (current.State != "dispute" || current.AuditVerdict != "" || current.Auditor != auditor || current.Pipeline == nil || current.Pipeline.Spot == nil || current.Pipeline.Spot.ChallengeHeight != challenge || current.Pipeline.Spot.Round != round || at > current.Pipeline.Spot.VerdictDeadline) {
+					err = errors.New("image audit challenge changed")
+				}
+			}
+			if err == nil {
+				err = s.Backend.Submit(task, envelope)
+			}
+			if err == nil {
+				_, _, err = s.Backend.Hold(task, id)
+			}
+		}
+		s.auditMu.Lock()
+		a.running = false
+		a.done = err == nil
+		if err != nil {
+			a.failures++
+			a.retry = time.Now().Add(time.Second * time.Duration(1<<min(a.failures, 6)))
+		}
+		s.auditMu.Unlock()
+		if err != nil {
+			log.Printf("IMAGE AUDIT failed hold=%s round=%s challenge=%d: %v", id, round, challenge, err)
+			return
+		}
+		// Re-read on the existing finalized block subscription before settlement.
+		log.Printf("IMAGE AUDIT submitted hold=%s round=%s challenge=%d", id, round, challenge)
+	}()
 }

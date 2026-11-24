@@ -212,11 +212,16 @@ class Agent:
                     os.unlink(payload_path)
             else:
                 job = json.loads(frame.payload)
+            image_audit = (frame.kind in ('audit', 'audit_commit') and
+                           getattr(self.engine, 'execution_profile', '') == 'diffusers-sd1.5-fp32-v2')
             task_id = frame.request_id
+            if image_audit:
+                from .image_runtime import audit_task
+                task_id = audit_task(self, frame, job)
             if frame.kind in ('audit', 'audit_commit') and job.get('kind') == 'spotcheck':
                 delivery = job.get('spot_delivery') or {}
                 task_id = (frame.request_id, delivery.get('challenge_height'), delivery.get('round'), job.get('mode'))
-            if frame.kind == 'audit_commit' or (frame.kind == 'audit' and job.get('kind') == 'spotcheck'):
+            if image_audit or frame.kind == 'audit_commit' or (frame.kind == 'audit' and job.get('kind') == 'spotcheck'):
                 with self.audit_verdicts_lock:
                     cached = self.audit_verdicts.get(task_id)
                 if cached is not None:
@@ -257,6 +262,12 @@ class Agent:
                     self.execution_lock.acquire()
                     executing = True
                 result = execute_image(self, frame, job)
+                if image_audit:
+                    from auditor.worker import cache_verdict
+                    with self.audit_verdicts_lock:
+                        self.audit_verdicts[task_id] = cache_verdict(result)
+                        while len(self.audit_verdicts) > 16:
+                            self.audit_verdicts.popitem(last=False)
                 send('image_result' if frame.kind == 'run' else 'audit_result', result)
                 self.completed_requests += 1
                 return

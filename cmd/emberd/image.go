@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	pb "ember/proto"
 	"ember/services/gateway"
 	"ember/services/ledger"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 func wireImages(api *gateway.Gateway, book *ledger.ChainLedger, enabled bool, database, spool, keyFile string) error {
@@ -38,6 +41,17 @@ func wireImages(api *gateway.Gateway, book *ledger.ChainLedger, enabled bool, da
 		return err
 	}
 	api.Image = &gateway.ImageService{Backend: backend, Store: store, ChainID: domain}
+	api.Image.Audit = func(ctx context.Context, node, hold string, job []byte) ([]byte, error) {
+		var result []byte
+		err := api.Tunnel.Audit(ctx, node, hold, fmt.Sprintf("image-audit-%s-%d", hold, time.Now().UnixNano()), job, func(frame *pb.TunnelFrame) error {
+			if frame.Kind != "audit_result" {
+				return errors.New("unexpected image audit frame")
+			}
+			result = append([]byte(nil), frame.Payload...)
+			return nil
+		})
+		return result, err
+	}
 	return nil
 }
 

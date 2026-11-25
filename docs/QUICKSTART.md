@@ -4,7 +4,7 @@ Read the [disclaimer](https://github.com/emberinfer/Ember/blob/master/docs/DISCL
 
 ## Verify a release
 
-The latest software release is on the [releases page](https://github.com/emberinfer/Ember/releases/latest). Releases starting with v0.10.0 publish `SHA256SUMS.sig` alongside `SHA256SUMS` and `release-signing.pub`. Set `EMBER_VERSION` below to the version shown there, without the leading `v`.
+The latest software release is on the [releases page](https://github.com/emberinfer/Ember/releases/latest). Releases starting with v0.10.0 publish `SHA256SUMS.sig` alongside `SHA256SUMS` and `release-signing.pub`. If you are installing a different release, set `EMBER_VERSION` to that version without the leading `v`.
 
 Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
 
@@ -13,7 +13,7 @@ Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
 Authenticate the fingerprint through a trusted channel. The downloaded key alone is not a trust anchor. The repository trust statement names an older key; its detached signature fails verification against the checked-in root key and current statement bytes. See [signing](SIGNING.md).
 
 ```sh
-EMBER_VERSION='<current version>'
+EMBER_VERSION='0.10.2'
 EMBER_RELEASE="https://github.com/emberinfer/Ember/releases/download/v$EMBER_VERSION"
 # Use arm64 instead of amd64 for ARM64.
 for file in "ember-$EMBER_VERSION-linux-amd64.tar.gz" SHA256SUMS SHA256SUMS.sig release-signing.pub; do

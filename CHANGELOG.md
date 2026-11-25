@@ -1,14 +1,14 @@
 # Changelog
 
-## Unreleased
+## 0.10.2 — 2026-11-25
 
-- Accept canonical, increasing sample layers in signed numeric policies and check them against the verified model manifest.
-- Use signed numeric policy layers for Transformers execution and audit replay and for gateway-local audit challenges.
-- Show the latest worker startup or exit failure in the supervisor catalog.
-- Generate unquoted state-sync chunk fetcher counts and accept existing quoted counts.
-- Skip public-view gateway entries without membership metadata during node configuration.
-- Verify bundled legacy profiles with their exact-ID replay comparator and signed tolerance.
-- Document CPU publication policy, weight uniqueness and release signatures, and bundle the bootstrap and validator membership guides.
+- The gateway supervisor can start serving newly published profiles whose signed sample layers match their verified model manifests.
+- Sampled audits of profiles with shapes other than the bundled 1.5B model can replay, reach a verdict, and settle. The execution and audit engines use the sample layers from the signed policy.
+- The supervisor catalog shows the latest worker startup or exit failure.
+- Generated validator configurations use unquoted state-sync chunk fetcher counts that the parser accepts. Existing quoted counts remain supported.
+- `ember-node configure` can use the website's `network.json` directly and skips public gateway entries without membership metadata.
+- `ember-node profile verify --conformance` works again for bundled legacy profiles using their exact-ID replay comparator and signed tolerance.
+- The publishing guide includes a copyable CPU policy example, weight uniqueness rules, and the chain CLI requirement. The release also bundles the bootstrap and validator membership guides.
 
 ## 0.10.1 — 2026-11-25
 

@@ -1,0 +1,346 @@
+I[2026-11-25|08:31:49.850] State store key layout version               version=vv1
+I[2026-11-25|08:31:49.853] Blockstore version                           version=v1
+I[2026-11-25|08:31:49.853] WARNING: deleting genesis file from database if present, the database stores a hash of the original genesis file now
+I[2026-11-25|08:31:49.853] service start                                module=proxy msg="Starting multiAppConn service" impl=multiAppConn
+I[2026-11-25|08:31:49.853] service start                                module=abci-client connection=query msg="Starting localClient service" impl=localClient
+I[2026-11-25|08:31:49.853] service start                                module=abci-client connection=snapshot msg="Starting localClient service" impl=localClient
+I[2026-11-25|08:31:49.853] service start                                module=abci-client connection=mempool msg="Starting localClient service" impl=localClient
+I[2026-11-25|08:31:49.853] service start                                module=abci-client connection=consensus msg="Starting localClient service" impl=localClient
+I[2026-11-25|08:31:49.853] service start                                module=events msg="Starting EventBus service" impl=EventBus
+I[2026-11-25|08:31:49.853] service start                                module=pubsub msg="Starting PubSub service" impl=PubSub
+I[2026-11-25|08:31:49.855] service start                                module=txindex msg="Starting IndexerService service" impl=IndexerService
+I[2026-11-25|08:31:49.855] ABCI Handshake App Info                      module=consensus height=0 hash= software-version= protocol-version=11
+I[2026-11-25|08:31:49.855] ABCI Replay Blocks                           module=consensus appHeight=0 storeHeight=0 stateHeight=0
+I[2026-11-25|08:31:49.858] Completed ABCI Handshake - CometBFT and App are synced module=consensus appHeight=0 appHash=D69801F22DA4EA8603C477D1A80ACCF749B080477A12CC04B7408CF44B102CB4
+I[2026-11-25|08:31:49.858] Version info                                 tendermint_version=1.0.1 abci=2.1.0 block=11 p2p=9 commit_hash=
+I[2026-11-25|08:31:49.858] This node is a validator                     module=consensus addr=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C pubKey=PubKeyEd25519{E39D59AD9B0D255DD2D5339729ED169754A9C69DF9B83BC3612DD58C89EEB2E7}
+I[2026-11-25|08:31:49.864] P2P Node ID                                  module=p2p ID=8729f4db4599012bb67ab38c5035d87abe7e50e5 file=/tmp/s2-loopback-dni2d_j2/validator/config/node_key.json
+I[2026-11-25|08:31:49.864] Adding persistent peers                      module=p2p addrs=[]
+I[2026-11-25|08:31:49.864] Adding unconditional peer ids                module=p2p ids=[]
+I[2026-11-25|08:31:49.864] Add our address to book                      module=p2p book=/tmp/s2-loopback-dni2d_j2/validator/config/addrbook.json addr=8729f4db4599012bb67ab38c5035d87abe7e50e5@127.0.0.1:51261
+I[2026-11-25|08:31:49.864] service start                                msg="Starting Node service" impl=Node
+I[2026-11-25|08:31:49.865] service start                                module=p2p msg="Starting P2P Switch service" impl="P2P Switch"
+I[2026-11-25|08:31:49.865] service start                                module=mempool msg="Starting Mempool service" impl=Mempool
+I[2026-11-25|08:31:49.865] service start                                module=blocksync msg="Starting Reactor service" impl=Reactor
+I[2026-11-25|08:31:49.865] service start                                module=consensus msg="Starting Consensus service" impl=ConsensusReactor
+I[2026-11-25|08:31:49.865] service start                                module=consensus msg="Starting State service" impl=ConsensusState
+I[2026-11-25|08:31:49.865] serve                                        module=rpc-server msg="Starting RPC HTTP server on 127.0.0.1:51743"
+I[2026-11-25|08:31:49.865] service start                                module=consensus wal=/tmp/s2-loopback-dni2d_j2/validator/data/cs.wal/wal msg="Starting baseWAL service" impl=baseWAL
+I[2026-11-25|08:31:49.865] service start                                module=consensus wal=/tmp/s2-loopback-dni2d_j2/validator/data/cs.wal/wal msg="Starting Group service" impl=Group
+I[2026-11-25|08:31:49.865] service start                                module=consensus msg="Starting TimeoutTicker service" impl=TimeoutTicker
+I[2026-11-25|08:31:49.865] Searching for height                         module=consensus wal=/tmp/s2-loopback-dni2d_j2/validator/data/cs.wal/wal height=1 min=0 max=0
+I[2026-11-25|08:31:49.865] Searching for height                         module=consensus wal=/tmp/s2-loopback-dni2d_j2/validator/data/cs.wal/wal height=0 min=0 max=0
+I[2026-11-25|08:31:49.865] Found                                        module=consensus wal=/tmp/s2-loopback-dni2d_j2/validator/data/cs.wal/wal height=0 index=0
+I[2026-11-25|08:31:49.865] Catchup by replaying consensus messages      module=consensus height=1
+I[2026-11-25|08:31:49.865] Replay: Done                                 module=consensus
+I[2026-11-25|08:31:49.865] service start                                module=evidence msg="Starting Evidence service" impl=Evidence
+I[2026-11-25|08:31:49.865] service start                                module=statesync msg="Starting StateSync service" impl=StateSync
+I[2026-11-25|08:31:49.865] service start                                module=pex msg="Starting PEX service" impl=PEX
+I[2026-11-25|08:31:49.865] service start                                module=p2p book=/tmp/s2-loopback-dni2d_j2/validator/config/addrbook.json msg="Starting AddrBook service" impl=AddrBook
+I[2026-11-25|08:31:49.865] Saving AddrBook to file                      module=p2p book=/tmp/s2-loopback-dni2d_j2/validator/config/addrbook.json size=0
+I[2026-11-25|08:31:49.865] Ensure peers                                 module=pex numOutPeers=0 numInPeers=0 numDialing=0 numToDial=10
+I[2026-11-25|08:31:49.866] service start                                module=state msg="Starting Pruner service" impl=Pruner
+2026/11/25 16:31:49 emberchain started home=/tmp/s2-loopback-dni2d_j2/validator p2p=tcp://127.0.0.1:51261 rpc=tcp://127.0.0.1:51743
+I[2026-11-25|08:31:49.866] No addresses to dial. Falling back to seeds  module=pex
+I[2026-11-25|08:31:49.866] Started pruning blocks                       module=state interval=10s
+I[2026-11-25|08:31:50.864] Timed out                                    module=consensus dur=998.463889ms height=1 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:50.865] Received proposal                            module=consensus proposal="Proposal{1/0 (7A351C46595609E5E05D13CF05FD3BD0A99BC6C3459A10A84DC1B4B8B254167A:1:7CF4D3A98423, -1) ECB51E5A8666 @ 2026-11-25T08:31:49.820422206Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:50.865] Received complete proposal block             module=consensus height=1 hash=7A351C46595609E5E05D13CF05FD3BD0A99BC6C3459A10A84DC1B4B8B254167A
+I[2026-11-25|08:31:50.867] Finalizing commit of block                   module=consensus height=1 hash=7A351C46595609E5E05D13CF05FD3BD0A99BC6C3459A10A84DC1B4B8B254167A root=D69801F22DA4EA8603C477D1A80ACCF749B080477A12CC04B7408CF44B102CB4 num_txs=0
+I[2026-11-25|08:31:50.867] Finalized block                              module=state height=1 num_txs_res=0 num_val_updates=0 block_app_hash=99F95E258AE7059187041582DB8149B5A2B6A76261F2A7D9E7B242E7DEE5B500 syncing_to_height=1
+I[2026-11-25|08:31:50.868] Committed state                              module=state height=1 block_app_hash=D69801F22DA4EA8603C477D1A80ACCF749B080477A12CC04B7408CF44B102CB4
+I[2026-11-25|08:31:50.869] indexed block events                         module=txindex height=1
+I[2026-11-25|08:31:51.867] Timed out                                    module=consensus dur=998.242204ms height=2 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:51.869] Received proposal                            module=consensus proposal="Proposal{2/0 (432016A684FE33F37A6C12E6117E695D81B2973579EC9347DF2CE89B1299323B:1:635447D66CE1, -1) 1FAC63053759 @ 2026-11-25T08:31:50.866641727Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:51.870] Received complete proposal block             module=consensus height=2 hash=432016A684FE33F37A6C12E6117E695D81B2973579EC9347DF2CE89B1299323B
+I[2026-11-25|08:31:51.873] Finalizing commit of block                   module=consensus height=2 hash=432016A684FE33F37A6C12E6117E695D81B2973579EC9347DF2CE89B1299323B root=99F95E258AE7059187041582DB8149B5A2B6A76261F2A7D9E7B242E7DEE5B500 num_txs=1
+I[2026-11-25|08:31:51.874] Finalized block                              module=state height=2 num_txs_res=1 num_val_updates=0 block_app_hash=E30F7CE0A74F03D202438A529126645302A509B434ABCB9B8428F1A4BC5140EE syncing_to_height=2
+I[2026-11-25|08:31:51.876] Committed state                              module=state height=2 block_app_hash=99F95E258AE7059187041582DB8149B5A2B6A76261F2A7D9E7B242E7DEE5B500
+I[2026-11-25|08:31:51.877] indexed block events                         module=txindex height=2
+I[2026-11-25|08:31:52.873] Timed out                                    module=consensus dur=996.611623ms height=3 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:52.875] Received proposal                            module=consensus proposal="Proposal{3/0 (DD67C2089BFE3AD6DEFABAC86E73B6F87477362FC41A424F9C012B131DC43EDB:1:20993720366F, -1) 0AE4AA49D6F2 @ 2026-11-25T08:31:51.872233719Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:52.875] Received complete proposal block             module=consensus height=3 hash=DD67C2089BFE3AD6DEFABAC86E73B6F87477362FC41A424F9C012B131DC43EDB
+I[2026-11-25|08:31:52.877] Finalizing commit of block                   module=consensus height=3 hash=DD67C2089BFE3AD6DEFABAC86E73B6F87477362FC41A424F9C012B131DC43EDB root=E30F7CE0A74F03D202438A529126645302A509B434ABCB9B8428F1A4BC5140EE num_txs=0
+I[2026-11-25|08:31:52.878] Finalized block                              module=state height=3 num_txs_res=0 num_val_updates=0 block_app_hash=0222ACD5BBC20D11554F2D81D9A6FFD54B6C22842E1EAABE75C6E4DC4478398E syncing_to_height=3
+I[2026-11-25|08:31:52.880] Committed state                              module=state height=3 block_app_hash=E30F7CE0A74F03D202438A529126645302A509B434ABCB9B8428F1A4BC5140EE
+I[2026-11-25|08:31:52.880] indexed block events                         module=txindex height=3
+I[2026-11-25|08:31:53.877] Timed out                                    module=consensus dur=997.186085ms height=4 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:53.879] Received proposal                            module=consensus proposal="Proposal{4/0 (C9DF4A0C1D609CE4980E0BDEBB099CBB10FF48148A61D10DB489775B9965E2E7:1:2550182C520B, -1) BD439FCF3F52 @ 2026-11-25T08:31:52.876603023Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:53.879] Received complete proposal block             module=consensus height=4 hash=C9DF4A0C1D609CE4980E0BDEBB099CBB10FF48148A61D10DB489775B9965E2E7
+I[2026-11-25|08:31:53.886] Finalizing commit of block                   module=consensus height=4 hash=C9DF4A0C1D609CE4980E0BDEBB099CBB10FF48148A61D10DB489775B9965E2E7 root=0222ACD5BBC20D11554F2D81D9A6FFD54B6C22842E1EAABE75C6E4DC4478398E num_txs=0
+I[2026-11-25|08:31:53.887] Finalized block                              module=state height=4 num_txs_res=0 num_val_updates=0 block_app_hash=9FA303DA7A1F3DA03861768127080691CB61712D755A9A6AB8968C248F553B89 syncing_to_height=4
+I[2026-11-25|08:31:53.889] Committed state                              module=state height=4 block_app_hash=0222ACD5BBC20D11554F2D81D9A6FFD54B6C22842E1EAABE75C6E4DC4478398E
+I[2026-11-25|08:31:53.890] indexed block events                         module=txindex height=4
+I[2026-11-25|08:31:54.887] Timed out                                    module=consensus dur=996.486383ms height=5 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:54.889] Received proposal                            module=consensus proposal="Proposal{5/0 (23EC98295C0278F53A7829CC9CC38BFBFC35FE278F3A7A6B2E83BAB6DFB08440:1:5145D3180054, -1) 80232983B1F8 @ 2026-11-25T08:31:53.8853239Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:54.889] Received complete proposal block             module=consensus height=5 hash=23EC98295C0278F53A7829CC9CC38BFBFC35FE278F3A7A6B2E83BAB6DFB08440
+I[2026-11-25|08:31:54.891] Finalizing commit of block                   module=consensus height=5 hash=23EC98295C0278F53A7829CC9CC38BFBFC35FE278F3A7A6B2E83BAB6DFB08440 root=9FA303DA7A1F3DA03861768127080691CB61712D755A9A6AB8968C248F553B89 num_txs=0
+I[2026-11-25|08:31:54.892] Finalized block                              module=state height=5 num_txs_res=0 num_val_updates=0 block_app_hash=3EC3E0DE29DA97A10FF37436F7252C7969E239E47F53F1B4E265D32B0E5BFEF3 syncing_to_height=5
+I[2026-11-25|08:31:54.893] Committed state                              module=state height=5 block_app_hash=9FA303DA7A1F3DA03861768127080691CB61712D755A9A6AB8968C248F553B89
+I[2026-11-25|08:31:54.894] indexed block events                         module=txindex height=5
+I[2026-11-25|08:31:55.891] Timed out                                    module=consensus dur=997.735703ms height=6 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:55.893] Received proposal                            module=consensus proposal="Proposal{6/0 (5CA2F57187C5FBE4C8F8AEE7239654EAE6EFA4B0D388205543E8C72E77B67350:1:1684CBB1165B, -1) 85EB7510DBB1 @ 2026-11-25T08:31:54.890984007Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:55.893] Received complete proposal block             module=consensus height=6 hash=5CA2F57187C5FBE4C8F8AEE7239654EAE6EFA4B0D388205543E8C72E77B67350
+I[2026-11-25|08:31:55.895] Finalizing commit of block                   module=consensus height=6 hash=5CA2F57187C5FBE4C8F8AEE7239654EAE6EFA4B0D388205543E8C72E77B67350 root=3EC3E0DE29DA97A10FF37436F7252C7969E239E47F53F1B4E265D32B0E5BFEF3 num_txs=0
+I[2026-11-25|08:31:55.896] Finalized block                              module=state height=6 num_txs_res=0 num_val_updates=0 block_app_hash=44B30866C2957BA1CB13F001A63F046445F9C7073CB764B5A496970DB6141351 syncing_to_height=6
+I[2026-11-25|08:31:55.897] Committed state                              module=state height=6 block_app_hash=3EC3E0DE29DA97A10FF37436F7252C7969E239E47F53F1B4E265D32B0E5BFEF3
+I[2026-11-25|08:31:55.898] indexed block events                         module=txindex height=6
+I[2026-11-25|08:31:56.896] Timed out                                    module=consensus dur=997.764583ms height=7 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:56.900] Received proposal                            module=consensus proposal="Proposal{7/0 (74C283C088A25DD1B9B3847F827AC48DFB33D76E644717B2110D221EFEF4C356:1:DD72980BF635, -1) 6714182B13B7 @ 2026-11-25T08:31:55.89509295Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:56.901] Received complete proposal block             module=consensus height=7 hash=74C283C088A25DD1B9B3847F827AC48DFB33D76E644717B2110D221EFEF4C356
+I[2026-11-25|08:31:56.905] Finalizing commit of block                   module=consensus height=7 hash=74C283C088A25DD1B9B3847F827AC48DFB33D76E644717B2110D221EFEF4C356 root=44B30866C2957BA1CB13F001A63F046445F9C7073CB764B5A496970DB6141351 num_txs=4
+I[2026-11-25|08:31:56.908] Finalized block                              module=state height=7 num_txs_res=4 num_val_updates=0 block_app_hash=1B302EE84FBDEBBCA1F1FADFE21B5AB9CEB16AF036E7AA4902DF83F0A599B084 syncing_to_height=7
+I[2026-11-25|08:31:56.910] Committed state                              module=state height=7 block_app_hash=44B30866C2957BA1CB13F001A63F046445F9C7073CB764B5A496970DB6141351
+I[2026-11-25|08:31:56.911] indexed block events                         module=txindex height=7
+I[2026-11-25|08:31:57.906] Timed out                                    module=consensus dur=994.409549ms height=8 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:57.908] Received proposal                            module=consensus proposal="Proposal{8/0 (4E6CBC80F4678359FEFAEC939800042AA932A4AB68B16CDDBFF338AB456E7A60:1:19965B4111E0, -1) 53E98AE9EE3F @ 2026-11-25T08:31:56.904868551Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:57.908] Received complete proposal block             module=consensus height=8 hash=4E6CBC80F4678359FEFAEC939800042AA932A4AB68B16CDDBFF338AB456E7A60
+I[2026-11-25|08:31:57.911] Finalizing commit of block                   module=consensus height=8 hash=4E6CBC80F4678359FEFAEC939800042AA932A4AB68B16CDDBFF338AB456E7A60 root=1B302EE84FBDEBBCA1F1FADFE21B5AB9CEB16AF036E7AA4902DF83F0A599B084 num_txs=1
+I[2026-11-25|08:31:57.913] Finalized block                              module=state height=8 num_txs_res=1 num_val_updates=0 block_app_hash=0C52DF8638548E76EE3E8D229AC30815AD309E2C9DB9D8DB75B4448D6D6C86C8 syncing_to_height=8
+I[2026-11-25|08:31:57.915] Committed state                              module=state height=8 block_app_hash=1B302EE84FBDEBBCA1F1FADFE21B5AB9CEB16AF036E7AA4902DF83F0A599B084
+I[2026-11-25|08:31:57.915] indexed block events                         module=txindex height=8
+I[2026-11-25|08:31:58.912] Timed out                                    module=consensus dur=995.995891ms height=9 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:58.915] Received proposal                            module=consensus proposal="Proposal{9/0 (979A3D398CEFC463E8CD7058BC2A689FA333D0EC2A6CC3DDE441E69A3678D318:1:6315C1AE0884, -1) 56218CF7D3A1 @ 2026-11-25T08:31:57.910822139Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:58.915] Received complete proposal block             module=consensus height=9 hash=979A3D398CEFC463E8CD7058BC2A689FA333D0EC2A6CC3DDE441E69A3678D318
+I[2026-11-25|08:31:58.918] Finalizing commit of block                   module=consensus height=9 hash=979A3D398CEFC463E8CD7058BC2A689FA333D0EC2A6CC3DDE441E69A3678D318 root=0C52DF8638548E76EE3E8D229AC30815AD309E2C9DB9D8DB75B4448D6D6C86C8 num_txs=1
+I[2026-11-25|08:31:58.920] Finalized block                              module=state height=9 num_txs_res=1 num_val_updates=0 block_app_hash=42B0D103E71A71F111A7BFDCD612FBB86B4BC8E3B18D8D282B153725857B0F60 syncing_to_height=9
+I[2026-11-25|08:31:58.921] Committed state                              module=state height=9 block_app_hash=0C52DF8638548E76EE3E8D229AC30815AD309E2C9DB9D8DB75B4448D6D6C86C8
+I[2026-11-25|08:31:58.922] indexed block events                         module=txindex height=9
+I[2026-11-25|08:31:59.918] Timed out                                    module=consensus dur=995.840233ms height=10 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:31:59.919] Received proposal                            module=consensus proposal="Proposal{10/0 (8182431807068A730F363264E854C6ABED4F58270B2E3D653C2244DD5569FEA4:1:E4B64C0E8109, -1) 9DA5B91AFAA5 @ 2026-11-25T08:31:58.917499223Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:31:59.920] Received complete proposal block             module=consensus height=10 hash=8182431807068A730F363264E854C6ABED4F58270B2E3D653C2244DD5569FEA4
+I[2026-11-25|08:31:59.922] Finalizing commit of block                   module=consensus height=10 hash=8182431807068A730F363264E854C6ABED4F58270B2E3D653C2244DD5569FEA4 root=42B0D103E71A71F111A7BFDCD612FBB86B4BC8E3B18D8D282B153725857B0F60 num_txs=1
+I[2026-11-25|08:31:59.923] Finalized block                              module=state height=10 num_txs_res=1 num_val_updates=0 block_app_hash=28C494A953212E1EA03B41D2B3B58B584BC6BD331B3BB0A6892E2892E5FF17F4 syncing_to_height=10
+I[2026-11-25|08:31:59.924] Committed state                              module=state height=10 block_app_hash=42B0D103E71A71F111A7BFDCD612FBB86B4BC8E3B18D8D282B153725857B0F60
+I[2026-11-25|08:31:59.924] indexed block events                         module=txindex height=10
+I[2026-11-25|08:32:00.922] Timed out                                    module=consensus dur=997.664994ms height=11 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:00.924] Received proposal                            module=consensus proposal="Proposal{11/0 (D77B5EA46A715232B35243793C53F069F8B855874C88C940FE1D7BC77382911E:1:0A07055EEDC2, -1) C2DFEAEA4147 @ 2026-11-25T08:31:59.921644135Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:00.925] Received complete proposal block             module=consensus height=11 hash=D77B5EA46A715232B35243793C53F069F8B855874C88C940FE1D7BC77382911E
+I[2026-11-25|08:32:00.927] Finalizing commit of block                   module=consensus height=11 hash=D77B5EA46A715232B35243793C53F069F8B855874C88C940FE1D7BC77382911E root=28C494A953212E1EA03B41D2B3B58B584BC6BD331B3BB0A6892E2892E5FF17F4 num_txs=0
+I[2026-11-25|08:32:00.929] Finalized block                              module=state height=11 num_txs_res=0 num_val_updates=0 block_app_hash=074AA0508139CE4841CDF0CCC0F260D1BF71C791D0B62DB3D3C078FBFFB6DB60 syncing_to_height=11
+I[2026-11-25|08:32:00.931] Committed state                              module=state height=11 block_app_hash=28C494A953212E1EA03B41D2B3B58B584BC6BD331B3BB0A6892E2892E5FF17F4
+I[2026-11-25|08:32:00.931] indexed block events                         module=txindex height=11
+I[2026-11-25|08:32:01.927] Timed out                                    module=consensus dur=995.883557ms height=12 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:01.930] Received proposal                            module=consensus proposal="Proposal{12/0 (00B731ECEA5864D44ABD4C86F8A5E5986F5D98E9AB3D9B665B13D41D2997203A:1:C74F77EBA73C, -1) 7148CF392C43 @ 2026-11-25T08:32:00.926469274Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:01.930] Received complete proposal block             module=consensus height=12 hash=00B731ECEA5864D44ABD4C86F8A5E5986F5D98E9AB3D9B665B13D41D2997203A
+I[2026-11-25|08:32:01.933] Finalizing commit of block                   module=consensus height=12 hash=00B731ECEA5864D44ABD4C86F8A5E5986F5D98E9AB3D9B665B13D41D2997203A root=074AA0508139CE4841CDF0CCC0F260D1BF71C791D0B62DB3D3C078FBFFB6DB60 num_txs=0
+I[2026-11-25|08:32:01.934] Finalized block                              module=state height=12 num_txs_res=0 num_val_updates=0 block_app_hash=8FC312D5841B42E6BB488A7C489E098475E8375AE476C075361C222A60DCF0C5 syncing_to_height=12
+I[2026-11-25|08:32:01.936] Committed state                              module=state height=12 block_app_hash=074AA0508139CE4841CDF0CCC0F260D1BF71C791D0B62DB3D3C078FBFFB6DB60
+I[2026-11-25|08:32:01.937] indexed block events                         module=txindex height=12
+I[2026-11-25|08:32:02.934] Timed out                                    module=consensus dur=996.303389ms height=13 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:02.939] Received proposal                            module=consensus proposal="Proposal{13/0 (11264FEE80D3121C913D55D9FD0E58A6DAEB834B9537C85E25CA15E9A218882D:1:DA7FB03512D7, -1) 9BCA04778EAB @ 2026-11-25T08:32:01.932399252Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:02.940] Received complete proposal block             module=consensus height=13 hash=11264FEE80D3121C913D55D9FD0E58A6DAEB834B9537C85E25CA15E9A218882D
+I[2026-11-25|08:32:02.947] Finalizing commit of block                   module=consensus height=13 hash=11264FEE80D3121C913D55D9FD0E58A6DAEB834B9537C85E25CA15E9A218882D root=8FC312D5841B42E6BB488A7C489E098475E8375AE476C075361C222A60DCF0C5 num_txs=1
+I[2026-11-25|08:32:02.950] Finalized block                              module=state height=13 num_txs_res=1 num_val_updates=0 block_app_hash=2F206D9CDFC159D2932ED09CBA6D25694D91DE20E6ED412ED6AF9ECA5970C7AE syncing_to_height=13
+I[2026-11-25|08:32:02.952] Committed state                              module=state height=13 block_app_hash=8FC312D5841B42E6BB488A7C489E098475E8375AE476C075361C222A60DCF0C5
+I[2026-11-25|08:32:02.953] indexed block events                         module=txindex height=13
+I[2026-11-25|08:32:03.948] Timed out                                    module=consensus dur=994.537507ms height=14 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:03.951] Received proposal                            module=consensus proposal="Proposal{14/0 (ADED8F7FDB6E39B26C4BA262DCB8D7F8506FE0BDAECD031C835DA12E22A7B212:1:3F0A28A79F60, -1) A12A625C01BD @ 2026-11-25T08:32:02.946402212Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:03.951] Received complete proposal block             module=consensus height=14 hash=ADED8F7FDB6E39B26C4BA262DCB8D7F8506FE0BDAECD031C835DA12E22A7B212
+I[2026-11-25|08:32:03.955] Finalizing commit of block                   module=consensus height=14 hash=ADED8F7FDB6E39B26C4BA262DCB8D7F8506FE0BDAECD031C835DA12E22A7B212 root=2F206D9CDFC159D2932ED09CBA6D25694D91DE20E6ED412ED6AF9ECA5970C7AE num_txs=1
+I[2026-11-25|08:32:03.956] Finalized block                              module=state height=14 num_txs_res=1 num_val_updates=0 block_app_hash=1D414417CA7E658D651BE979E9C4513DF9915490B271EC737091A0ADEEBF032B syncing_to_height=14
+I[2026-11-25|08:32:03.957] Committed state                              module=state height=14 block_app_hash=2F206D9CDFC159D2932ED09CBA6D25694D91DE20E6ED412ED6AF9ECA5970C7AE
+I[2026-11-25|08:32:03.958] indexed block events                         module=txindex height=14
+I[2026-11-25|08:32:04.955] Timed out                                    module=consensus dur=996.682369ms height=15 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:05.009] Received proposal                            module=consensus proposal="Proposal{15/0 (871426381B588E45A3D000F60740C29ED63E6F42170F17F825CAAD30D4156C99:1:51B3CE0AADCF, -1) 3A820E3B02D7 @ 2026-11-25T08:32:03.954254874Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:05.010] Received complete proposal block             module=consensus height=15 hash=871426381B588E45A3D000F60740C29ED63E6F42170F17F825CAAD30D4156C99
+I[2026-11-25|08:32:05.011] Finalizing commit of block                   module=consensus height=15 hash=871426381B588E45A3D000F60740C29ED63E6F42170F17F825CAAD30D4156C99 root=1D414417CA7E658D651BE979E9C4513DF9915490B271EC737091A0ADEEBF032B num_txs=0
+I[2026-11-25|08:32:05.012] Finalized block                              module=state height=15 num_txs_res=0 num_val_updates=0 block_app_hash=18724A71E35665A108096F2A6B66200948EC87C9FA487E67D1CAC810DA7A417F syncing_to_height=15
+I[2026-11-25|08:32:05.013] Committed state                              module=state height=15 block_app_hash=1D414417CA7E658D651BE979E9C4513DF9915490B271EC737091A0ADEEBF032B
+I[2026-11-25|08:32:05.014] indexed block events                         module=txindex height=15
+I[2026-11-25|08:32:06.012] Timed out                                    module=consensus dur=997.710327ms height=16 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:06.014] Received proposal                            module=consensus proposal="Proposal{16/0 (96BA7CCEA584615069EF37888FA21B62913089964B0B58CC8282BBD6C2B8354E:1:619E40BCF785, -1) 7FE1C2C999A3 @ 2026-11-25T08:32:05.011179488Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:06.014] Received complete proposal block             module=consensus height=16 hash=96BA7CCEA584615069EF37888FA21B62913089964B0B58CC8282BBD6C2B8354E
+I[2026-11-25|08:32:06.017] Finalizing commit of block                   module=consensus height=16 hash=96BA7CCEA584615069EF37888FA21B62913089964B0B58CC8282BBD6C2B8354E root=18724A71E35665A108096F2A6B66200948EC87C9FA487E67D1CAC810DA7A417F num_txs=0
+I[2026-11-25|08:32:06.018] Finalized block                              module=state height=16 num_txs_res=0 num_val_updates=0 block_app_hash=EF30D84B4CB239A66D6917D720DEDC4ACBA6EBFA4E3741654A806F2F1803535B syncing_to_height=16
+I[2026-11-25|08:32:06.020] Committed state                              module=state height=16 block_app_hash=18724A71E35665A108096F2A6B66200948EC87C9FA487E67D1CAC810DA7A417F
+I[2026-11-25|08:32:06.020] indexed block events                         module=txindex height=16
+I[2026-11-25|08:32:07.017] Timed out                                    module=consensus dur=996.530063ms height=17 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:07.019] Received proposal                            module=consensus proposal="Proposal{17/0 (5913B093F1ADCB0C9AEB4F818EB1A5927E2CBE484E3C4CF8FEA1ABE091DA9738:1:E072C92BECB6, -1) B8B17277A459 @ 2026-11-25T08:32:06.016298388Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:07.019] Received complete proposal block             module=consensus height=17 hash=5913B093F1ADCB0C9AEB4F818EB1A5927E2CBE484E3C4CF8FEA1ABE091DA9738
+I[2026-11-25|08:32:07.021] Finalizing commit of block                   module=consensus height=17 hash=5913B093F1ADCB0C9AEB4F818EB1A5927E2CBE484E3C4CF8FEA1ABE091DA9738 root=EF30D84B4CB239A66D6917D720DEDC4ACBA6EBFA4E3741654A806F2F1803535B num_txs=0
+I[2026-11-25|08:32:07.022] Finalized block                              module=state height=17 num_txs_res=0 num_val_updates=0 block_app_hash=013506573EEECC34CE39585ED85F44403B29AAEC47AC987184C3C8C6EE7C5F6C syncing_to_height=17
+I[2026-11-25|08:32:07.024] Committed state                              module=state height=17 block_app_hash=EF30D84B4CB239A66D6917D720DEDC4ACBA6EBFA4E3741654A806F2F1803535B
+I[2026-11-25|08:32:07.024] indexed block events                         module=txindex height=17
+I[2026-11-25|08:32:08.022] Timed out                                    module=consensus dur=997.018221ms height=18 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:08.023] Received proposal                            module=consensus proposal="Proposal{18/0 (5FEE32F38E75C97EF6AC1DDCE5DA843E5467F26FFDB48FB1A10F0F7033FF1B06:1:60C61100893A, -1) 83C798413A3B @ 2026-11-25T08:32:07.020787398Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:08.024] Received complete proposal block             module=consensus height=18 hash=5FEE32F38E75C97EF6AC1DDCE5DA843E5467F26FFDB48FB1A10F0F7033FF1B06
+I[2026-11-25|08:32:08.025] Finalizing commit of block                   module=consensus height=18 hash=5FEE32F38E75C97EF6AC1DDCE5DA843E5467F26FFDB48FB1A10F0F7033FF1B06 root=013506573EEECC34CE39585ED85F44403B29AAEC47AC987184C3C8C6EE7C5F6C num_txs=0
+I[2026-11-25|08:32:08.026] Finalized block                              module=state height=18 num_txs_res=0 num_val_updates=0 block_app_hash=38FDF8ACEE733AD8C4E36FA1B9C40DC5D49A1F9035A9A0AE80891458AE4C0CDE syncing_to_height=18
+I[2026-11-25|08:32:08.027] Committed state                              module=state height=18 block_app_hash=013506573EEECC34CE39585ED85F44403B29AAEC47AC987184C3C8C6EE7C5F6C
+I[2026-11-25|08:32:08.028] indexed block events                         module=txindex height=18
+I[2026-11-25|08:32:09.026] Timed out                                    module=consensus dur=997.763477ms height=19 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:09.028] Received proposal                            module=consensus proposal="Proposal{19/0 (13908463EE7943DFB0EF8836C2B8E1270D4ABACC7A21CBDBF1FE944CABEBBC99:1:F039166B2B12, -1) 916127C92286 @ 2026-11-25T08:32:08.025290596Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:09.028] Received complete proposal block             module=consensus height=19 hash=13908463EE7943DFB0EF8836C2B8E1270D4ABACC7A21CBDBF1FE944CABEBBC99
+I[2026-11-25|08:32:09.030] Finalizing commit of block                   module=consensus height=19 hash=13908463EE7943DFB0EF8836C2B8E1270D4ABACC7A21CBDBF1FE944CABEBBC99 root=38FDF8ACEE733AD8C4E36FA1B9C40DC5D49A1F9035A9A0AE80891458AE4C0CDE num_txs=1
+I[2026-11-25|08:32:09.031] Finalized block                              module=state height=19 num_txs_res=1 num_val_updates=0 block_app_hash=5CA670F32497E743BB04731ADBE2C5DFB5536476A675E9E150F3C467910C92C6 syncing_to_height=19
+I[2026-11-25|08:32:09.033] Committed state                              module=state height=19 block_app_hash=38FDF8ACEE733AD8C4E36FA1B9C40DC5D49A1F9035A9A0AE80891458AE4C0CDE
+I[2026-11-25|08:32:09.033] indexed block events                         module=txindex height=19
+I[2026-11-25|08:32:10.031] Timed out                                    module=consensus dur=997.234418ms height=20 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:10.033] Received proposal                            module=consensus proposal="Proposal{20/0 (37B350EE3F36230DC63F6773FB50835B7791C341E031C6E6A1D1F5D6825956E4:1:FFF78975BD8E, -1) E5F8D00C2AD7 @ 2026-11-25T08:32:09.029949878Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:10.033] Received complete proposal block             module=consensus height=20 hash=37B350EE3F36230DC63F6773FB50835B7791C341E031C6E6A1D1F5D6825956E4
+I[2026-11-25|08:32:10.036] Finalizing commit of block                   module=consensus height=20 hash=37B350EE3F36230DC63F6773FB50835B7791C341E031C6E6A1D1F5D6825956E4 root=5CA670F32497E743BB04731ADBE2C5DFB5536476A675E9E150F3C467910C92C6 num_txs=1
+I[2026-11-25|08:32:10.038] Finalized block                              module=state height=20 num_txs_res=1 num_val_updates=0 block_app_hash=8724BA37B2574AB092CFDB979EECECE76E806CE512D6420ECB30EAE3D2794402 syncing_to_height=20
+I[2026-11-25|08:32:10.039] Committed state                              module=state height=20 block_app_hash=5CA670F32497E743BB04731ADBE2C5DFB5536476A675E9E150F3C467910C92C6
+I[2026-11-25|08:32:10.040] indexed block events                         module=txindex height=20
+I[2026-11-25|08:32:11.036] Timed out                                    module=consensus dur=996.399383ms height=21 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:11.039] Received proposal                            module=consensus proposal="Proposal{21/0 (534810E2AA57A54291FFB2AEF82FCC6D5A3F9D93D2DE12DEF86A5D019E52B6CD:1:F09955A1D6F7, -1) 2D7E6C0B0241 @ 2026-11-25T08:32:10.035364135Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:11.039] Received complete proposal block             module=consensus height=21 hash=534810E2AA57A54291FFB2AEF82FCC6D5A3F9D93D2DE12DEF86A5D019E52B6CD
+I[2026-11-25|08:32:11.042] Finalizing commit of block                   module=consensus height=21 hash=534810E2AA57A54291FFB2AEF82FCC6D5A3F9D93D2DE12DEF86A5D019E52B6CD root=8724BA37B2574AB092CFDB979EECECE76E806CE512D6420ECB30EAE3D2794402 num_txs=1
+I[2026-11-25|08:32:11.044] Finalized block                              module=state height=21 num_txs_res=1 num_val_updates=0 block_app_hash=156B74E611DC46EB728104A0CBF714DB4D9E08B8A75446072AB43D1838A42D59 syncing_to_height=21
+I[2026-11-25|08:32:11.046] Committed state                              module=state height=21 block_app_hash=8724BA37B2574AB092CFDB979EECECE76E806CE512D6420ECB30EAE3D2794402
+I[2026-11-25|08:32:11.046] indexed block events                         module=txindex height=21
+I[2026-11-25|08:32:12.043] Timed out                                    module=consensus dur=996.254169ms height=22 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:12.047] Received proposal                            module=consensus proposal="Proposal{22/0 (B27B9FC26529B9E0087676568CF17D904E01AC6D7001AD5082BAB97D67494070:1:B1A966C76C32, -1) 98A353C1B43A @ 2026-11-25T08:32:11.042021276Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:12.047] Received complete proposal block             module=consensus height=22 hash=B27B9FC26529B9E0087676568CF17D904E01AC6D7001AD5082BAB97D67494070
+I[2026-11-25|08:32:12.051] Finalizing commit of block                   module=consensus height=22 hash=B27B9FC26529B9E0087676568CF17D904E01AC6D7001AD5082BAB97D67494070 root=156B74E611DC46EB728104A0CBF714DB4D9E08B8A75446072AB43D1838A42D59 num_txs=1
+I[2026-11-25|08:32:12.053] Finalized block                              module=state height=22 num_txs_res=1 num_val_updates=0 block_app_hash=B4E95DB6412B924C07276F624DCB45712EFAD3D893FA9CDDC5A2928539A5FD19 syncing_to_height=22
+I[2026-11-25|08:32:12.055] Committed state                              module=state height=22 block_app_hash=156B74E611DC46EB728104A0CBF714DB4D9E08B8A75446072AB43D1838A42D59
+I[2026-11-25|08:32:12.056] indexed block events                         module=txindex height=22
+I[2026-11-25|08:32:13.051] Timed out                                    module=consensus dur=993.893723ms height=23 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:13.054] Received proposal                            module=consensus proposal="Proposal{23/0 (CC8A4B2D110CBA7983B068191C187DD03368AE9DE8A9A7E79DB4C05696796E2F:1:847FBA5A449F, -1) AD88D3D6BCA8 @ 2026-11-25T08:32:12.050293091Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:13.054] Received complete proposal block             module=consensus height=23 hash=CC8A4B2D110CBA7983B068191C187DD03368AE9DE8A9A7E79DB4C05696796E2F
+I[2026-11-25|08:32:13.057] Finalizing commit of block                   module=consensus height=23 hash=CC8A4B2D110CBA7983B068191C187DD03368AE9DE8A9A7E79DB4C05696796E2F root=B4E95DB6412B924C07276F624DCB45712EFAD3D893FA9CDDC5A2928539A5FD19 num_txs=1
+I[2026-11-25|08:32:13.058] Finalized block                              module=state height=23 num_txs_res=1 num_val_updates=0 block_app_hash=BF61ED62EA6499D7A3CBB28D2FA379B817A5C877713681723FB18E02A6EB0723 syncing_to_height=23
+I[2026-11-25|08:32:13.060] Committed state                              module=state height=23 block_app_hash=B4E95DB6412B924C07276F624DCB45712EFAD3D893FA9CDDC5A2928539A5FD19
+I[2026-11-25|08:32:13.060] indexed block events                         module=txindex height=23
+I[2026-11-25|08:32:14.058] Timed out                                    module=consensus dur=996.751772ms height=24 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:14.060] Received proposal                            module=consensus proposal="Proposal{24/0 (D0A14E3B7362DA81DF15E42C8BE478216B6D60E80D54C126F7587F63D075F525:1:2E80447FFED9, -1) A63FBD4FDBC1 @ 2026-11-25T08:32:13.05660643Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:14.060] Received complete proposal block             module=consensus height=24 hash=D0A14E3B7362DA81DF15E42C8BE478216B6D60E80D54C126F7587F63D075F525
+I[2026-11-25|08:32:14.063] Finalizing commit of block                   module=consensus height=24 hash=D0A14E3B7362DA81DF15E42C8BE478216B6D60E80D54C126F7587F63D075F525 root=BF61ED62EA6499D7A3CBB28D2FA379B817A5C877713681723FB18E02A6EB0723 num_txs=1
+I[2026-11-25|08:32:14.064] Finalized block                              module=state height=24 num_txs_res=1 num_val_updates=0 block_app_hash=471A1C2763A7A094961E744B78F09065FCF06FA0F5992B9E76074CD791F7D7C0 syncing_to_height=24
+I[2026-11-25|08:32:14.065] Committed state                              module=state height=24 block_app_hash=BF61ED62EA6499D7A3CBB28D2FA379B817A5C877713681723FB18E02A6EB0723
+I[2026-11-25|08:32:14.066] indexed block events                         module=txindex height=24
+I[2026-11-25|08:32:15.063] Timed out                                    module=consensus dur=997.110808ms height=25 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:15.066] Received proposal                            module=consensus proposal="Proposal{25/0 (45962E5368C5C3C097657C623690DB2AC69446E565E141F5E28097227728C344:1:9DDE9F73433A, -1) A8894A0A39FF @ 2026-11-25T08:32:14.062471994Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:15.066] Received complete proposal block             module=consensus height=25 hash=45962E5368C5C3C097657C623690DB2AC69446E565E141F5E28097227728C344
+I[2026-11-25|08:32:15.070] Finalizing commit of block                   module=consensus height=25 hash=45962E5368C5C3C097657C623690DB2AC69446E565E141F5E28097227728C344 root=471A1C2763A7A094961E744B78F09065FCF06FA0F5992B9E76074CD791F7D7C0 num_txs=1
+I[2026-11-25|08:32:15.072] Finalized block                              module=state height=25 num_txs_res=1 num_val_updates=0 block_app_hash=C54DAB3FD88743FD5E36BBA398A2C6CF858D6E72D9E536C90DFFA3E742D16E7E syncing_to_height=25
+I[2026-11-25|08:32:15.074] Committed state                              module=state height=25 block_app_hash=471A1C2763A7A094961E744B78F09065FCF06FA0F5992B9E76074CD791F7D7C0
+I[2026-11-25|08:32:15.074] indexed block events                         module=txindex height=25
+I[2026-11-25|08:32:16.070] Timed out                                    module=consensus dur=995.451062ms height=26 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:16.073] Received proposal                            module=consensus proposal="Proposal{26/0 (E3F6B5CAC3D0ADC04B835351E5039F3E6651070DCA86C4A0490DFA6ED73EDB41:1:4937E204EC10, -1) 4B597E2499C7 @ 2026-11-25T08:32:15.069478838Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:16.073] Received complete proposal block             module=consensus height=26 hash=E3F6B5CAC3D0ADC04B835351E5039F3E6651070DCA86C4A0490DFA6ED73EDB41
+I[2026-11-25|08:32:16.077] Finalizing commit of block                   module=consensus height=26 hash=E3F6B5CAC3D0ADC04B835351E5039F3E6651070DCA86C4A0490DFA6ED73EDB41 root=C54DAB3FD88743FD5E36BBA398A2C6CF858D6E72D9E536C90DFFA3E742D16E7E num_txs=2
+I[2026-11-25|08:32:16.079] Finalized block                              module=state height=26 num_txs_res=2 num_val_updates=0 block_app_hash=A5D3FC2450F8D41416A3D7A55A40C42074992F497CCA56CC6C810611CF075271 syncing_to_height=26
+I[2026-11-25|08:32:16.081] Committed state                              module=state height=26 block_app_hash=C54DAB3FD88743FD5E36BBA398A2C6CF858D6E72D9E536C90DFFA3E742D16E7E
+I[2026-11-25|08:32:16.081] indexed block events                         module=txindex height=26
+I[2026-11-25|08:32:17.077] Timed out                                    module=consensus dur=995.450893ms height=27 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:17.080] Received proposal                            module=consensus proposal="Proposal{27/0 (58A002E54A0DB8D2AC1FCFFD5017204060E37879D12FEBB43F0EE8615AC10862:1:B94D448AF883, -1) 2C129FEFABB9 @ 2026-11-25T08:32:16.076225243Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:17.081] Received complete proposal block             module=consensus height=27 hash=58A002E54A0DB8D2AC1FCFFD5017204060E37879D12FEBB43F0EE8615AC10862
+I[2026-11-25|08:32:17.084] Finalizing commit of block                   module=consensus height=27 hash=58A002E54A0DB8D2AC1FCFFD5017204060E37879D12FEBB43F0EE8615AC10862 root=A5D3FC2450F8D41416A3D7A55A40C42074992F497CCA56CC6C810611CF075271 num_txs=1
+I[2026-11-25|08:32:17.087] Finalized block                              module=state height=27 num_txs_res=1 num_val_updates=0 block_app_hash=65146C08BDCA214882E0436DF159A0E4E8EAEC04CA30DBBE2D307957ACB44B25 syncing_to_height=27
+I[2026-11-25|08:32:17.088] Committed state                              module=state height=27 block_app_hash=A5D3FC2450F8D41416A3D7A55A40C42074992F497CCA56CC6C810611CF075271
+I[2026-11-25|08:32:17.089] indexed block events                         module=txindex height=27
+I[2026-11-25|08:32:18.085] Timed out                                    module=consensus dur=995.755304ms height=28 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:18.088] Received proposal                            module=consensus proposal="Proposal{28/0 (EC776F74968CDC929219E9129593E549832F7E5AE1A095F8484E0F9A08A31FEA:1:A0EC93A29D4B, -1) 009A2085E394 @ 2026-11-25T08:32:17.084383061Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:18.088] Received complete proposal block             module=consensus height=28 hash=EC776F74968CDC929219E9129593E549832F7E5AE1A095F8484E0F9A08A31FEA
+I[2026-11-25|08:32:18.091] Finalizing commit of block                   module=consensus height=28 hash=EC776F74968CDC929219E9129593E549832F7E5AE1A095F8484E0F9A08A31FEA root=65146C08BDCA214882E0436DF159A0E4E8EAEC04CA30DBBE2D307957ACB44B25 num_txs=1
+I[2026-11-25|08:32:18.093] Finalized block                              module=state height=28 num_txs_res=1 num_val_updates=0 block_app_hash=94DBD8E30467CE3A8CC0DDFED09029FF9C18573CE02BCF76708A7207E55101F1 syncing_to_height=28
+I[2026-11-25|08:32:18.094] Committed state                              module=state height=28 block_app_hash=65146C08BDCA214882E0436DF159A0E4E8EAEC04CA30DBBE2D307957ACB44B25
+I[2026-11-25|08:32:18.095] indexed block events                         module=txindex height=28
+I[2026-11-25|08:32:19.091] Timed out                                    module=consensus dur=996.205529ms height=29 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:19.105] Received proposal                            module=consensus proposal="Proposal{29/0 (8B6352D5A8BD7493CF2A85175F8BE67BDE3FB2EC716A3A1E18753D958D6A6E61:1:4730DA3C225F, -1) ADD5A0B1FDC0 @ 2026-11-25T08:32:18.090677116Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:19.105] Received complete proposal block             module=consensus height=29 hash=8B6352D5A8BD7493CF2A85175F8BE67BDE3FB2EC716A3A1E18753D958D6A6E61
+I[2026-11-25|08:32:19.107] Finalizing commit of block                   module=consensus height=29 hash=8B6352D5A8BD7493CF2A85175F8BE67BDE3FB2EC716A3A1E18753D958D6A6E61 root=94DBD8E30467CE3A8CC0DDFED09029FF9C18573CE02BCF76708A7207E55101F1 num_txs=0
+I[2026-11-25|08:32:19.108] Finalized block                              module=state height=29 num_txs_res=0 num_val_updates=0 block_app_hash=B6F8357088762128F8C5EF3E8EE7B3D4C2CE74AFE159D1D6841DE2B6F35952EB syncing_to_height=29
+I[2026-11-25|08:32:19.110] Committed state                              module=state height=29 block_app_hash=94DBD8E30467CE3A8CC0DDFED09029FF9C18573CE02BCF76708A7207E55101F1
+I[2026-11-25|08:32:19.110] indexed block events                         module=txindex height=29
+I[2026-11-25|08:32:19.866] Ensure peers                                 module=pex numOutPeers=0 numInPeers=0 numDialing=0 numToDial=10
+I[2026-11-25|08:32:19.866] No addresses to dial. Falling back to seeds  module=pex
+I[2026-11-25|08:32:20.108] Timed out                                    module=consensus dur=997.129184ms height=30 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:20.109] Received proposal                            module=consensus proposal="Proposal{30/0 (D926A7483933ED93F395147DD478BB10DD6F469567E1734FFC2278473D0F4AE4:1:E483D16FEDCD, -1) 1C5DCBAECE18 @ 2026-11-25T08:32:19.106951789Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:20.110] Received complete proposal block             module=consensus height=30 hash=D926A7483933ED93F395147DD478BB10DD6F469567E1734FFC2278473D0F4AE4
+I[2026-11-25|08:32:20.112] Finalizing commit of block                   module=consensus height=30 hash=D926A7483933ED93F395147DD478BB10DD6F469567E1734FFC2278473D0F4AE4 root=B6F8357088762128F8C5EF3E8EE7B3D4C2CE74AFE159D1D6841DE2B6F35952EB num_txs=0
+I[2026-11-25|08:32:20.114] Finalized block                              module=state height=30 num_txs_res=0 num_val_updates=0 block_app_hash=19E7DB08A0E5D7F5A72B408862332AD047B1930E342BA79D5BCF68EFFAADD30B syncing_to_height=30
+I[2026-11-25|08:32:20.116] Committed state                              module=state height=30 block_app_hash=B6F8357088762128F8C5EF3E8EE7B3D4C2CE74AFE159D1D6841DE2B6F35952EB
+I[2026-11-25|08:32:20.116] indexed block events                         module=txindex height=30
+I[2026-11-25|08:32:21.113] Timed out                                    module=consensus dur=996.20905ms height=31 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:21.115] Received proposal                            module=consensus proposal="Proposal{31/0 (D9F1895D1C927874B7AB63E89F5FBCD4AA044DD4EDE90FE390113C92AAFCDF5D:1:8A2B9AE33DBC, -1) 02C5AA4A3A22 @ 2026-11-25T08:32:20.112031685Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:21.116] Received complete proposal block             module=consensus height=31 hash=D9F1895D1C927874B7AB63E89F5FBCD4AA044DD4EDE90FE390113C92AAFCDF5D
+I[2026-11-25|08:32:21.118] Finalizing commit of block                   module=consensus height=31 hash=D9F1895D1C927874B7AB63E89F5FBCD4AA044DD4EDE90FE390113C92AAFCDF5D root=19E7DB08A0E5D7F5A72B408862332AD047B1930E342BA79D5BCF68EFFAADD30B num_txs=0
+I[2026-11-25|08:32:21.120] Finalized block                              module=state height=31 num_txs_res=0 num_val_updates=0 block_app_hash=CE8D2C4E61651C9F3C75986594AC42789B8BA85B721C3222B698EE076A0D7A9D syncing_to_height=31
+I[2026-11-25|08:32:21.122] Committed state                              module=state height=31 block_app_hash=19E7DB08A0E5D7F5A72B408862332AD047B1930E342BA79D5BCF68EFFAADD30B
+I[2026-11-25|08:32:21.123] indexed block events                         module=txindex height=31
+I[2026-11-25|08:32:22.118] Timed out                                    module=consensus dur=995.04076ms height=32 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:22.122] Received proposal                            module=consensus proposal="Proposal{32/0 (48224A265F2B728AF11C6587DAA259693DC58BDD52805FED0F29D65080395FD4:1:32EC179EA1FF, -1) 9221D70B52D8 @ 2026-11-25T08:32:21.117691687Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:22.122] Received complete proposal block             module=consensus height=32 hash=48224A265F2B728AF11C6587DAA259693DC58BDD52805FED0F29D65080395FD4
+I[2026-11-25|08:32:22.125] Finalizing commit of block                   module=consensus height=32 hash=48224A265F2B728AF11C6587DAA259693DC58BDD52805FED0F29D65080395FD4 root=CE8D2C4E61651C9F3C75986594AC42789B8BA85B721C3222B698EE076A0D7A9D num_txs=0
+I[2026-11-25|08:32:22.126] Finalized block                              module=state height=32 num_txs_res=0 num_val_updates=0 block_app_hash=93169BDD1EF0897BE9668B63027AA3A00D243E7E0C7CC08B61842BE66948DFD7 syncing_to_height=32
+I[2026-11-25|08:32:22.127] Committed state                              module=state height=32 block_app_hash=CE8D2C4E61651C9F3C75986594AC42789B8BA85B721C3222B698EE076A0D7A9D
+I[2026-11-25|08:32:22.127] indexed block events                         module=txindex height=32
+I[2026-11-25|08:32:23.126] Timed out                                    module=consensus dur=997.383111ms height=33 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:23.129] Received proposal                            module=consensus proposal="Proposal{33/0 (853C90AAC1A8C0E832CC66A7837BCC67046291D593C40A8C56AE0D3DED0AD1A1:1:168CAEC2E8E3, -1) 55DB5A885C54 @ 2026-11-25T08:32:22.124271388Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:23.129] Received complete proposal block             module=consensus height=33 hash=853C90AAC1A8C0E832CC66A7837BCC67046291D593C40A8C56AE0D3DED0AD1A1
+I[2026-11-25|08:32:23.133] Finalizing commit of block                   module=consensus height=33 hash=853C90AAC1A8C0E832CC66A7837BCC67046291D593C40A8C56AE0D3DED0AD1A1 root=93169BDD1EF0897BE9668B63027AA3A00D243E7E0C7CC08B61842BE66948DFD7 num_txs=1
+I[2026-11-25|08:32:23.136] Finalized block                              module=state height=33 num_txs_res=1 num_val_updates=0 block_app_hash=C2C870FD778D69E9B294BEA6528BA0A711C9EF9B5A3582A000C9E0872560C4E8 syncing_to_height=33
+I[2026-11-25|08:32:23.137] Committed state                              module=state height=33 block_app_hash=93169BDD1EF0897BE9668B63027AA3A00D243E7E0C7CC08B61842BE66948DFD7
+I[2026-11-25|08:32:23.138] indexed block events                         module=txindex height=33
+I[2026-11-25|08:32:24.134] Timed out                                    module=consensus dur=995.455431ms height=34 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:24.136] Received proposal                            module=consensus proposal="Proposal{34/0 (C65ADD87A0E8EE388F5D8C33C73AF35A8E12CE36EC8B51C30610F8A3B6EF6029:1:2E8A97F77A6E, -1) 4EE0CB46A290 @ 2026-11-25T08:32:23.132743273Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:24.136] Received complete proposal block             module=consensus height=34 hash=C65ADD87A0E8EE388F5D8C33C73AF35A8E12CE36EC8B51C30610F8A3B6EF6029
+I[2026-11-25|08:32:24.139] Finalizing commit of block                   module=consensus height=34 hash=C65ADD87A0E8EE388F5D8C33C73AF35A8E12CE36EC8B51C30610F8A3B6EF6029 root=C2C870FD778D69E9B294BEA6528BA0A711C9EF9B5A3582A000C9E0872560C4E8 num_txs=1
+I[2026-11-25|08:32:24.140] Finalized block                              module=state height=34 num_txs_res=1 num_val_updates=0 block_app_hash=962BFB408E2EDF359322448E50F97F800E7B93FFBEED7585C3BABE3EF53EFE3A syncing_to_height=34
+I[2026-11-25|08:32:24.141] Committed state                              module=state height=34 block_app_hash=C2C870FD778D69E9B294BEA6528BA0A711C9EF9B5A3582A000C9E0872560C4E8
+I[2026-11-25|08:32:24.141] indexed block events                         module=txindex height=34
+I[2026-11-25|08:32:25.139] Timed out                                    module=consensus dur=997.269801ms height=35 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:25.141] Received proposal                            module=consensus proposal="Proposal{35/0 (67CCCB3BAC0801090BDC7A33B70D8AD897020239A3E15F2586CD00D02C4F79A0:1:E32B67D6D4F3, -1) 59D0ADBB9D9B @ 2026-11-25T08:32:24.13853703Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:25.141] Received complete proposal block             module=consensus height=35 hash=67CCCB3BAC0801090BDC7A33B70D8AD897020239A3E15F2586CD00D02C4F79A0
+I[2026-11-25|08:32:25.144] Finalizing commit of block                   module=consensus height=35 hash=67CCCB3BAC0801090BDC7A33B70D8AD897020239A3E15F2586CD00D02C4F79A0 root=962BFB408E2EDF359322448E50F97F800E7B93FFBEED7585C3BABE3EF53EFE3A num_txs=0
+I[2026-11-25|08:32:25.145] Finalized block                              module=state height=35 num_txs_res=0 num_val_updates=0 block_app_hash=B7073A27ECA94CEB32647D4F9D7640C1E21AE09C97F8387153FD3C85C030491A syncing_to_height=35
+I[2026-11-25|08:32:25.146] Committed state                              module=state height=35 block_app_hash=962BFB408E2EDF359322448E50F97F800E7B93FFBEED7585C3BABE3EF53EFE3A
+I[2026-11-25|08:32:25.146] indexed block events                         module=txindex height=35
+I[2026-11-25|08:32:26.144] Timed out                                    module=consensus dur=997.302808ms height=36 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:26.146] Received proposal                            module=consensus proposal="Proposal{36/0 (F9436A856077357AC61A2B5D5D169E0632EF57DD48854201F5E27F3564DA1626:1:8F9EE1BF719E, -1) E3F580B54B30 @ 2026-11-25T08:32:25.143142955Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:26.146] Received complete proposal block             module=consensus height=36 hash=F9436A856077357AC61A2B5D5D169E0632EF57DD48854201F5E27F3564DA1626
+I[2026-11-25|08:32:26.148] Finalizing commit of block                   module=consensus height=36 hash=F9436A856077357AC61A2B5D5D169E0632EF57DD48854201F5E27F3564DA1626 root=B7073A27ECA94CEB32647D4F9D7640C1E21AE09C97F8387153FD3C85C030491A num_txs=0
+I[2026-11-25|08:32:26.149] Finalized block                              module=state height=36 num_txs_res=0 num_val_updates=0 block_app_hash=BF1C26E1620D67CB0265CC841BFAB5A258C8B17C59D843A6D0801860A6B39D9A syncing_to_height=36
+I[2026-11-25|08:32:26.150] Committed state                              module=state height=36 block_app_hash=B7073A27ECA94CEB32647D4F9D7640C1E21AE09C97F8387153FD3C85C030491A
+I[2026-11-25|08:32:26.150] indexed block events                         module=txindex height=36
+I[2026-11-25|08:32:27.148] Timed out                                    module=consensus dur=997.669743ms height=37 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:27.149] Received proposal                            module=consensus proposal="Proposal{37/0 (8EE97840E88C0568E9BEC3222A670913EAB6543A167AD0456F82C05E425DA45A:1:69AAEC02E068, -1) 811EB6311E95 @ 2026-11-25T08:32:26.147541638Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:27.149] Received complete proposal block             module=consensus height=37 hash=8EE97840E88C0568E9BEC3222A670913EAB6543A167AD0456F82C05E425DA45A
+I[2026-11-25|08:32:27.151] Finalizing commit of block                   module=consensus height=37 hash=8EE97840E88C0568E9BEC3222A670913EAB6543A167AD0456F82C05E425DA45A root=BF1C26E1620D67CB0265CC841BFAB5A258C8B17C59D843A6D0801860A6B39D9A num_txs=0
+I[2026-11-25|08:32:27.152] Finalized block                              module=state height=37 num_txs_res=0 num_val_updates=0 block_app_hash=017DAFDFBA7F8A172B3E2A74E9CF23A12EBB455F71A38091113A94E92518D92D syncing_to_height=37
+I[2026-11-25|08:32:27.153] Committed state                              module=state height=37 block_app_hash=BF1C26E1620D67CB0265CC841BFAB5A258C8B17C59D843A6D0801860A6B39D9A
+I[2026-11-25|08:32:27.153] indexed block events                         module=txindex height=37
+I[2026-11-25|08:32:28.151] Timed out                                    module=consensus dur=998.075169ms height=38 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:28.153] Received proposal                            module=consensus proposal="Proposal{38/0 (83104DDEC4DC97CFBBF612096EFFFE2AF9DBF7EEE6F06591736A273F55311CBD:1:B8DF2ED60F71, -1) 79D7AE15EBC3 @ 2026-11-25T08:32:27.150921484Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:28.153] Received complete proposal block             module=consensus height=38 hash=83104DDEC4DC97CFBBF612096EFFFE2AF9DBF7EEE6F06591736A273F55311CBD
+I[2026-11-25|08:32:28.155] Finalizing commit of block                   module=consensus height=38 hash=83104DDEC4DC97CFBBF612096EFFFE2AF9DBF7EEE6F06591736A273F55311CBD root=017DAFDFBA7F8A172B3E2A74E9CF23A12EBB455F71A38091113A94E92518D92D num_txs=0
+I[2026-11-25|08:32:28.156] Finalized block                              module=state height=38 num_txs_res=0 num_val_updates=0 block_app_hash=35718FE25A3BDD4CBB16A743E633792A3F8DF1E51D6CC5C9DFDFAD3155563D3A syncing_to_height=38
+I[2026-11-25|08:32:28.157] Committed state                              module=state height=38 block_app_hash=017DAFDFBA7F8A172B3E2A74E9CF23A12EBB455F71A38091113A94E92518D92D
+I[2026-11-25|08:32:28.157] indexed block events                         module=txindex height=38
+I[2026-11-25|08:32:29.155] Timed out                                    module=consensus dur=997.781327ms height=39 round=0 step=RoundStepNewHeight
+I[2026-11-25|08:32:29.157] Received proposal                            module=consensus proposal="Proposal{39/0 (1E46C2CDF491C935C98223730018DDE79077577030BD8C76D98224EBCD4DCD80:1:213701CF06BD, -1) CE1D77FC2C0E @ 2026-11-25T08:32:28.154440942Z}" proposer=0D5EDB3B7F258EE69A24EC4F8D883DE5FDF47B9C
+I[2026-11-25|08:32:29.157] Received complete proposal block             module=consensus height=39 hash=1E46C2CDF491C935C98223730018DDE79077577030BD8C76D98224EBCD4DCD80
+I[2026-11-25|08:32:29.159] Finalizing commit of block                   module=consensus height=39 hash=1E46C2CDF491C935C98223730018DDE79077577030BD8C76D98224EBCD4DCD80 root=35718FE25A3BDD4CBB16A743E633792A3F8DF1E51D6CC5C9DFDFAD3155563D3A num_txs=1
+I[2026-11-25|08:32:29.161] Finalized block                              module=state height=39 num_txs_res=1 num_val_updates=0 block_app_hash=B211E27460062A0C5DC02552026F182DA497978B6C769682052F5AAA3AA7358D syncing_to_height=39
+I[2026-11-25|08:32:29.162] Committed state                              module=state height=39 block_app_hash=35718FE25A3BDD4CBB16A743E633792A3F8DF1E51D6CC5C9DFDFAD3155563D3A
+I[2026-11-25|08:32:29.162] indexed block events                         module=txindex height=39
+I[2026-11-25|08:32:29.570] service stop                                 msg="Stopping Node service" impl=Node
+I[2026-11-25|08:32:29.570] Stopping Node
+I[2026-11-25|08:32:29.570] service stop                                 module=state msg="Stopping Pruner service" impl=Pruner
+I[2026-11-25|08:32:29.570] service stop                                 module=events msg="Stopping EventBus service" impl=EventBus
+I[2026-11-25|08:32:29.570] service stop                                 module=pubsub msg="Stopping PubSub service" impl=PubSub
+I[2026-11-25|08:32:29.570] service stop                                 module=txindex msg="Stopping IndexerService service" impl=IndexerService
+I[2026-11-25|08:32:29.570] service stop                                 module=p2p msg="Stopping P2P Switch service" impl="P2P Switch"
+I[2026-11-25|08:32:29.570] service stop                                 module=mempool msg="Stopping Mempool service" impl=Mempool
+I[2026-11-25|08:32:29.570] service stop                                 module=blocksync msg="Stopping Reactor service" impl=Reactor
+I[2026-11-25|08:32:29.570] service stop                                 module=consensus msg="Stopping Consensus service" impl=ConsensusReactor
+I[2026-11-25|08:32:29.570] service stop                                 module=consensus msg="Stopping State service" impl=ConsensusState
+I[2026-11-25|08:32:29.570] service stop                                 module=consensus msg="Stopping TimeoutTicker service" impl=TimeoutTicker
+I[2026-11-25|08:32:29.570] service stop                                 module=consensus wal=/tmp/s2-loopback-dni2d_j2/validator/data/cs.wal/wal msg="Stopping baseWAL service" impl=baseWAL
+I[2026-11-25|08:32:29.570] service stop                                 module=consensus wal=/tmp/s2-loopback-dni2d_j2/validator/data/cs.wal/wal msg="Stopping Group service" impl=Group
+I[2026-11-25|08:32:29.570] service stop                                 module=evidence msg="Stopping Evidence service" impl=Evidence
+I[2026-11-25|08:32:29.570] service stop                                 module=statesync msg="Stopping StateSync service" impl=StateSync
+I[2026-11-25|08:32:29.570] service stop                                 module=pex msg="Stopping PEX service" impl=PEX
+I[2026-11-25|08:32:29.570] service stop                                 module=p2p book=/tmp/s2-loopback-dni2d_j2/validator/config/addrbook.json msg="Stopping AddrBook service" impl=AddrBook
+I[2026-11-25|08:32:29.570] Saving AddrBook to file                      module=p2p book=/tmp/s2-loopback-dni2d_j2/validator/config/addrbook.json size=0
+E[2026-11-25|08:32:29.571] Stopped accept routine, as transport is closed module=p2p numPeers=0
+I[2026-11-25|08:32:29.571] Closing rpc listener                         listener="&{Listener:0x1416c0948a00 sem:0x1416c0484540 closeOnce:{_:{} done:{_:{} v:0} m:{_:{} mu:{state:0 sema:0}}} done:0x1416c04845b0}"
+I[2026-11-25|08:32:29.571] RPC HTTP server stopped                      module=rpc-server err="accept tcp 127.0.0.1:51743: use of closed network connection"
+E[2026-11-25|08:32:29.571] Error serving server                         err="accept tcp 127.0.0.1:51743: use of closed network connection"
+I[2026-11-25|08:32:29.571] Closing blockstore
+I[2026-11-25|08:32:29.572] Closing statestore
+I[2026-11-25|08:32:29.572] Closing evidencestore

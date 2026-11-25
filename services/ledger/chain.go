@@ -14,6 +14,7 @@ import (
 	"os"
 	"sort"
 	"sync"
+	"syscall"
 	"time"
 
 	core "ember/core-go"
@@ -24,6 +25,7 @@ import (
 )
 
 type ChainConfig struct {
+	SignLock       string // Optional supervisor-wide transaction nonce lock.
 	RPC            string
 	ChainID        string
 	CoordinatorKey string
@@ -39,6 +41,7 @@ type chainAuthEntry struct {
 }
 
 type ChainLedger struct {
+	signLock      string
 	pricing       pricingResolver
 	mu            sync.Mutex
 	rpc           *rpchttp.HTTP
@@ -75,7 +78,7 @@ func OpenChain(config ChainConfig) (*ChainLedger, error) {
 	if json.Unmarshal(raw, &entries) != nil || len(entries) == 0 {
 		return nil, errors.New("invalid chain auth file")
 	}
-	ledger := &ChainLedger{rpc: client, chainID: config.ChainID, coordinator: coordinator, auditor: auditor, accounts: map[string]ed25519.PrivateKey{}, tokens: map[[32]byte]string{}, signingTokens: map[[32]byte]bool{}}
+	ledger := &ChainLedger{signLock: config.SignLock, rpc: client, chainID: config.ChainID, coordinator: coordinator, auditor: auditor, accounts: map[string]ed25519.PrivateKey{}, tokens: map[[32]byte]string{}, signingTokens: map[[32]byte]bool{}}
 	if config.FaucetKey != "" {
 		ledger.faucet, err = readPrivateKey(config.FaucetKey)
 		if err != nil {
@@ -385,6 +388,19 @@ func (l *ChainLedger) withAccount(id string, action chainapp.Action) error {
 	return l.submit(key, action)
 }
 func (l *ChainLedger) submit(key ed25519.PrivateKey, action chainapp.Action) error {
+	// Workers can share authority and consumer keys. Serialize query/sign/commit
+	// across processes so concurrent orders cannot reuse the same account nonce.
+	if l.signLock != "" {
+		file, err := os.OpenFile(l.signLock, os.O_CREATE|os.O_RDWR, 0600)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		if err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX); err != nil {
+			return err
+		}
+		defer syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if err := l.contributionAdmission(action); err != nil {

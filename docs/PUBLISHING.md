@@ -107,3 +107,9 @@ ember-node profile verify --genesis ./release/genesis.pb \
 
 This checks artifact bytes and signed roots, then generation and forced-prefix
 replay. It is a conformance probe, not cross-hardware numerical calibration.
+
+Supervisor mode note: `emberd supervisor` automatically admits valid published
+profiles into isolated workers using their verified publisher anchors; it does
+not require gateway vetting or endorsements. Single-profile gateway and node
+trust policies retain their existing defaults. Unsupported runtime/layout
+contexts remain unavailable with a reason in `/v1/catalog`.

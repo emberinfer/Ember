@@ -100,3 +100,52 @@ func (g *Gateway) failPipeline(w http.ResponseWriter, stream bool, id string, ca
 	}
 	return cause
 }
+
+// ServeAvailability returns live scheduler eligibility, never registered-node counts.
+// It is consumed by the supervisor on loopback; request-specific context/budget
+// checks remain in the unchanged quote and dispatch handlers.
+func (g *Gateway) ServeAvailability(w http.ResponseWriter, r *http.Request) {
+	ready, count, reason := g.availability()
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]any{"ready": ready, "reason": reason, "executors_online": count})
+}
+func (g *Gateway) availability() (bool, int, string) {
+	if g.Candidates == nil || g.ChainID == "" || g.Profile == "" || len(g.Manifest) == 0 {
+		return false, 0, "profile context incomplete"
+	}
+	if g.CheckModelTrust != nil {
+		if err := g.CheckModelTrust(g.ChainID); err != nil {
+			return false, 0, err.Error()
+		}
+	}
+	req := scheduler.Request{Chain: g.ChainID, Manifest: g.Manifest, Profile: g.Profile}
+	if g.SchedulingPolicy != nil {
+		p, e := g.SchedulingPolicy()
+		if e != nil {
+			return false, 0, "chain scheduling state unavailable"
+		}
+		req.LatencyPolicy = p
+	}
+	candidates := g.liveCandidates()
+	if g.Moe != nil {
+		return false, 0, "dedicated MoE gateway required"
+	}
+	if g.Pipeline != nil {
+		if g.TotalLayers == 0 || g.Pipeline.Python == "" || g.Pipeline.ModelPath == "" || g.Pipeline.SchedulerKeyFile == "" {
+			return false, 0, "pipeline context incomplete"
+		}
+		req.DynamicRanges = g.Pipeline.DynamicRanges
+		req.MinStageLayers = g.Pipeline.MinStageLayers
+		req.AllowedCuts = g.Pipeline.AllowedCuts
+		plan, e := scheduler.PlanPipeline(req, candidates, g.TotalLayers)
+		if e != nil {
+			return false, 0, e.Error()
+		}
+		return true, len(plan.Stages), ""
+	}
+	count := len(scheduler.Rank(req, candidates))
+	if count == 0 {
+		return false, 0, "no eligible online executor"
+	}
+	return true, count, ""
+}

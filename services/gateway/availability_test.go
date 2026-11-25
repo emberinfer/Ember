@@ -248,3 +248,42 @@ func TestCandidateTrackerLeaseSupersedesPinnedProfileExpiry(t *testing.T) {
 		t.Fatal("expired tracker lease accepted")
 	}
 }
+
+func TestWorkerCatalogEligibility(t *testing.T) {
+	g, _, p := availabilityFixture(t)
+	g.ChainID = "model"
+	if ready, _, reason := g.availability(); !ready {
+		t.Fatal("complete pipeline rejected", reason)
+	}
+	p.ShardEndLayer = 14
+	p.ShardHasLmHead = false
+	if ready, _, reason := g.availability(); ready || reason == "" {
+		t.Fatal("partial shard cover advertised ready")
+	}
+	g.Pipeline = nil
+	p.ShardTotalLayers = 0
+	p.ShardEndLayer = 0
+	p.ShardHasEmbedding = false
+	if ready, n, reason := g.availability(); !ready || n != 1 {
+		t.Fatal(ready, n, reason)
+	}
+	p.ExpiresUnix = time.Now().Add(-time.Minute).Unix()
+	if ready, _, reason := g.availability(); ready || reason == "" {
+		t.Fatal("expired executor ready")
+	}
+	p.ExpiresUnix = time.Now().Add(time.Minute).Unix()
+	g.ExecExclude = map[string]bool{p.NodeId: true}
+	if ready, _, _ := g.availability(); ready {
+		t.Fatal("excluded executor ready")
+	}
+	g.ExecExclude = nil
+	g.CheckModelTrust = func(string) error { return errors.New("publication invalid") }
+	if ready, _, reason := g.availability(); ready || reason != "publication invalid" {
+		t.Fatal(ready, reason)
+	}
+	g.CheckModelTrust = nil
+	g.Manifest = nil
+	if ready, _, reason := g.availability(); ready || reason != "profile context incomplete" {
+		t.Fatal(ready, reason)
+	}
+}

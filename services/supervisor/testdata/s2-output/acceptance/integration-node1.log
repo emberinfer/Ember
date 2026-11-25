@@ -1,0 +1,5 @@
+MULTIHOME connected=0/1 peer=127.0.0.1:46569 ready=False missing=['127.0.0.1:46569']
+MULTIHOME connected=0/1 peer=127.0.0.1:46569 ready=False missing=['127.0.0.1:46569']
+height=39 tx_hash=7141C14C97A22C350190EDECD27F181D6FF3DA57D0D4B5E40FCEF83130CCB273
+JOIN READY node=1bcbd4c41a9ad7e325fd9ff066c90510a9184d07a39d736362ccf599efe58875 peer=127.0.0.1:46569
+MULTIHOME connected=1/1 peer=127.0.0.1:46569 ready=True missing=[]

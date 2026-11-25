@@ -1,0 +1,12 @@
+README.md:1: missing required current-release anchor
+site/index.html:83: current release '0.7.0'; expected 0.9.3
+site/index.html:71: release literal 'v0.7.0'; expected 0.9.3
+site/index.html:72: release literal 'v0.7.0'; expected 0.9.3
+site/index.html:72: release literal 'v0.7.0'; expected 0.9.3
+site/index.html:83: release literal '0.7.0'; expected 0.9.3
+site/index.html:83: release literal 'v0.7.0'; expected 0.9.3
+docs/QUICKSTART.md:1: missing required current-release anchor
+docs/QUICKSTART.md:18: release literal '0.9.2'; expected 0.9.3
+version-check: 9 errors; VERSION=0.9.3
+
+exit_code=1

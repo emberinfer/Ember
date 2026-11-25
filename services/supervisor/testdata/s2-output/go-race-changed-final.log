@@ -1,0 +1,4 @@
+ok  	ember/services/supervisor	1.152s
+ok  	ember/services/gateway	(cached)
+ok  	ember/services/ledger	(cached)
+ok  	ember/cmd/emberd	3.443s

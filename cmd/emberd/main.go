@@ -45,6 +45,7 @@ import (
 	"ember/services/jsonspool"
 	"ember/services/ledger"
 	"ember/services/scheduler"
+	"ember/services/supervisor"
 	"ember/services/tracker"
 	"ember/services/tunnel"
 	"ember/services/verifier"
@@ -58,6 +59,12 @@ func main() {
 	mode := "all"
 	if len(os.Args) > 1 {
 		mode = os.Args[1]
+	}
+	if mode == "supervisor" {
+		if err := supervisor.Run(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+		return
 	}
 	if mode == "privacy-gateway" {
 		privacyGateway(os.Args[2:])
@@ -84,6 +91,7 @@ func main() {
 	imageKey := flags.String("image-key", "", "persistent mode-0600 image gateway Ed25519 key (defaults to <db>.image.key)")
 	database := flags.String("db", "ember.db", "SQLite ledger file")
 	ledgerBackend := flags.String("ledger-backend", "sqlite", "ledger backend: sqlite or chain")
+	signLock := flags.String("chain-sign-lock", "", "optional shared worker transaction nonce lock")
 	chainRPC := flags.String("chain-rpc", "", "CometBFT RPC URL for chain ledger")
 	chainID := flags.String("chain-id", "", "CometBFT chain ID")
 	chainCoordinatorKey := flags.String("chain-coordinator-key", "", "mode-0600 coordinator Ed25519 key")
@@ -173,7 +181,7 @@ func main() {
 		if *faucetAmount > 0 && *faucetKey == "" {
 			log.Fatal("--faucet-amount requires --faucet-key")
 		}
-		chainBook, err = ledger.OpenChain(ledger.ChainConfig{RPC: *chainRPC, ChainID: *chainID,
+		chainBook, err = ledger.OpenChain(ledger.ChainConfig{SignLock: *signLock, RPC: *chainRPC, ChainID: *chainID,
 			CoordinatorKey: *chainCoordinatorKey, AuditorKey: *chainAuditorKey, AuthFile: *chainAuthFile, FaucetKey: *faucetKey})
 		book = chainBook
 		if *schedulerKeyFile == "" {
@@ -1229,6 +1237,7 @@ func main() {
 	mux.Handle("/v1/chat/completions", api)
 	mux.Handle("/v1/quote", api)
 	mux.Handle("/v1/pricing", api)
+	mux.HandleFunc("/v1/availability", api.ServeAvailability)
 	if *faucetAmount > 0 {
 		if *faucetState == "" {
 			*faucetState = *database + ".faucet-state.json"

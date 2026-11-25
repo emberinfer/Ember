@@ -1,0 +1,12 @@
+MULTIHOME connected=0/1 peer=127.0.0.1:35165 ready=False missing=['127.0.0.1:35165']
+MULTIHOME connected=0/1 peer=127.0.0.1:35165 ready=False missing=['127.0.0.1:35165']
+height=7 tx_hash=41A13FC883ABE1ACBF7F72E4B59E4C63E2E16EC408864B60DC5B9F8DCE52E96D
+JOIN READY node=dc337eff7506e067212cb9b620fc4157a92b60e5659fac94bf6b0727502933ce peer=127.0.0.1:35165
+MULTIHOME connected=1/1 peer=127.0.0.1:35165 ready=True missing=[]
+audit request=51c6ea3d96623b804b01cf73b621813b-f3aed188a14f38c9a7429c4dae05df07 waiting for engine lock
+audit request=51c6ea3d96623b804b01cf73b621813b-f3aed188a14f38c9a7429c4dae05df07 acquired engine lock wait_seconds=0.000448
+audit_result request_id=51c6ea3d96623b804b01cf73b621813b-f3aed188a14f38c9a7429c4dae05df07 summary={"distance": 0.0, "grade": "within-enforced-band", "verdict": "accept"}
+audit request=372a47c31734bf0c046c47c6c09814ae-3267d24dcdae98e144c04772979a381e waiting for engine lock
+audit request=372a47c31734bf0c046c47c6c09814ae-3267d24dcdae98e144c04772979a381e acquired engine lock wait_seconds=0.000134
+audit_result request_id=372a47c31734bf0c046c47c6c09814ae-3267d24dcdae98e144c04772979a381e summary={"distance": 0.0, "grade": "within-enforced-band", "verdict": "accept"}
+HEARTBEAT node=dc337eff7506e067212cb9b620fc4157a92b60e5659fac94bf6b0727502933ce peer=127.0.0.1:35165

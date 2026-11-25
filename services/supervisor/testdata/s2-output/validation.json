@@ -1,0 +1,38 @@
+{
+  "public_base": "1d39f3fa39fa7ecaa03a601396d2df13c532ee7a",
+  "web_base": "e8fef5d2841583b388d9307c8a634716e4704e14",
+  "public_go_full": "passed",
+  "public_go_race_full": "passed",
+  "public_go_race_final_changes": "passed",
+  "public_python": {
+    "passed": 564,
+    "skipped": 3,
+    "subtests": 63
+  },
+  "web_python": {
+    "passed": 12
+  },
+  "web_error_harness": "passed",
+  "normal_sampling_acceptance": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "forced_sampling_acceptance": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "forced_sampling_audits": "3 sampled; 3 accepted; 80/15/5 shares and executor balance deltas verified",
+  "unchanged_baseline_checks": {
+    "docs_lint_errors": 33,
+    "version_check_errors": 9
+  },
+  "production_access": false
+}

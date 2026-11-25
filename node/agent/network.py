@@ -9,15 +9,78 @@ import shlex
 import sys
 
 
+def validate_artifacts(model, ident):
+    """Authenticate exact protobuf bytes against an operator-trusted record."""
+    import base64
+    from ember_core import verify, digest, node_id
+    from ember_pb2 import ChainGenesis, ModelManifest
+    if not re.fullmatch(r'ember-[a-zA-Z0-9_.-]{1,192}', ident) or model.get('id') != ident:
+        raise ValueError('model ID mismatch')
+    publication = model.get('publication')
+    if publication and publication.get('invalid'):
+        raise ValueError('publication invalid')
+    source = publication or model
+    graw = base64.b64decode(source.get('genesis' if publication else 'signed_profile') or '', validate=True)
+    mraw = base64.b64decode(source.get('manifest' if publication else 'signed_manifest') or '', validate=True)
+    if not graw or not mraw or len(graw) + len(mraw) > 16 << 20:
+        raise ValueError('signed artifacts unavailable or exceed limit')
+    g, m = ChainGenesis.FromString(graw), ModelManifest.FromString(mraw)
+    verify(g); verify(m)
+    gh, mh = hashlib.sha256(graw).hexdigest(), hashlib.sha256(mraw).hexdigest()
+    if (g.chain_id != ident or m.chain_id != ident or g.signer != m.signer or
+            digest(m) != g.model_manifest_root or gh != model.get('genesis_hash')):
+        raise ValueError('artifact anchor mismatch')
+    if publication:
+        if (publication.get('publisher') != node_id(g.signer) or
+                publication.get('manifest_root') != digest(m).hex() or
+                model.get('profile_hash') != digest(g).hex()):
+            raise ValueError('publication anchor mismatch')
+    elif model.get('profile_hash') != mh:
+        raise ValueError('legacy manifest SHA256 mismatch')
+    return graw, mraw, dict(id=ident, genesis_sha256=gh, manifest_sha256=mh)
+
+
+def fetch_profile(document, ident, profiles, rpc, cli, trust_policy=None):
+    # Explicit --chain-rpc is the minimum operator trust pin. Ordinary ABCI
+    # JSON is not a Merkle proof and cannot establish trust in an unknown RPC.
+    if not rpc:
+        raise ValueError('unbundled profiles require operator-pinned --chain-rpc')
+    if not re.fullmatch(r'ember-[a-zA-Z0-9_.-]{1,192}', ident):
+        raise ValueError('invalid profile ID')
+    from .join import _chain_json
+    from .trust import check_model_trust
+    model = _chain_json(cli, rpc, '/model/' + ident)
+    state = _chain_json(cli, rpc, '/model-trust/' + ident)
+    parameters = _chain_json(cli, rpc, '/parameters')
+    if parameters['chain_id'] != document['ledger']['chain_id']:
+        raise ValueError('ledger chain ID mismatch')
+    if model != state['models'][ident]:
+        raise ValueError('model changed during trust query; retry configure')
+    graw, mraw, profile = validate_artifacts(model, ident)
+    check_model_trust(state, ident, trust_policy)
+    target = Path(profiles) / ident
+    target.mkdir(parents=True, exist_ok=True)
+    for name, raw in [('genesis.pb', graw), ('manifest.pb', mraw)]:
+        path = target / name
+        if path.exists() and path.read_bytes() != raw:
+            raise ValueError('cached profile bytes differ: ' + name)
+        if not path.exists():
+            with path.open('xb') as stream:
+                stream.write(raw)
+    document['current_profile'] = profile
+    document['access']['rpc'] = rpc
+    return profile
+
+
 def gateway_coordinators(access, profile, *, same_host_684=False):
     selected = []
     matched = False
     for private, gateways in ((False, access.get('gateways', [])),
                               (True, access.get('private_gateways', []))):
         for gateway in gateways:
-            if 'profiles' not in gateway:
+            if 'profiles' not in gateway and gateway.get('dynamic_profiles') is not True:
                 raise ValueError('gateway directory lacks exact profile membership')
-            if profile not in gateway['profiles']:
+            if profile not in gateway.get('profiles', []) and gateway.get('dynamic_profiles') is not True:
                 continue
             matched = True
             ident = str(gateway.get('id', gateway.get('url')))
@@ -136,9 +199,31 @@ def main(args=None):
     parser.add_argument('--model-path', required=True)
     parser.add_argument('--config', required=True)
     parser.add_argument('--profiles', default=str(Path(__file__).resolve().parents[4]/'profiles'))
+    parser.add_argument('--profile-id')
+    parser.add_argument('--chain-rpc', help='operator-pinned trusted ledger RPC (not a light-client proof)')
+    parser.add_argument('--chain-cli', default='emberchain')
+    parser.add_argument('--trust-policy')
+    parser.add_argument('--gateway', help='explicit gateway directory ID or URL')
     parser.add_argument('--same-host-684', action='store_true', help='explicitly attest client runs on gateway host 684')
     opts = parser.parse_args(args)
     document = json.loads(Path(opts.network_parameters).read_text())
+    if opts.profile_id and not re.fullmatch(r'ember-[a-zA-Z0-9_.-]{1,192}', opts.profile_id):
+        raise ValueError('invalid profile ID')
+    dynamic = opts.profile_id and (opts.profile_id != document.get('current_profile', {}).get('id') or
+        not all((Path(opts.profiles) / opts.profile_id / name).is_file() for name in ('genesis.pb', 'manifest.pb')))
+    if dynamic:
+        fetch_profile(document, opts.profile_id, opts.profiles, opts.chain_rpc,
+                      opts.chain_cli, opts.trust_policy)
+    if opts.gateway:
+        private = document['access'].get('private_gateways', [])
+        gateways = document['access'].get('gateways', []) + private
+        chosen = [g for g in gateways if opts.gateway in (g.get('id'), g.get('url'))]
+        if len(chosen) != 1:
+            raise ValueError('explicit gateway not found or ambiguous')
+        is_private = chosen[0] in private
+        chosen[0] = dict(chosen[0], profiles=[document['current_profile']['id']])
+        document['access']['gateways'] = [] if is_private else chosen
+        document['access']['private_gateways'] = chosen if is_private else []
     # Validate the document (and the bundled profile binding) before
     # resolving the trust policy, so a refused configure leaves no
     # generated policy file behind.
@@ -149,7 +234,7 @@ def main(args=None):
     # replace the file with their own pin.  See resolve_trust_policy:
     # an existing file is kept, a missing one is generated from the
     # network document's current_profile.publisher.
-    trust_policy = resolve_trust_policy(document, opts.config, opts.profiles)
+    trust_policy = opts.trust_policy or (None if dynamic else resolve_trust_policy(document, opts.config, opts.profiles))
     content = node_config(document, opts.model_path, opts.profiles, same_host_684=opts.same_host_684,
                           trust_policy=trust_policy)
     target = Path(opts.config)

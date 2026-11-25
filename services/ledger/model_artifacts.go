@@ -12,9 +12,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	rpcclient "github.com/cometbft/cometbft/rpc/client"
 	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 	"google.golang.org/protobuf/proto"
 	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -27,7 +29,7 @@ type ModelArtifacts struct {
 }
 
 // ArtifactClient serializes fetches and bounds its exact-byte cache to one entry.
-// Latest queries always contact RPC so invalidation cannot be hidden by cache.
+// Every fetch checks the latest height; entries from older heights are never served.
 type ArtifactClient struct {
 	RPC     *rpchttp.HTTP
 	ChainID string
@@ -56,7 +58,17 @@ func (c *ArtifactClient) Fetch(ctx context.Context, id string) (*ModelArtifacts,
 	if status.NodeInfo.Network != c.ChainID {
 		return nil, errors.New("ledger chain ID mismatch")
 	}
-	r, e := c.RPC.ABCIQuery(ctx, "/model/"+id, nil)
+	height := status.SyncInfo.LatestBlockHeight
+	prefix := fmt.Sprintf("%s/%s/%d/", c.ChainID, id, height)
+	clone := func(a ModelArtifacts) *ModelArtifacts {
+		a.Genesis = bytes.Clone(a.Genesis)
+		a.Manifest = bytes.Clone(a.Manifest)
+		return &a
+	}
+	if height > 0 && strings.HasPrefix(c.key, prefix) {
+		return clone(c.cached), nil
+	}
+	r, e := c.RPC.ABCIQueryWithOptions(ctx, "/model/"+id, nil, rpcclient.ABCIQueryOptions{Height: height})
 	if e != nil {
 		return nil, e
 	}
@@ -78,10 +90,7 @@ func (c *ArtifactClient) Fetch(ctx context.Context, id string) (*ModelArtifacts,
 	key := fmt.Sprintf("%s/%s/%d/%s/%s", c.ChainID, id, a.Height, a.GenesisSHA256, a.ManifestRoot)
 	c.key = key
 	c.cached = *a
-	out := c.cached
-	out.Genesis = bytes.Clone(out.Genesis)
-	out.Manifest = bytes.Clone(out.Manifest)
-	return &out, nil
+	return clone(c.cached), nil
 }
 func VerifyModelArtifacts(id string, m chain.Model) (*ModelArtifacts, error) {
 	if !profileID.MatchString(id) || m.ID != id {

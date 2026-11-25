@@ -41,8 +41,14 @@ case "$role" in
     : "${EMBER_GATEWAY_HTTP:?}" "${EMBER_GATEWAY_GRPC:?}" "${EMBER_CHAIN_RPC:?}"
     : "${EMBER_LEDGER_CHAIN_ID:?}" "${EMBER_COORDINATOR_KEY:?}" "${EMBER_AUDITOR_KEY:?}"
     : "${EMBER_AUTH_FILE:?}" "${EMBER_TLS_CERT:?}" "${EMBER_TLS_KEY:?}"
-    : "${EMBER_MODEL_GENESIS:?}" "${EMBER_MODEL_MANIFEST:?}" "${EMBER_MODEL_PATH:?}"
+    : "${EMBER_MODEL_PATH:?}"
     gateway_args=()
+    if [[ -n ${EMBER_PROFILE_ID:-} ]]; then
+      gateway_args+=(--profile-id "$EMBER_PROFILE_ID")
+    else
+      : "${EMBER_MODEL_GENESIS:?}" "${EMBER_MODEL_MANIFEST:?}"
+      gateway_args+=(--genesis "$EMBER_MODEL_GENESIS" --manifest "$EMBER_MODEL_MANIFEST")
+    fi
     if [[ -n ${EMBER_PROFILE_TRUST_POLICY:-} ]]; then gateway_args+=(--trust-policy "$EMBER_PROFILE_TRUST_POLICY"); fi
     if [[ -n ${EMBER_FAUCET_KEY:-} || -n ${EMBER_FAUCET_AMOUNT:-} ]]; then
       : "${EMBER_FAUCET_KEY:?}" "${EMBER_FAUCET_AMOUNT:?}" "${EMBER_FAUCET_STATE:?}"
@@ -57,7 +63,6 @@ case "$role" in
       --scheduler-key "$EMBER_COORDINATOR_KEY" --audit-key "$EMBER_AUDITOR_KEY" \
       --http "$EMBER_GATEWAY_HTTP" --grpc "$EMBER_GATEWAY_GRPC" \
       --tls-cert "$EMBER_TLS_CERT" --tls-key "$EMBER_TLS_KEY" \
-      --genesis "$EMBER_MODEL_GENESIS" --manifest "$EMBER_MODEL_MANIFEST" \
       --engine transformers --model-path "$EMBER_MODEL_PATH" \
       --auditor-python "${EMBER_AUDITOR_PYTHON:-$root/venv/bin/python}" \
       --auditor-pythonpath "${EMBER_AUDITOR_PYTHONPATH:-$root/lib/ember/core-py:$root/lib/ember/proto:$root/lib/ember/node}" \

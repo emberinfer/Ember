@@ -1,0 +1,24 @@
+=== RUN   TestModelArtifacts
+=== RUN   TestModelArtifacts/publication
+=== RUN   TestModelArtifacts/legacy
+=== RUN   TestModelArtifacts/invalid
+=== RUN   TestModelArtifacts/signer
+=== RUN   TestModelArtifacts/root
+=== RUN   TestModelArtifacts/id
+=== RUN   TestModelArtifacts/bytes
+=== RUN   TestModelArtifacts/missing
+=== RUN   TestModelArtifacts/profile-hash
+--- PASS: TestModelArtifacts (0.01s)
+    --- PASS: TestModelArtifacts/publication (0.00s)
+    --- PASS: TestModelArtifacts/legacy (0.00s)
+    --- PASS: TestModelArtifacts/invalid (0.00s)
+    --- PASS: TestModelArtifacts/signer (0.00s)
+    --- PASS: TestModelArtifacts/root (0.00s)
+    --- PASS: TestModelArtifacts/id (0.00s)
+    --- PASS: TestModelArtifacts/bytes (0.00s)
+    --- PASS: TestModelArtifacts/missing (0.00s)
+    --- PASS: TestModelArtifacts/profile-hash (0.00s)
+=== RUN   TestArtifactClientCacheHeightAndIsolation
+--- PASS: TestArtifactClientCacheHeightAndIsolation (0.00s)
+PASS
+ok  	ember/services/ledger	0.032s

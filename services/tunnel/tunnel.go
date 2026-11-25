@@ -5,6 +5,8 @@ import (
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -76,6 +78,22 @@ func (s *Server) Connect(stream pb.NodeTunnel_ConnectServer) error {
 		if hello.Kind != "join" || s.Tracker == nil || s.Genesis == nil {
 			log.Printf("JOIN REJECT node=%s reason=expected join", id)
 			return errors.New("expected join")
+		}
+		if len(hello.Payload) > 1024 {
+			return s.reject(id, "JOIN assertion too large")
+		}
+		if len(hello.Payload) != 0 {
+			var request struct {
+				ProfileID     string `json:"profile_id"`
+				GenesisSHA256 string `json:"genesis_sha256"`
+			}
+			if json.Unmarshal(hello.Payload, &request) != nil || request.ProfileID == "" || request.ProfileID != s.Genesis.ChainId {
+				return s.reject(id, "requested profile ID is not served by this gateway")
+			}
+			h := sha256.Sum256(s.GenesisBytes)
+			if request.GenesisSHA256 != "" && request.GenesisSHA256 != hex.EncodeToString(h[:]) {
+				return s.reject(id, "requested genesis hash mismatch")
+			}
 		}
 		nonce := make([]byte, 32)
 		if _, err = rand.Read(nonce); err != nil {

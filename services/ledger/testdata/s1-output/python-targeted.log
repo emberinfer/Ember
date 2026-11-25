@@ -1,0 +1,21 @@
+......MULTIHOME connected=0/1 peer=127.0.0.1:19191 ready=False missing=['127.0.0.1:19191']
+AUTH chain query retry 1/4: targeted state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query retry 2/4: targeted state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query retry 3/4: targeted state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query failed after 4 attempts: targeted state: Command 'cli' returned non-zero exit status 1.
+.MULTIHOME connected=0/1 peer=127.0.0.1:19191 ready=False missing=['127.0.0.1:19191']
+AUTH chain query retry 1/4: targeted state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query retry 2/4: targeted state: Command 'cli' timed out after 30 seconds
+AUTH chain query retry 1/4: targeted state: empty response: line 1 column 1 (char 0)
+AUTH chain query retry 1/4: targeted state: read failed
+.MULTIHOME connected=0/1 peer=127.0.0.1:19191 ready=False missing=['127.0.0.1:19191']
+..AUTH chain query retry 1/4: /state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query retry 2/4: /state: Command 'cli' timed out after 30 seconds
+AUTH chain query retry 1/4: /state: empty response: line 1 column 1 (char 0)
+AUTH chain query retry 1/4: /state: temporary read failure
+.MULTIHOME connected=0/1 peer=127.0.0.1:19191 ready=False missing=['127.0.0.1:19191']
+..
+----------------------------------------------------------------------
+Ran 13 tests in 0.030s
+
+OK

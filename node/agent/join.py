@@ -30,6 +30,21 @@ CHAIN_QUERY_ATTEMPTS = 4
 CHAIN_QUERY_BASE_DELAY_SECONDS = 1.0
 
 
+class ProfileAssertion(grpc.StreamStreamClientInterceptor):
+    """Bind every reconnect's initial JOIN to the caller's selected profile."""
+    def __init__(self, profile_id, genesis_sha256=None):
+        self.payload = json.dumps(dict(profile_id=profile_id,
+            genesis_sha256=genesis_sha256 or '')).encode()
+
+    def intercept_stream_stream(self, continuation, details, requests):
+        def asserted():
+            for frame in requests:
+                if frame.kind == 'join':
+                    frame.payload = self.payload
+                yield frame
+        return continuation(details, asserted())
+
+
 def _model_eos_token_ids(model_path):
     """Derive all locally configured EOS IDs without requiring a tokenizer."""
     if not model_path:
@@ -192,15 +207,17 @@ def _join_single(args, shared):
     def authenticate(frame):
         nonlocal loaded_anchor
         data = json.loads(frame.payload)
-        genesis = ChainGenesis.FromString(base64.b64decode(data['genesis']))
-        manifest = ModelManifest.FromString(base64.b64decode(data['manifest']))
+        genesis_raw = base64.b64decode(data['genesis'], validate=True)
+        manifest_raw = base64.b64decode(data['manifest'], validate=True)
+        genesis = ChainGenesis.FromString(genesis_raw)
+        manifest = ModelManifest.FromString(manifest_raw)
         verify(genesis)
         verify(manifest)
-        if genesis.chain_id != args.chain or manifest.chain_id != args.chain or digest(manifest) != genesis.model_manifest_root:
+        if genesis.signer != manifest.signer or genesis.chain_id != args.chain or manifest.chain_id != args.chain or digest(manifest) != genesis.model_manifest_root:
             raise ValueError('genesis/manifest chain or hash mismatch')
         from content_policy import from_manifest
         agent.content_policy = from_manifest(genesis, manifest)
-        anchor = (genesis.SerializeToString(deterministic=True), manifest.SerializeToString(deterministic=True))
+        anchor = (genesis_raw, manifest_raw)
         if getattr(args, 'genesis_sha256', None):
             if hashlib.sha256(anchor[0]).hexdigest() != args.genesis_sha256.lower():
                 raise ValueError('seed genesis hash differs from pinned release')
@@ -353,7 +370,8 @@ def _join_single(args, shared):
         return TunnelFrame(node_id=ident, kind='authenticate', payload=json.dumps(proof).encode())
 
     def channel_factory(target):
-        return pinned_channel(target, args.tls_fingerprint) if args.tls_fingerprint else grpc.insecure_channel(target)
+        channel = pinned_channel(target, args.tls_fingerprint) if args.tls_fingerprint else grpc.insecure_channel(target)
+        return grpc.intercept_channel(channel, ProfileAssertion(args.chain, getattr(args, 'genesis_sha256', None)))
 
     if getattr(args, 'chain_rpc', None) and getattr(args, 'liveness_enabled', True):
         threading.Thread(target=send_liveness, args=(args, Path(args.state_dir), ident),

@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+## 0.10.3 — 2026-11-25
+
 - The gateway supervisor passes pre-bound HTTP and tunnel listeners to workers, eliminating the port allocation race during startup.
 - Node readiness stays healthy while any configured gateway tunnel has completed JOIN and remains connected.
+- The quickstart covers paid consumer requests, Python virtual environment prerequisites, gateway selection, and role registration opt-outs. Release verification, upgrade, and protocol references reflect the published network and artifacts.
 
 ## 0.10.2 — 2026-11-25
 

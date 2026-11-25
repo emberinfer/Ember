@@ -19,14 +19,14 @@ def validate_bootstrap(value):
                 any(sync[k] is not None for k in sync_fields - {'rpc_servers'}) or sync['rpc_servers'] != []):
             raise ValueError('pending bootstrap must use null anchors and empty peer/RPC lists')
         return
-    def https_url(url):
+    def valid_url(url, schemes=('https',)):
         if not isinstance(url, str): return False
         parsed = urlparse(url)
-        return parsed.scheme == 'https' and bool(parsed.hostname) and not parsed.username and not parsed.fragment
+        return parsed.scheme in schemes and bool(parsed.hostname) and not parsed.username and not parsed.fragment
     for key in ('genesis_sha256',):
         if not isinstance(value[key], str) or not re.fullmatch('[0-9a-fA-F]{64}', value[key]):
             raise ValueError('bootstrap.' + key + ' must be an exact-byte 64-hex hash')
-    if not https_url(value['genesis_url']):
+    if not valid_url(value['genesis_url']):
         raise ValueError('bootstrap.genesis_url must be immutable HTTPS')
     if type(sync['trust_height']) is not int or sync['trust_height'] <= 0:
         raise ValueError('bootstrap.statesync.trust_height must be positive')
@@ -42,8 +42,8 @@ def validate_bootstrap(value):
     except (AttributeError, TypeError, ValueError) as exc:
         raise ValueError('bootstrap statesync needs ordered timezone-aware trusted_header_time/expires_at') from exc
     rpcs = sync['rpc_servers']
-    if not isinstance(rpcs, list) or len(rpcs) < 2 or not all(https_url(url) for url in rpcs) or len(set(rpcs)) != len(rpcs):
-        raise ValueError('bootstrap.statesync.rpc_servers needs at least two distinct HTTPS endpoints')
+    if not isinstance(rpcs, list) or len(rpcs) < 2 or not all(valid_url(url, ('http', 'https')) for url in rpcs) or len(set(rpcs)) != len(rpcs):
+        raise ValueError('bootstrap.statesync.rpc_servers needs at least two distinct HTTP(S) endpoints')
     peers = value['snapshot_peers']
     if not isinstance(peers, list) or not peers or not all(isinstance(p, str) and re.fullmatch(r'[0-9a-fA-F]{40}@[^\s:]+:[0-9]+', p) for p in peers):
         raise ValueError('bootstrap.snapshot_peers requires public node-id@host:port suppliers')

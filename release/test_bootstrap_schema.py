@@ -23,6 +23,23 @@ def test_pending_and_complete_schema():
     validate_bootstrap(pending());validate_bootstrap(ready())
 
 
+def test_public_http_rpcs_keep_genesis_https_only():
+    b = ready()
+    b['statesync']['rpc_servers'] = ['http://relay.example.org:39657', 'http://relay2.example.org:39661']
+    validate_bootstrap(b)
+    b['genesis_url'] = 'http://example.org/genesis.json'
+    with pytest.raises(ValueError):
+        validate_bootstrap(b)
+
+
+@pytest.mark.parametrize('url', ['ftp://relay.example.org', 'http://user@relay.example.org', 'http://relay.example.org/#fragment'])
+def test_invalid_rpc_urls_rejected(url):
+    b = ready()
+    b['statesync']['rpc_servers'][0] = url
+    with pytest.raises(ValueError):
+        validate_bootstrap(b)
+
+
 @pytest.mark.parametrize('mutation', [
     lambda b:b.pop('genesis_sha256'),
     lambda b:b.update(genesis_sha256='placeholder'),

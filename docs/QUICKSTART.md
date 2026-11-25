@@ -9,12 +9,10 @@ The latest software release is [v0.7.0](https://github.com/emberinfer/Ember/rele
 **v0.7.0 has no published `SHA256SUMS.sig`.** The signing key is offline. Checksum comparison detects mismatched downloaded bytes but does not authenticate unsigned checksums.
 
 Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
+
 `d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb`.
 
-
-Authenticate the fingerprint through a trusted channel. The downloaded key alone
-is not a trust anchor. The repository trust statement names an older key; its detached signature fails
-verification against the checked-in root key and current statement bytes. See [signing](SIGNING.md).
+Authenticate the fingerprint through a trusted channel. The downloaded key alone is not a trust anchor. The repository trust statement names an older key; its detached signature fails verification against the checked-in root key and current statement bytes. See [signing](SIGNING.md).
 
 ```sh
 EMBER_VERSION=0.7.0
@@ -30,26 +28,15 @@ cd "ember-$EMBER_VERSION-linux-amd64"
 ./install-release.sh --role node --prefix "$HOME/ember" --python python3.12
 ```
 
-Use Linux amd64 or arm64, Python 3.12 with venv/ensurepip, OpenSSL with Ed25519,
-`tar`, `sha256sum` and `curl` for this CPU installation path. Check runtime and
-hardware against the selected signed profile; other engines need their own
-compatible dependencies. Installation does not supply model weights.
+Use Linux amd64 or arm64, Python 3.12 with venv/ensurepip, OpenSSL with Ed25519, `tar`, `sha256sum` and `curl` for this CPU installation path. Check runtime and hardware against the selected signed profile; other engines need their own compatible dependencies. Installation does not supply model weights.
 
 ## Install a role
 
-The command above installs the node role under the selected prefix. The installer
-also accepts `--role gateway` and `--role validator`; the latter is the CLI name
-for a Ledger node. See the [Ledger node guide](VALIDATOR_GUIDE.md).
+The command above installs the node role under the selected prefix. The installer also accepts `--role gateway` and `--role validator`; the latter is the CLI name for a Ledger node. See the [Ledger node guide](VALIDATOR_GUIDE.md).
 
-Obtain current signed profile artifacts, their chain anchors, model origin and
-immutable revision through an authenticated deployment channel. Verify local
-weights against the manifest before serving. The repository's [network parameter file](../site/network.json) contains synchronized
-public seed, RPC, scheduler and profile anchors for configure. Verify these values
-against the current public network before use, and supply the matching signed
-profile artifacts to the installation.
+Obtain current signed profile artifacts, their chain anchors, model origin and immutable revision through an authenticated deployment channel. Verify local weights against the manifest before serving. The repository's [network parameter file](../site/network.json) contains synchronized public seed, RPC, scheduler and profile anchors for configure. Verify these values against the current public network before use, and supply the matching signed profile artifacts to the installation.
 
-The configuration helper consumes a complete parameter file and refuses existing
-config overwrite:
+The configuration helper consumes a complete parameter file and refuses existing config overwrite:
 
 ```sh
 "$HOME/ember/bin/ember-node" configure \
@@ -59,9 +46,50 @@ config overwrite:
 "$HOME/ember/bin/ember-node" id --state-dir "$HOME/ember/var/node"
 ```
 
-Fund that account using the deployment's verified funding procedure. An enabled
-faucet supplies rate-limited valueless credit; this document does not assert a
-current public faucet address. Wait for finalized funding before enrollment.
+## Profile anchors: genesis hash, manifest hash and scheme hash
+
+A profile is pinned by three hashes, and a node must present all of them
+correctly for its registration to be accepted and routed:
+
+- **Genesis hash** and **manifest hash** — the SHA-256 of the profile's
+  signed `genesis.pb` and `manifest.pb` files. They are published in
+  `network.json` as `current_profile.genesis_sha256` and
+  `current_profile.manifest_sha256`, and the configure helper above
+  checks your bundled artifacts against them.
+- **Scheme hash** — one per layout scheme declared in the manifest
+  (the manifest's `schemes` list). If the manifest declares any scheme,
+  joining requires pinning exactly one of them: pass
+  `ember-node join --scheme-hash <64 hex characters>` (or set
+  `EMBER_SCHEME_HASH` in the node config the role launcher reads).
+  Without a pinned scheme hash — or with one that matches no declared
+  scheme — the client stops with `missing or unknown scheme hash`,
+  because the node's signed resource profile and every execution
+  receipt it produces carry the scheme hash, and gateways check
+  receipts against it. Profiles whose manifest declares no schemes do
+  not need one.
+
+For the current public testnet profile
+`ember-qwen2.5-1.5b-unified-v1` the manifest declares exactly one
+scheme, and its scheme hash is:
+
+`400120b65600b51587238ea514a711bb57c68d267194e6ed400a1e2b64a7a142`
+
+Where to get and check this value:
+
+- The live network parameter file, https://emberinfer.org/network.json,
+  carries it as `current_profile.scheme_hash`, next to the genesis and
+  manifest hashes above. Treat the three values as one set: never mix
+  a scheme hash from one profile (or one profile revision) with the
+  genesis or manifest of another.
+- You can recompute it from the manifest itself. The scheme hash is
+  `sha256("ember-layout-v1\0" || deterministic protobuf serialization
+  of the LayoutScheme message)`, exactly as implemented in
+  `layout_identity.py` in the release (`lib/ember/node/`). First verify
+  the manifest file's SHA-256 equals the published manifest hash, so
+  the scheme you hash is the anchored one.
+
+Fund that account using the deployment's verified funding procedure. An enabled faucet supplies rate-limited valueless credit; this document does not assert a current public faucet address. Wait for finalized funding before enrollment.
+
 Then start and check the loopback health listener:
 
 ```sh
@@ -72,12 +100,12 @@ curl -fsS http://127.0.0.1:19192/readyz
 
 Since AppVersion 10, registration offers both execution and on-chain audit eligibility by default. `--no-exec` and `--no-audit` select registration-time opt-outs. Eligibility still requires the appropriate evidence and replay capabilities. Registration binds the identity, exact signed profile, layer range and capacity. There is no deregistration or mid-term removal of an enabled role. Registrations lapse after the live 200,000-block TTL; stopping a process does not erase its registration.
 
-Keep identity keys mode 0600, private directories mode 0700, and health listeners
-and local transport bridges on loopback. See [contribution limits](CONTRIBUTION_CAPS.md).
+Keep identity keys mode 0600, private directories mode 0700, and health listeners and local transport bridges on loopback. See [contribution limits](CONTRIBUTION_CAPS.md).
 
 ## Exit and recover stake
 
 Stop the node and disable automatic restart/renewal. Keep its identity key.
+
 Set `RPC` to your verified chain RPC and use the live ledger chain ID:
 
 ```sh
@@ -86,10 +114,4 @@ Set `RPC` to your verified chain RPC and use the live ledger chain ID:
   --ledger-chain-id ember-testnet-1 --action status
 ```
 
-Wait for `registration_blocks_remaining` to reach zero and for outstanding holds
-to finish or expire. Repeat with `--action unbond`, then wait for the returned
-`release_height` and repeat with `--action claim`. The health-listener check must
-use the node's actual port (`--health-url` if changed). Registration expiry,
-pending work exposure and unbonding delay are separate constraints. Recoverable
-stake is the amount remaining after any finalized penalties. Serving payments
-remain in the account; unbonding creates no new credit.
+Wait for `registration_blocks_remaining` to reach zero and for outstanding holds to finish or expire. Repeat with `--action unbond`, then wait for the returned `release_height` and repeat with `--action claim`. The health-listener check must use the node's actual port (`--health-url` if changed). Registration expiry, pending work exposure and unbonding delay are separate constraints. Recoverable stake is the amount remaining after any finalized penalties. Serving payments remain in the account; unbonding creates no new credit.

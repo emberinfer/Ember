@@ -62,7 +62,7 @@ Publish these fields using network-bootstrap.schema.json:
 - `bootstrap.status=ready` only after all real fields are verified.
 - `bootstrap.statesync.trust_height` and `trust_hash` (the trusted **header hash**).
 - `trust_period`, `trusted_header_time`, `expires_at` and `rpc_servers` under
-  `bootstrap.statesync`.
+ `bootstrap.statesync`.
 - `bootstrap.snapshot_peers`: publicly reachable node-id@host:port suppliers.
 
 Pending publication uses null anchors and empty lists and must remain explicitly
@@ -108,7 +108,7 @@ Start with explicit public peers, for example:
 
 ```sh
 emberchain start --home "$NEW_HOME" --p2p tcp://0.0.0.0:26656 \
-  --rpc tcp://127.0.0.1:26657 --peers "$VERIFIED_SNAPSHOT_PEERS"
+ --rpc tcp://127.0.0.1:26657 --peers "$VERIFIED_SNAPSHOT_PEERS"
 ```
 
 Observe successful snapshot installation, rising status height and eventually
@@ -139,3 +139,41 @@ home with new independent keys after resolving the cause. Never roll back a
 voting validator's signing high-water state. Disabling snapshot production only
 changes local transport availability; it does not rewrite application state.
 Revoke unavailable public checkpoints and publish new authenticated ones.
+
+### Snapshot archive inclusion policy
+
+Snapshot producers can set this in `config/config.toml`:
+
+```toml
+[snapshots]
+interval = 100
+keep_recent = 2
+include_archive = false
+```
+
+`include_archive` defaults to `true`, preserving full archive packaging. Set it
+to `false` when historical audit archives would dominate the package or exceed
+the unchanged 256 MiB / 256 chunk transport limits. Such packages contain only
+current state bytes and chunk-spool files; their size should track current state
+and active spool size, rather than accumulated archive history. Large active
+state or spool data can still exceed the limit.
+
+Metadata records `archive_included`; consumers log it on offer and installation
+(legacy metadata without the field means `true`). An archive-free restore creates
+an empty archive directory. Current state, AppHash verification, and dependency-first
+atomic state installation are unchanged. A local `.archive-omitted` sidecar records
+the exact omitted state root for restart; it is not consensus state or a package
+entry. Other missing archive references remain errors.
+
+Restored nodes retain current/hot state and accumulate new archives normally.
+They do not acquire audit entries omitted from before the snapshot: the internal
+historical block-hash lookup returns `nil` (no entry), and archived-hold lookup
+returns no hold (`/hold/<id>` returns code 0 with JSON `null`;
+`/settlement-receipts/<id>` returns a nonzero code with `not found`). Query a full archive
+provider for older audit history. This does not remove hot-window records still
+contained in current state, nor does it backfill older history later.
+
+The isolated acceptance fixture measured 7,680 bytes without archives versus
+1,556,480 bytes with 302 archive files; actual sizes depend on state and spool
+contents. Both restore paths restarted and matched every baseline AppHash for
+21 following blocks, with newly archived hashes readable after restart.

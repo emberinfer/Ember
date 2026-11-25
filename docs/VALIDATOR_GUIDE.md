@@ -171,3 +171,8 @@ mode 0700, monitor peering, height, vote participation and alerts, and never run
 two machines with the same consensus signer/high-water state. A new-network
 ceremony is a separate procedure in GENESIS_CEREMONY.md, never a shortcut for
 joining this chain.
+
+Snapshot producers may set `[snapshots] include_archive = false` (default `true`)
+when historical archives would exceed snapshot transport limits; restored nodes
+start with an empty archive, retain current state, and accumulate new audit history,
+while omitted older entries are unavailable (see [snapshot policy](BOOTSTRAP-RUNBOOK.md#snapshot-archive-inclusion-policy)).

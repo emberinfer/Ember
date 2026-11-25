@@ -49,6 +49,14 @@ cp -a "$source_root/lib" "$source_root/profiles" "$source_root/docs" "$install_r
 install -m 0644 "$source_root/network.json" "$install_root/network.json"
 install -m 0755 "$source_root/ember-role" "$install_root/bin/ember-role"
 install -m 0600 "$source_root/config/$role.env.example" "$install_root/config/$role.env"
+# Every role's installation must carry the local profile trust policy
+# example: `ember-node configure` points generated configs at
+# config/trust-policy.json inside the installation, and the node and
+# gateway launchers both honour EMBER_PROFILE_TRUST_POLICY.  v0.9.2
+# shipped the file only in the unpacked bundle, so a standard
+# install-then-configure route silently lost the pointer and nodes
+# refused the current profile's publisher.
+install -m 0644 "$source_root/config/trust-policy.json" "$install_root/config/trust-policy.json"
 if [[ "$role" == node ]]; then
   "$python" -m venv "$install_root/venv"
   "$install_root/venv/bin/python" -m pip install --disable-pip-version-check \

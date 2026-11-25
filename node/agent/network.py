@@ -79,6 +79,57 @@ def node_config(document, model_path, profiles, *, same_host_684=False, trust_po
     return ''.join(k + '=' + shlex.quote(v) + '\n' for k, v in fields.items())
 
 
+def resolve_trust_policy(document, config_target, profiles=None):
+    """Return the local trust-policy path a generated config must pin.
+
+    The policy lives at config/trust-policy.json under the installation
+    root (the directory holding the generated config, in the standard
+    layout).  Look, in order, at the config directory itself, at the
+    installation/bundle root derived from this module's location (both
+    the installed lib/ember/node/agent layout and the repository
+    node/agent layout), and at the root implied by the profiles
+    directory.  An existing file is an operator pin: it is used as-is
+    and never overwritten.  If no candidate exists, generate the file
+    next to the generated config from the network document's
+    current_profile.publisher so a standard installation works even
+    when the bundled example is missing.
+    """
+    config_dir = Path(config_target).expanduser().parent
+    candidates = [config_dir / 'trust-policy.json']
+    here = Path(__file__).resolve()
+    roots = []
+    if len(here.parents) > 4:
+        roots.append(here.parents[4])
+    if len(here.parents) > 2:
+        roots.append(here.parents[2])
+    if profiles:
+        roots.append(Path(profiles).expanduser().parent)
+    for root in roots:
+        candidates.append(root / 'config' / 'trust-policy.json')
+    seen = set()
+    for candidate in candidates:
+        key = str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        if candidate.is_file():
+            return str(candidate)
+    profile = document.get('current_profile') or {}
+    profile_id, publisher = profile.get('id'), profile.get('publisher')
+    if not isinstance(profile_id, str) or not profile_id or \
+            not isinstance(publisher, str) or not publisher:
+        return None
+    generated = config_dir / 'trust-policy.json'
+    config_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    try:
+        fd = os.open(generated, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+    except FileExistsError:
+        return str(generated)
+    with os.fdopen(fd, 'w') as f:
+        f.write(json.dumps({'profiles': {profile_id: {'publishers': [publisher]}}}, indent=2) + '\n')
+    return str(generated)
+
+
 def main(args=None):
     parser = argparse.ArgumentParser(prog='ember-node configure')
     parser.add_argument('--network-parameters', required=True)
@@ -87,13 +138,20 @@ def main(args=None):
     parser.add_argument('--profiles', default=str(Path(__file__).resolve().parents[4]/'profiles'))
     parser.add_argument('--same-host-684', action='store_true', help='explicitly attest client runs on gateway host 684')
     opts = parser.parse_args(args)
-    # Point the generated config at the trust policy example bundled
-    # with the release (config/trust-policy.json next to profiles/) so
-    # a published profile passes the node's local publisher check out
-    # of the box; operators may replace it with their own pin.
-    bundled_policy = Path(__file__).resolve().parents[4] / 'config' / 'trust-policy.json'
-    content = node_config(json.loads(Path(opts.network_parameters).read_text()), opts.model_path, opts.profiles, same_host_684=opts.same_host_684,
-                          trust_policy=str(bundled_policy) if bundled_policy.is_file() else None)
+    document = json.loads(Path(opts.network_parameters).read_text())
+    # Validate the document (and the bundled profile binding) before
+    # resolving the trust policy, so a refused configure leaves no
+    # generated policy file behind.
+    node_config(document, opts.model_path, opts.profiles, same_host_684=opts.same_host_684)
+    # Point the generated config at the installation's trust policy
+    # (config/trust-policy.json) so a published profile passes the
+    # node's local publisher check out of the box; operators may
+    # replace the file with their own pin.  See resolve_trust_policy:
+    # an existing file is kept, a missing one is generated from the
+    # network document's current_profile.publisher.
+    trust_policy = resolve_trust_policy(document, opts.config, opts.profiles)
+    content = node_config(document, opts.model_path, opts.profiles, same_host_684=opts.same_host_684,
+                          trust_policy=trust_policy)
     target = Path(opts.config)
     target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     # Never overwrite an operator's existing configuration implicitly.

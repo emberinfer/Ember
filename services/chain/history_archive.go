@@ -125,6 +125,15 @@ func loadArchive(path string, s *State, raw []byte) error {
 		}
 		seen[key] = true
 		b, err := os.ReadFile(archivePath(path, key))
+		if os.IsNotExist(err) && key == archiveKey(raw) {
+			// A local transport marker authorizes only this exact omitted root.
+			// Missing files in ordinary archives remain corruption errors.
+			marker, markerErr := os.ReadFile(path + ".archive-omitted")
+			if markerErr == nil && string(marker) == key {
+				s.history = store
+				return nil
+			}
+		}
 		if err != nil {
 			return fmt.Errorf("state archive %s: %w", key, err)
 		}

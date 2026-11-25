@@ -26,13 +26,14 @@ func TestSyncConfigurationFailClosed(t *testing.T) {
 		"[statesync]\nenable=true\ntrust_height=0",
 		"[statesync]\ntrust_period=\"oops\"",
 		"[snapshots]\ninterval=-1",
+		"[snapshots]\ninclude_archive=oops",
 		"[snapshots]\nkeep_recent=0",
 		"[statesync]\nunknown_switch=true",
 	} {
 		home := t.TempDir()
 		writeConfigFile(t, home, body)
 		cfg := cmtcfg.DefaultConfig()
-		if _, _, e := loadSyncConfig(cfg, filepath.Join(home, "config/config.toml")); e == nil {
+		if _, _, _, e := loadSyncConfig(cfg, filepath.Join(home, "config/config.toml")); e == nil {
 			t.Fatalf("accepted %q", body)
 		}
 		if cfg.StateSync.Enable {
@@ -42,15 +43,27 @@ func TestSyncConfigurationFailClosed(t *testing.T) {
 	home := t.TempDir()
 	writeConfigFile(t, home, "[statesync]\nenable=false\n[snapshots]\ninterval=10\nkeep_recent=3\n")
 	cfg := cmtcfg.DefaultConfig()
-	interval, keep, e := loadSyncConfig(cfg, filepath.Join(home, "config/config.toml"))
-	if e != nil || interval != 10 || keep != 3 || cfg.StateSync.Enable {
+	interval, keep, included, e := loadSyncConfig(cfg, filepath.Join(home, "config/config.toml"))
+	if !included || e != nil || interval != 10 || keep != 3 || cfg.StateSync.Enable {
 		t.Fatal(interval, keep, e)
 	}
+	writeConfigFile(t, home, "[snapshots]\ninclude_archive=false\n")
+	_, _, included, e = loadSyncConfig(cfg, filepath.Join(home, "config/config.toml"))
+	if e != nil || included {
+		t.Fatal("archive exclusion config", e)
+	}
+
 }
 
 // Real CometBFT P2P snapshot transfer, with two distinct local RPC processes.
 // No external network, production keys or production genesis are used.
 func TestLocalNetworkStateSync(t *testing.T) {
+	for _, included := range []bool{true, false} {
+		t.Run(fmt.Sprintf("include_archive=%t", included), func(t *testing.T) { localNetworkStateSync(t, included) })
+	}
+}
+
+func localNetworkStateSync(t *testing.T, included bool) {
 	if testing.Short() {
 		t.Skip("real network drill")
 	}
@@ -98,7 +111,7 @@ func TestLocalNetworkStateSync(t *testing.T) {
 		if e = os.WriteFile(filepath.Join(home, "config/genesis.json"), genesisRaw, 0600); e != nil {
 			t.Fatal(e)
 		}
-		writeConfigFile(t, home, "[consensus]\ntimeout_commit=\"150ms\"\ntimeout_propose=\"500ms\"\n[snapshots]\ninterval=5\nkeep_recent=20\n")
+		writeConfigFile(t, home, fmt.Sprintf("[consensus]\ntimeout_commit=\"150ms\"\ntimeout_propose=\"500ms\"\n[snapshots]\ninterval=5\nkeep_recent=20\ninclude_archive=%t\n", included))
 	}
 	startNode := func(i int) {
 		t.Helper()
@@ -159,6 +172,11 @@ func TestLocalNetworkStateSync(t *testing.T) {
 	waitHeight(0, 8)
 	startNode(1)
 	waitHeight(1, 15)
+	archiveEntries, err := os.ReadDir(chain.StatePath(homes[0]) + ".archive")
+	if err != nil || len(archiveEntries) == 0 {
+		t.Fatal("donor has no real archive before transfer", err)
+	}
+	t.Logf("donor has %d real archive files before state sync", len(archiveEntries))
 	trustHeight := int64(10)
 	commit, e := clients[0].Commit(context.Background(), &trustHeight)
 	if e != nil {
@@ -193,6 +211,9 @@ func TestLocalNetworkStateSync(t *testing.T) {
 	index := strings.Index(string(logRaw), marker)
 	if index < 0 {
 		t.Fatal("receiver did not install an ABCI snapshot")
+	}
+	if !strings.Contains(string(logRaw), fmt.Sprintf("archive_included=%t", included)) {
+		t.Fatal("consumer policy log missing")
 	}
 	var restored int64
 	if _, e = fmt.Sscanf(string(logRaw[index:]), marker+"%d", &restored); e != nil {

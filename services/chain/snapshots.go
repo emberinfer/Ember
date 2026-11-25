@@ -25,32 +25,37 @@ const snapshotChunkSize = 1 << 20
 const snapshotMaxBytes int64 = 256 << 20
 
 type snapshotMetadata struct {
-	Chain        string   `json:"chain"`
-	AppHash      []byte   `json:"app_hash"`
-	StateVersion uint64   `json:"state_version"`
-	Size         int64    `json:"size"`
-	Hashes       [][]byte `json:"hashes"`
+	ArchiveIncluded *bool    `json:"archive_included,omitempty"`
+	Chain           string   `json:"chain"`
+	AppHash         []byte   `json:"app_hash"`
+	StateVersion    uint64   `json:"state_version"`
+	Size            int64    `json:"size"`
+	Hashes          [][]byte `json:"hashes"`
 }
 type snapshotStore struct {
-	workers     sync.WaitGroup
-	mu          sync.Mutex
-	root, chain string
-	interval    uint64
-	keep        int
-	busy        bool
-	offer       *abci.Snapshot
-	meta        snapshotMetadata
-	expected    []byte
-	temp        string
-	next        uint32
+	workers        sync.WaitGroup
+	mu             sync.Mutex
+	root, chain    string
+	interval       uint64
+	keep           int
+	busy           bool
+	includeArchive bool
+	offer          *abci.Snapshot
+	meta           snapshotMetadata
+	expected       []byte
+	temp           string
+	next           uint32
 }
 
 // ConfigureSnapshots separates production (interval=0 disables it) from consumption.
-func (app *Application) ConfigureSnapshots(chain string, interval uint64, keep int) error {
+func (app *Application) ConfigureSnapshots(chain string, interval uint64, keep int, includeArchive ...bool) error {
 	if app.path == "" || chain == "" || keep < 1 || keep > 20 {
 		return errors.New("snapshots require a state path, chain ID and keep_recent in 1..20")
 	}
-	app.snapshots = &snapshotStore{root: app.path + ".snapshots", chain: chain, interval: interval, keep: keep}
+	app.snapshots = &snapshotStore{root: app.path + ".snapshots", chain: chain, interval: interval, keep: keep, includeArchive: true}
+	if len(includeArchive) > 0 {
+		app.snapshots.includeArchive = includeArchive[0]
+	}
 	if err := os.MkdirAll(app.snapshots.root, 0700); err != nil {
 		return err
 	}
@@ -91,7 +96,30 @@ func (app *Application) pinSnapshot() {
 		fail(err)
 		return
 	}
+	if marker, e := os.ReadFile(app.path + ".archive-omitted"); e == nil {
+		if e = durableWrite(filepath.Join(tmp, "state.archive-omitted"), marker); e != nil {
+			fail(e)
+			return
+		}
+	} else if !os.IsNotExist(e) {
+		fail(e)
+		return
+	}
+	if !s.includeArchive {
+		raw, e := os.ReadFile(filepath.Join(tmp, "state"))
+		if e != nil {
+			fail(e)
+			return
+		}
+		if e = durableWrite(filepath.Join(tmp, "state.archive-omitted"), []byte(archiveKey(raw))); e != nil {
+			fail(e)
+			return
+		}
+	}
 	for _, suffix := range []string{".archive", ".chunk-spool"} {
+		if suffix == ".archive" && !s.includeArchive {
+			continue
+		}
 		root := app.path + suffix
 		err = filepath.WalkDir(root, func(path string, d os.DirEntry, e error) error {
 			if os.IsNotExist(e) && path == root {
@@ -147,7 +175,7 @@ func (s *snapshotStore) build(tmp string, height uint64) error {
 		if e != nil {
 			return e
 		}
-		if d.IsDir() {
+		if d.IsDir() || d.Name() == "state.archive-omitted" {
 			return nil
 		}
 		info, e := d.Info()
@@ -192,7 +220,7 @@ func (s *snapshotStore) build(tmp string, height uint64) error {
 	if err != nil {
 		return err
 	}
-	m := snapshotMetadata{Chain: s.chain, AppHash: appHash, StateVersion: state.Version}
+	m := snapshotMetadata{ArchiveIncluded: &s.includeArchive, Chain: s.chain, AppHash: appHash, StateVersion: state.Version}
 	all := sha256.New()
 	for i := 0; ; i++ {
 		b := make([]byte, snapshotChunkSize)
@@ -309,9 +337,13 @@ func (app *Application) OfferSnapshot(_ context.Context, r *abci.OfferSnapshotRe
 	if app.committed != nil && app.committed.Height != 0 {
 		return out, nil
 	}
-	var m snapshotMetadata
+	included := true // Legacy format-1 metadata includes archives.
+	m := snapshotMetadata{ArchiveIncluded: &included}
 	if json.Unmarshal(v.Metadata, &m) != nil || m.Chain != s.chain || len(m.AppHash) != 32 || !bytes.Equal(m.AppHash, r.AppHash) || m.StateVersion < 4 || m.StateVersion > 16 || m.Size <= 0 || m.Size > snapshotMaxBytes || len(m.Hashes) != int(v.Chunks) || uint32((m.Size+snapshotChunkSize-1)/snapshotChunkSize) != v.Chunks {
 		return out, nil
+	}
+	if m.ArchiveIncluded == nil {
+		m.ArchiveIncluded = &included
 	}
 	for _, h := range m.Hashes {
 		if len(h) != 32 {
@@ -325,6 +357,7 @@ func (app *Application) OfferSnapshot(_ context.Context, r *abci.OfferSnapshotRe
 	copyV := *v
 	s.offer = &copyV
 	s.meta = m
+	log.Printf("snapshot offered height=%d archive_included=%t", v.Height, *m.ArchiveIncluded)
 	s.expected = append([]byte(nil), r.AppHash...)
 	s.temp = tmp
 	out.Result = abci.OFFER_SNAPSHOT_RESULT_ACCEPT
@@ -405,6 +438,9 @@ func (app *Application) installSnapshot(s *snapshotStore) error {
 		if h.Typeflag != tar.TypeReg || filepath.ToSlash(filepath.Clean(name)) != name || strings.Contains(name, "\\") || strings.HasPrefix(name, "/") || !(name == "state" || strings.HasPrefix(name, "state.archive/") || strings.HasPrefix(name, "state.chunk-spool/")) || strings.Contains(name, "../") || seen[name] {
 			return errors.New("invalid snapshot entry")
 		}
+		if !*s.meta.ArchiveIncluded && strings.HasPrefix(name, "state.archive/") {
+			return errors.New("archive entry contradicts snapshot policy")
+		}
 		seen[name] = true
 		total += h.Size
 		if h.Size < 0 || total > snapshotMaxBytes {
@@ -435,6 +471,22 @@ func (app *Application) installSnapshot(s *snapshotStore) error {
 		return errors.New("snapshot transport hash mismatch")
 	}
 	path := filepath.Join(root, "state")
+	archivePresent := false
+	for name := range seen {
+		if strings.HasPrefix(name, "state.archive/") {
+			archivePresent = true
+			break
+		}
+	}
+	if !archivePresent {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if err = durableWrite(path+".archive-omitted", []byte(archiveKey(raw))); err != nil {
+			return err
+		}
+	}
 	state, e := LoadState(path)
 	if e != nil {
 		return e
@@ -476,6 +528,12 @@ func (app *Application) installSnapshot(s *snapshotStore) error {
 	if app.committed != nil && app.committed.Height != 0 {
 		return errors.New("snapshot target is not empty")
 	}
+	// Even an archive-free restore replaces stale dependencies with empty dirs.
+	for _, suffix := range []string{".archive", ".chunk-spool"} {
+		if e = os.MkdirAll(path+suffix, 0700); e != nil {
+			return e
+		}
+	}
 	// Persist directory entries as well as file contents before exposing state.
 	if e = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -512,12 +570,22 @@ func (app *Application) installSnapshot(s *snapshotStore) error {
 	if e != nil {
 		return e
 	}
+	if !archivePresent {
+		if e = durableWrite(app.path+".archive-omitted", []byte(archiveKey(raw))); e != nil {
+			return e
+		}
+	}
+	if archivePresent {
+		if e = os.Remove(app.path + ".archive-omitted"); e != nil && !os.IsNotExist(e) {
+			return e
+		}
+	}
 	if e = durableWrite(app.path, raw); e != nil {
 		return e
 	}
 	state.SetChunkSpoolPath(app.path)
 	app.committed = state
-	log.Printf("snapshot installed height=%d app_hash=%x", state.Height, got)
+	log.Printf("snapshot installed height=%d app_hash=%x archive_included=%t", state.Height, got, *s.meta.ArchiveIncluded)
 	app.staged = nil
 	app.stagedBytes = nil
 	return nil

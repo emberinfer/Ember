@@ -2,7 +2,7 @@
 
 The live chain is `ember-testnet-1`, with five Ledger nodes and AppVersion 12
 activated at height 116582. Serving-node registration does not by itself grant
-consensus membership. Follow [Ledger membership](VALIDATORS.md) for admission,
+consensus membership. Follow [Ledger membership](https://github.com/emberinfer/Ember/blob/master/docs/VALIDATORS.md) for admission,
 readiness proofs and coordinated set changes; follow [Upgrade](UPGRADE.md) for
 the activation ladder. Do not create a new genesis to join an existing chain.
 

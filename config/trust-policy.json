@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "ember-qwen2.5-1.5b-unified-v1": {
+      "publishers": [
+        "c0058cba3b9014581b4f88679d24f3fc1c524e33668c4974fadfebf3bb29307d"
+      ]
+    }
+  }
+}

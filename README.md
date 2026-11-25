@@ -4,7 +4,7 @@ Ember is an open inference network: independent hardware operators run models,
 submit signed execution evidence and settle inference fees in Spark on a
 CometBFT ledger. Participation is permissionless, subject to protocol admission.
 
-The public testnet is live with v0.7.0. The chain is `ember-testnet-1`.
+The public testnet is live. The chain is `ember-testnet-1`.
 **Testnet Spark is valueless test credit.**
 
 ## How the network works
@@ -47,15 +47,15 @@ Audits sample work rather than verify every request. Unsampled settlement is
 explicitly unaudited. Registered equality-audit workers default to teacher-forcing
 replay; supported alternative tokens within the declared margin can be accepted.
 Signatures and consensus finality do not prove inference correctness. See
-[audit design](docs/AUDIT_DESIGN.md), [sampling](docs/AUDIT_SAMPLING.md) and
-[architecture](docs/PRODUCTION_ARCH.md).
+[audit design](https://github.com/emberinfer/Ember/blob/master/docs/AUDIT_DESIGN.md), [sampling](https://github.com/emberinfer/Ember/blob/master/docs/AUDIT_SAMPLING.md) and
+[architecture](https://github.com/emberinfer/Ember/blob/master/docs/PRODUCTION_ARCH.md).
 
 ## Participate
 
 ### Use
 
 Send authenticated OpenAI-compatible chat-completion requests to a gateway.
-Use [site/network.json](site/network.json) for current gateway addresses, faucet,
+Use [site/network.json](https://github.com/emberinfer/Ember/blob/master/site/network.json) for current gateway addresses, faucet,
 RPC, seeds and certificate pins. Obtain your bearer token through the deployment
 operator and fund your account using the listed faucet.
 
@@ -72,7 +72,7 @@ curl -N -fsS "$EMBER_GATEWAY_URL/v1/chat/completions" \
 Whole-model and MoE paths support SSE streaming. For a quote before inference,
 use authenticated `POST /v1/quote` with the intended request body; quoting creates
 no hold. Effective prices and frozen multipliers come from chain state. See
-[pricing](docs/PRICING.md).
+[pricing](https://github.com/emberinfer/Ember/blob/master/docs/PRICING.md).
 
 ### Serve
 
@@ -83,10 +83,11 @@ audit work by default; each requires the appropriate evidence and replay capabil
 Start with the [quickstart](docs/QUICKSTART.md): check the release, install,
 authenticate network parameters and signed profile artifacts, verify local model
 weights, fund the account, then configure and start the node. Linux amd64 and
-arm64 release archives are available from the [v0.7.0 release](https://github.com/emberinfer/Ember/releases/tag/v0.7.0).
+arm64 release archives are available from the [latest release](https://github.com/emberinfer/Ember/releases/latest).
 Installation does not provide model weights.
 
-**v0.7.0 has no published `SHA256SUMS.sig`.** Checksum comparison detects mismatched
+**Recent releases have no published `SHA256SUMS.sig`.** If the release you
+downloaded has no detached signature, checksum comparison detects mismatched
 bytes but does not authenticate unsigned checksums. Authenticate the release-key
 fingerprint through a trusted channel; read [release signing](docs/SIGNING.md)
 for the measured keys and trust-statement verification gap.
@@ -106,7 +107,7 @@ registrations are queryable on-chain; serving registration alone does not grant
 consensus membership.
 
 Follow the [Ledger node guide](docs/VALIDATOR_GUIDE.md) for existing-network
-participation, the [membership rules](docs/VALIDATORS.md) for admission and
+participation, the [membership rules](https://github.com/emberinfer/Ember/blob/master/docs/VALIDATORS.md) for admission and
 readiness, and [upgrades](docs/UPGRADE.md) for coordinated changes. Do not create
 a new genesis to join an existing chain. Keep consensus signing keys separate
 from account keys and never run two live copies of the same consensus identity.
@@ -124,26 +125,26 @@ sharded by layer + expert, with sampled segment-replay audits. Kimi K3.1 Pro is
 published on-chain but is not deployed and has no serving nodes.
 
 Publication and endorsement do not activate execution. Consult the
-[profile records](docs/PROFILE_RELEASES.md) for exact identifiers and context
-limits, [sharding](docs/SHARDING.md) for supported paths and
-[publishing](docs/PUBLISHING.md) for immutable profile releases.
+[profile records](https://github.com/emberinfer/Ember/blob/master/docs/PROFILE_RELEASES.md) for exact identifiers and context
+limits, [sharding](https://github.com/emberinfer/Ember/blob/master/docs/SHARDING.md) for supported paths and
+[publishing](https://github.com/emberinfer/Ember/blob/master/docs/PUBLISHING.md) for immutable profile releases.
 
 ## Documentation
 
 | Task | Guides |
 | --- | --- |
-| Join and operate | [Quickstart](docs/QUICKSTART.md), [public network](docs/PUBLIC_NETWORK.md), [operations](docs/OPERATIONS.md) |
-| Participate in consensus | [Ledger guide](docs/VALIDATOR_GUIDE.md), [membership](docs/VALIDATORS.md), [upgrades](docs/UPGRADE.md) |
-| Understand network rules | [Architecture](docs/PRODUCTION_ARCH.md), [pricing](docs/PRICING.md), [audit design](docs/AUDIT_DESIGN.md), [slashing](docs/SLASHING.md) |
-| Supply model capacity | [Profiles](docs/PROFILE_RELEASES.md), [hardware](docs/HARDWARE.md), [contribution limits](docs/CONTRIBUTION_CAPS.md), [sharding](docs/SHARDING.md) |
-| Build integrations | [Engine SPI](docs/ENGINE_SPI.md), [adapters](docs/ENGINE_ADAPTERS.md), [publishing](docs/PUBLISHING.md) |
+| Join and operate | [Quickstart](docs/QUICKSTART.md), [public network](https://github.com/emberinfer/Ember/blob/master/docs/PUBLIC_NETWORK.md), [operations](docs/OPERATIONS.md) |
+| Participate in consensus | [Ledger guide](docs/VALIDATOR_GUIDE.md), [membership](https://github.com/emberinfer/Ember/blob/master/docs/VALIDATORS.md), [upgrades](docs/UPGRADE.md) |
+| Understand network rules | [Architecture](https://github.com/emberinfer/Ember/blob/master/docs/PRODUCTION_ARCH.md), [pricing](https://github.com/emberinfer/Ember/blob/master/docs/PRICING.md), [audit design](https://github.com/emberinfer/Ember/blob/master/docs/AUDIT_DESIGN.md), [slashing](https://github.com/emberinfer/Ember/blob/master/docs/SLASHING.md) |
+| Supply model capacity | [Profiles](https://github.com/emberinfer/Ember/blob/master/docs/PROFILE_RELEASES.md), [hardware](docs/HARDWARE.md), [contribution limits](https://github.com/emberinfer/Ember/blob/master/docs/CONTRIBUTION_CAPS.md), [sharding](https://github.com/emberinfer/Ember/blob/master/docs/SHARDING.md) |
+| Build integrations | [Engine SPI](docs/ENGINE_SPI.md), [adapters](https://github.com/emberinfer/Ember/blob/master/docs/ENGINE_ADAPTERS.md), [publishing](https://github.com/emberinfer/Ember/blob/master/docs/PUBLISHING.md) |
 
 ## Status and limitations
 
 Ember is experimental software, provided as-is without warranty. **Testnet Spark
 is valueless test credit**, not money or a financial instrument, and is not
 for sale. The project operates no exchange or fiat on/off-ramp. Participation is
-at your own risk and subject to local rules. Read the [full disclaimer](docs/DISCLAIMER.md).
+at your own risk and subject to local rules. Read the [full disclaimer](https://github.com/emberinfer/Ember/blob/master/docs/DISCLAIMER.md).
 
 Signed evidence attributes statements; sampled audits do not prove every
 computation. Unsampled settlement is explicitly unaudited. Distinct identities

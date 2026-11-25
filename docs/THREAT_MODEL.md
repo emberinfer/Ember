@@ -1,9 +1,9 @@
 # Ember threat model
 
 Operators and security reviewers can use this document to assess authority,
-attack surfaces and remaining guarantees. See [architecture](PRODUCTION_ARCH.md),
-[engine evidence](ENGINE_SPI.md), [ledger ADR](LEDGER_DECISION.md) and the
-[audit design](AUDIT_DESIGN.md) and [changelog](../CHANGELOG.md). Deployment mode matters: SQLite development mode
+attack surfaces and remaining guarantees. See [architecture](https://github.com/emberinfer/Ember/blob/master/docs/PRODUCTION_ARCH.md),
+[engine evidence](ENGINE_SPI.md), [ledger ADR](https://github.com/emberinfer/Ember/blob/master/docs/LEDGER_DECISION.md) and the
+[audit design](https://github.com/emberinfer/Ember/blob/master/docs/AUDIT_DESIGN.md) and [changelog](../CHANGELOG.md). Deployment mode matters: SQLite development mode
 and CometBFT settlement have different trust boundaries.
 
 ## Assets, adversaries and assumptions

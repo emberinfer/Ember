@@ -29,7 +29,7 @@ Assigned auditors receive work through authenticated routing, sign their own
 verdicts and require compatible evidence and replay capabilities. Default
 execution/audit availability does not waive those requirements. The gateway
 cannot choose the assigned reviewer. Keep the resident liveness sender enabled
-for hosted identities; see [liveness](AUDITOR-LIVENESS.md).
+for hosted identities; see [liveness](https://github.com/emberinfer/Ember/blob/master/docs/AUDITOR-LIVENESS.md).
 
 Freeze a bounded hold, execute, commit signed evidence, resolve sampled audit, then settle using actual token counts. Accepted fees allocate 80% to execution, 15% to audit and 5% back to the caller. Unused reservation is refunded. The live hold timeout is 5,000 blocks; expiry refunds unresolved holds through `expire_hold` and gateway recovery, rather than a wall-clock timer.
 
@@ -42,19 +42,19 @@ must budget tokenization, generation, replay and evidence transfer independently
 
 Dispatch combines reputation, cache affinity and gateway speed observations.
 The source records observations after successful submission, before final
-settlement. See [scheduling](SCHEDULING.md). Local execution exclusion is an
+settlement. See [scheduling](https://github.com/emberinfer/Ember/blob/master/docs/SCHEDULING.md). Local execution exclusion is an
 operator policy, not a consensus ban. Whole-model and sharded candidate pools
 remain separate.
 
 MoE generation uses one FIFO per gateway fleet, with eight waiting requests and
 10-minute maximum wait by default. Queueing precedes freeze. Full/expired waits
 return retryable 503. Separate gateway instances do not coordinate. See
-[MoE serialization](moe-serialization.md).
+[MoE serialization](https://github.com/emberinfer/Ember/blob/master/docs/moe-serialization.md).
 
 The pipeline daemon is opt-in with `EMBER_PIPELINE_DAEMON=1`; retain the supported
 per-request mode (`EMBER_PIPELINE_DAEMON=0`) unless independently validated.
 Protect failure stderr artifacts and evidence storage; they may expose sensitive
-operational details. See [executor operation](gateway-executor-robustness.md).
+operational details. See [executor operation](https://github.com/emberinfer/Ember/blob/master/docs/gateway-executor-robustness.md).
 
 ## Query current policy
 
@@ -68,7 +68,7 @@ emberchain query --rpc "$RPC" --path "/hold/$HOLD"
 
 The live multiplier corridor is [0.8, 2.0], with at most 10% relative change per
 1,000-block epoch. Only settled accepted demand contributes; role shares remain
-80/15/5. Coverage is registration coverage, not measured uptime. See [pricing](PRICING.md).
+80/15/5. Coverage is registration coverage, not measured uptime. See [pricing](https://github.com/emberinfer/Ember/blob/master/docs/PRICING.md).
 Library defaults and historical example chains are not live parameter snapshots.
 
 ## Public ingress and faucet
@@ -82,10 +82,10 @@ private. Verify source preservation and connectivity before advertising a relay.
 
 Pinned gRPC clients use the shared pin/SAN helper; the HTTP relay and upstream
 CA-verified TLS leg have separate checks. Certificate rotation changes pins and
-requires coordinated configuration updates. See [TLS handling](v11-cert-hostname.md).
+requires coordinated configuration updates. See [TLS handling](https://github.com/emberinfer/Ember/blob/master/docs/v11-cert-hostname.md).
 
 ## Content policy
 
 Only the signed profile can define supported refusal behavior. A local external
 backend moderation setting is not an audit exemption. Check receipt category,
-assigned verdict and settled hold. See [profile policies](PROFILE_RELEASES.md#profile-content-policies).
+assigned verdict and settled hold. See [profile policies](https://github.com/emberinfer/Ember/blob/master/docs/PROFILE_RELEASES.md#profile-content-policies).

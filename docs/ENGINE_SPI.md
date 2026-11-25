@@ -83,10 +83,10 @@ Equality profiles use their own evidence contract; the live 35B unified profile 
 
 Commitment serialization lives in node/evidence, signing in core-py. Adapters emit
 opening bytes; the framework hashes/signs them. KV stays local; migration and replay
-use tokens; see [architecture](PRODUCTION_ARCH.md). A shard adapter identifies its layer range and artifact
+use tokens; see [architecture](https://github.com/emberinfer/Ember/blob/master/docs/PRODUCTION_ARCH.md). A shard adapter identifies its layer range and artifact
 digest; stage transport wraps its forward operation without assuming model internals
 in gateway, tracker, scheduler or account logic. The Qwen2-specific stage executor is a separate reference stage implementation;
-see [sharding](SHARDING.md) for its authenticated lifecycle.
+see [sharding](https://github.com/emberinfer/Ember/blob/master/docs/SHARDING.md) for its authenticated lifecycle.
 
 ## Errors, limits and compatibility
 

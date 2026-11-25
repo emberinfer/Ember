@@ -10,4 +10,4 @@ key custody, Ledger node-key compromise, denial of service, model supply-chain
 attacks and prompt disclosure to gateways/executors/auditors. There is no TEE,
 MPC, confidential inference, hardware attestation or mainnet economics claim.
 See [the threat model](THREAT_MODEL.md) for the full inventory and controls, and
-[audit design](AUDIT_DESIGN.md) for replay, confirmation and economic limits.
+[audit design](https://github.com/emberinfer/Ember/blob/master/docs/AUDIT_DESIGN.md) for replay, confirmation and economic limits.

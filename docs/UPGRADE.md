@@ -34,7 +34,7 @@ accounting rights must not be silently dropped by a new genesis.
 Dynamic Ledger membership is implemented, when initialized. An optional v10→v11
 `membership_init` maps the existing live consensus set to operator accounts and
 initial parameters; it does not replace that set with an arbitrary new one.
-See [Ledger membership](VALIDATORS.md). Publication and price governance do not
+See [Ledger membership](https://github.com/emberinfer/Ember/blob/master/docs/VALIDATORS.md). Publication and price governance do not
 automatically require a new ledger chain ID. Signed profile bytes remain immutable;
 new profiles and authorized compute corrections use their respective transactions.
 
@@ -42,7 +42,7 @@ AppVersion 10 introduces registration availability and whole-model adjudication.
 AppVersion 11 adds effective token-price overrides and persistence changes.
 AppVersion 12 gates architecture-first expert TopK parsing. The live Kimi correction
 sets F to 208,736,282,112 FLOPs/token without replacing profile bytes or identity.
-See [compute](compute-v11.md) and [governance pricing](v11-pricing.md).
+See [compute](https://github.com/emberinfer/Ember/blob/master/docs/compute-v11.md) and [governance pricing](https://github.com/emberinfer/Ember/blob/master/docs/v11-pricing.md).
 
 ## Backup and recovery
 

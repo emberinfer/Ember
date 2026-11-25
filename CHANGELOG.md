@@ -42,7 +42,7 @@ compute derivation to 208,736,282,112 FLOPs/token (correction count 0 to 1).
 AppVersion 10 supplies default execution/audit registration availability and
 bounded whole-model adjudication; AppVersion 11 supplies token-price overrides.
 This snapshot describes chain state, not a claim that every mechanism first
-shipped in v0.7.0. See [pricing](docs/PRICING.md) and [upgrades](docs/UPGRADE.md).
+shipped in v0.7.0. See [pricing](https://github.com/emberinfer/Ember/blob/master/docs/PRICING.md) and [upgrades](docs/UPGRADE.md).
 
 ## Historical 0.22.0 - 2026-11-11
 

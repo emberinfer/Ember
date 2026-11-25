@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.10.0 — 2026-11-25
+
+- Distribute signed profile artifacts from the chain and bind JOIN assertions to the selected profile.
+- Add the gateway supervisor, dynamic gateway directories, and a same-origin website directory.
+- Bootstrap the ledger with ABCI snapshots and CometBFT state sync.
+- Publish profiles with one `ember-node profile publish` command.
+- Document and package the CUDA installation path and preflight checks for virtual environments.
+- Separate ledger synchronization and governance in the operator guides, and synchronize the website guidance.
+- Fix page placeholders in public installation and onboarding instructions.
+
 ## 0.7.0 — current published release
 
 Latest GitHub release: v0.7.0. Snapshot source `1e6ecfc` (the release commit

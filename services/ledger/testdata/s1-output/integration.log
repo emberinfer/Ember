@@ -1,0 +1,7 @@
+validator_address=D52C222B692C1A9428CE72C2AC94F9B09E16DACC validator_pubkey=2B5A5BDC4B2F668125E6B3F8691C1C4C6215FE72E3F0CC2EA639DEF9C5B27F2C node_id=80f7edc94e2ddd60d3357f8826e9fb1c4b81b5f4
+
+
+Node configuration written: /tmp/s1-local-9dfytvz9/node.env
+
+PASS: local ledger publication -> emberd --profile-id -> configure exact bytes -> asserted JOIN READY
+PASS: different profile fails closed before challenge: requested profile ID is not served by this gateway

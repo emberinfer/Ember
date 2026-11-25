@@ -1,0 +1,406 @@
+E.................................JOIN READY node=busy peer=unused
+HEARTBEAT node=busy peer=unused
+HEARTBEAT node=busy peer=unused
+HEARTBEAT node=busy peer=unused
+HEARTBEAT node=busy peer=unused
+HEARTBEAT node=busy peer=unused
+...........................................E........EEEPOLICY_EVIDENCE {"request": "policy-request", "policy_id": "prompt-sha256-denylist", "policy_version": "1", "manifest_root": "5bc4b3944f6632f519a16b3325035dcb6b483f42e6fef2db6af951162741ae7d", "verdict": "accept", "grade": "profile-policy-compliant-refusal", "distance": 0.0, "n_out_billed": 0, "offense": false}
+MULTIHOME connected=0/1 peer=127.0.0.1:19191 ready=False missing=['127.0.0.1:19191']
+AUTH chain query retry 1/4: targeted state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query retry 2/4: targeted state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query retry 3/4: targeted state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query failed after 4 attempts: targeted state: Command 'cli' returned non-zero exit status 1.
+.MULTIHOME connected=0/1 peer=127.0.0.1:19191 ready=False missing=['127.0.0.1:19191']
+AUTH chain query retry 1/4: targeted state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query retry 2/4: targeted state: Command 'cli' timed out after 30 seconds
+AUTH chain query retry 1/4: targeted state: empty response: line 1 column 1 (char 0)
+AUTH chain query retry 1/4: targeted state: read failed
+.MULTIHOME connected=0/1 peer=127.0.0.1:19191 ready=False missing=['127.0.0.1:19191']
+..AUTH chain query retry 1/4: /state: Command 'cli' returned non-zero exit status 1.
+AUTH chain query retry 2/4: /state: Command 'cli' timed out after 30 seconds
+AUTH chain query retry 1/4: /state: empty response: line 1 column 1 (char 0)
+AUTH chain query retry 1/4: /state: temporary read failure
+.MULTIHOME connected=0/1 peer=127.0.0.1:19191 ready=False missing=['127.0.0.1:19191']
+..E.E.LIVENESS retry: end fixture
+.LIVENESS retry: end fixture
+LIVENESS retry: end fixture
+.LIVENESS retry: end fixture
+LIVENESS retry: broadcast failed
+LIVENESS retry: end fixture
+...[transformers] Model config: eos_token_id must be `None` or an integer within the vocabulary (between 0 and 127), got 50279. This may result in unexpected behavior.
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00, 315.48it/s]
+Loading weights:   0%|          | 0/25 [00:00<?, ?it/s]Loading weights: 100%|██████████| 25/25 [00:00<00:00, 4689.73it/s]
+....Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00, 497.66it/s]
+Loading weights:   0%|          | 0/25 [00:00<?, ?it/s]Loading weights: 100%|██████████| 25/25 [00:00<00:00, 4799.85it/s]
+ELoading weights:   0%|          | 0/25 [00:00<?, ?it/s]Loading weights: 100%|██████████| 25/25 [00:00<00:00, 4585.14it/s]
+ELoading weights:   0%|          | 0/25 [00:00<?, ?it/s]Loading weights: 100%|██████████| 25/25 [00:00<00:00, 4767.55it/s]
+.s......................Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00, 458.95it/s]
+..E....TUNNEL disconnected peer=127.0.0.1:1 reconnecting: coordinator restarting
+.......Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00, 823.70it/s]
+.MULTIHOME connected=0/1 peer=127.0.0.1:19191 ready=False missing=['127.0.0.1:19191']
+.................job=0 stdin=open elapsed=4.382s frame={'type': 'job_end', 'ok': False, 'error': "Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/nonexistent/gwrobust-local-only'. Use `repo_type` argument if needed."}
+job=1 stdin=open elapsed=4.383s frame={'type': 'job_end', 'ok': False, 'error': "Repo id must be in the form 'repo_name' or 'namespace/repo_name': '/nonexistent/gwrobust-local-only'. Use `repo_type` argument if needed."}
+......................EEE....REDACTION_METRICS {"by_class": {"account_id": {"fn": 1, "fp": 0, "tp": 4}, "credential": {"fn": 2, "fp": 2, "tp": 3}, "email": {"fn": 1, "fp": 0, "tp": 3}, "phone": {"fn": 2, "fp": 0, "tp": 2}, "private_key": {"fn": 1, "fp": 0, "tp": 2}}, "cases": 23, "fn": 7, "fp": 2, "lossless": 23, "precision": 0.875, "recall": 0.6666666666666666, "tp": 14}
+JOIN READY node=test peer=unused
+TUNNEL disconnected peer=unused reconnecting: UNAVAILABLE
+JOIN READY node=test peer=unused
+.EEE..........spot verdict deadline approaching request=abababababababababababababababababababababababababababababababab challenge_height=10 deadline=190 remaining_blocks=-1
+............audit request=abababababababababababababababababababababababababababababababab waiting for engine lock
+audit request=abababababababababababababababababababababababababababababababab acquired engine lock wait_seconds=0.000390
+audit request=abababababababababababababababababababababababababababababababab waiting for engine lock
+audit request=abababababababababababababababababababababababababababababababab acquired engine lock wait_seconds=0.000069
+..........spot verdict deadline approaching request=abababababababababababababababababababababababababababababababab challenge_height=10 deadline=190 remaining_blocks=10
+spot verdict deadline approaching request=abababababababababababababababababababababababababababababababab challenge_height=10 deadline=190 remaining_blocks=-1
+..EEEEEEE................E.......
+======================================================================
+ERROR: agent.test_audit_engine (unittest.loader._FailedTest.agent.test_audit_engine)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: agent.test_audit_engine
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/agent/test_audit_engine.py", line 8, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_http_act2b (unittest.loader._FailedTest.test_http_act2b)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_http_act2b
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_http_act2b.py", line 6, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_image_client (unittest.loader._FailedTest.test_image_client)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_image_client
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_image_client.py", line 6, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_join_image_pins (unittest.loader._FailedTest.test_join_image_pins)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_join_image_pins
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_join_image_pins.py", line 5, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_join_registration (unittest.loader._FailedTest.test_join_registration)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_join_registration
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_join_registration.py", line 9, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_join_targeted (unittest.loader._FailedTest.test_join_targeted)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_join_targeted
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_join_targeted.py", line 4, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_lifecycle (unittest.loader._FailedTest.test_lifecycle)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_lifecycle
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_lifecycle.py", line 4, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_attention_stage_matches_reference (test_moe_engine.MoeEngineTest.test_attention_stage_matches_reference)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/autodl-tmp/fix3/work/node/test_moe_engine.py", line 79, in test_attention_stage_matches_reference
+    attn_out, _, _ = layer.self_attn(xn, attention_mask=None,
+    ^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 3, got 2)
+
+======================================================================
+ERROR: test_expert_unit_matches_reference (test_moe_engine.MoeEngineTest.test_expert_unit_matches_reference)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/autodl-tmp/fix3/work/node/test_moe_engine.py", line 57, in test_expert_unit_matches_reference
+    ref = model.model.layers[layer].mlp.experts[expert](rows)
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+TypeError: 'OlmoeExperts' object is not subscriptable
+
+======================================================================
+ERROR: test_multihome (unittest.loader._FailedTest.test_multihome)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_multihome
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_multihome.py", line 11, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_range_atoms (unittest.loader._FailedTest.test_range_atoms)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_range_atoms
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_range_atoms.py", line 5, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_range_fit (unittest.loader._FailedTest.test_range_fit)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_range_fit
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_range_fit.py", line 8, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_range_pipeline (unittest.loader._FailedTest.test_range_pipeline)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_range_pipeline
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_range_pipeline.py", line 9, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_registration_roles (unittest.loader._FailedTest.test_registration_roles)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_registration_roles
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_registration_roles.py", line 5, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_scheme_hash (unittest.loader._FailedTest.test_scheme_hash)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_scheme_hash
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_scheme_hash.py", line 8, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_segengine (unittest.loader._FailedTest.test_segengine)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_segengine
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_segengine.py", line 6, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_spot_bounded_v15 (unittest.loader._FailedTest.test_spot_bounded_v15)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_spot_bounded_v15
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_spot_bounded_v15.py", line 1, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_spot_context (unittest.loader._FailedTest.test_spot_context)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_spot_context
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_spot_context.py", line 8, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_spot_patrol (unittest.loader._FailedTest.test_spot_patrol)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_spot_patrol
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_spot_patrol.py", line 9, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_spot_pipeline (unittest.loader._FailedTest.test_spot_pipeline)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_spot_pipeline
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_spot_pipeline.py", line 8, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_spot_records (unittest.loader._FailedTest.test_spot_records)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_spot_records
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_spot_records.py", line 6, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_spotcheck (unittest.loader._FailedTest.test_spotcheck)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_spotcheck
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_spotcheck.py", line 7, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_t2i_pipeline_reference (unittest.loader._FailedTest.test_t2i_pipeline_reference)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_t2i_pipeline_reference
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_t2i_pipeline_reference.py", line 8, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+======================================================================
+ERROR: test_token_text (unittest.loader._FailedTest.test_token_text)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_token_text
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 394, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.12/unittest/loader.py", line 337, in _get_module_from_name
+    __import__(name)
+  File "/root/autodl-tmp/fix3/work/node/test_token_text.py", line 4, in <module>
+    import pytest
+ModuleNotFoundError: No module named 'pytest'
+
+
+----------------------------------------------------------------------
+Ran 265 tests in 30.758s
+
+FAILED (errors=24, skipped=1)

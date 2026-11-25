@@ -1,0 +1,22 @@
+............................................................ [ 11%]
+................................................ [ 21%]
+..................................................................... [ 35%]
+................s.......................................... [ 47%]
+..................................................................... [ 60%]
+................................................................ [ 73%]
+.......................................................................s [ 87%]
+s............................................................            [100%]
+=============================== warnings summary ===============================
+node/test_image_client.py: 25 warnings
+  /root/autodl-tmp/fix3/work/node/image_client.py:146: DeprecationWarning: 'mode' parameter is deprecated and will be removed in Pillow 13 (2026-10-15)
+    Image.fromarray(pixels, 'RGB').save(encoded, format='PNG', compress_level=9, optimize=False)
+
+node/test_image_client.py::test_formula_against_diffusers_reference[1-euler]
+node/test_image_client.py::test_formula_against_diffusers_reference[3-euler]
+node/test_image_client.py::test_formula_against_diffusers_reference[20-euler]
+node/test_image_client.py::test_formula_against_diffusers_reference[100-euler]
+  /tmp/gateway-venv/lib/python3.12/site-packages/diffusers/schedulers/scheduling_euler_discrete.py:405: DeprecationWarning: __array__ implementation doesn't accept a copy keyword, so passing copy=False failed. __array__ must implement 'dtype' and 'copy' keyword arguments. To learn more, see the migration guide https://numpy.org/devdocs/numpy_2_0_migration_guide.html#adapting-to-changes-in-the-copy-keyword
+    sigmas = np.array(((1 - self.alphas_cumprod) / self.alphas_cumprod) ** 0.5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+499 passed, 3 skipped, 29 warnings, 63 subtests passed in 108.82s (0:01:48)

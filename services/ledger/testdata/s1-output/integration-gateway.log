@@ -1,0 +1,4 @@
+2026/11/25 15:50:12 LIVENESS query: chain query /liveness/368bd469990a89471d617b7aeefe8010cbb319223d58d00e28f31fb8e8520161: not found
+2026/11/25 15:50:12 emberd all http=127.0.0.1:59557 grpc=127.0.0.1:51997
+2026/11/25 15:50:15 JOIN ACCEPT node=96a44757176f7c67a03130f5ae81a29a57d87973272b00b2d0db29fae6627364 score=2
+2026/11/25 15:50:15 JOIN REJECT node=wrong-profile reason=requested profile ID is not served by this gateway

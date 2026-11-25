@@ -1,0 +1,121 @@
+............................................................ [ 11%]
+................................................ [ 21%]
+FFFFFFFF............................................................. [ 35%]
+...............s........................................... [ 47%]
+..................................................................... [ 60%]
+................................................................ [ 73%]
+......................................................................ss [ 88%]
+............................................................             [100%]
+=================================== FAILURES ===================================
+_______________ test_formula_against_diffusers_reference[1-ddim] _______________
+
+sampler = 'ddim', steps = 1
+
+    @pytest.mark.parametrize('sampler', ['ddim', 'euler'])
+    @pytest.mark.parametrize('steps', [1, 3, 20, 100])
+    def test_formula_against_diffusers_reference(sampler, steps):
+        import torch
+>       from diffusers import DDIMScheduler, EulerDiscreteScheduler
+E       ModuleNotFoundError: No module named 'diffusers'
+
+node/test_image_client.py:125: ModuleNotFoundError
+______________ test_formula_against_diffusers_reference[1-euler] _______________
+
+sampler = 'euler', steps = 1
+
+    @pytest.mark.parametrize('sampler', ['ddim', 'euler'])
+    @pytest.mark.parametrize('steps', [1, 3, 20, 100])
+    def test_formula_against_diffusers_reference(sampler, steps):
+        import torch
+>       from diffusers import DDIMScheduler, EulerDiscreteScheduler
+E       ModuleNotFoundError: No module named 'diffusers'
+
+node/test_image_client.py:125: ModuleNotFoundError
+_______________ test_formula_against_diffusers_reference[3-ddim] _______________
+
+sampler = 'ddim', steps = 3
+
+    @pytest.mark.parametrize('sampler', ['ddim', 'euler'])
+    @pytest.mark.parametrize('steps', [1, 3, 20, 100])
+    def test_formula_against_diffusers_reference(sampler, steps):
+        import torch
+>       from diffusers import DDIMScheduler, EulerDiscreteScheduler
+E       ModuleNotFoundError: No module named 'diffusers'
+
+node/test_image_client.py:125: ModuleNotFoundError
+______________ test_formula_against_diffusers_reference[3-euler] _______________
+
+sampler = 'euler', steps = 3
+
+    @pytest.mark.parametrize('sampler', ['ddim', 'euler'])
+    @pytest.mark.parametrize('steps', [1, 3, 20, 100])
+    def test_formula_against_diffusers_reference(sampler, steps):
+        import torch
+>       from diffusers import DDIMScheduler, EulerDiscreteScheduler
+E       ModuleNotFoundError: No module named 'diffusers'
+
+node/test_image_client.py:125: ModuleNotFoundError
+______________ test_formula_against_diffusers_reference[20-ddim] _______________
+
+sampler = 'ddim', steps = 20
+
+    @pytest.mark.parametrize('sampler', ['ddim', 'euler'])
+    @pytest.mark.parametrize('steps', [1, 3, 20, 100])
+    def test_formula_against_diffusers_reference(sampler, steps):
+        import torch
+>       from diffusers import DDIMScheduler, EulerDiscreteScheduler
+E       ModuleNotFoundError: No module named 'diffusers'
+
+node/test_image_client.py:125: ModuleNotFoundError
+______________ test_formula_against_diffusers_reference[20-euler] ______________
+
+sampler = 'euler', steps = 20
+
+    @pytest.mark.parametrize('sampler', ['ddim', 'euler'])
+    @pytest.mark.parametrize('steps', [1, 3, 20, 100])
+    def test_formula_against_diffusers_reference(sampler, steps):
+        import torch
+>       from diffusers import DDIMScheduler, EulerDiscreteScheduler
+E       ModuleNotFoundError: No module named 'diffusers'
+
+node/test_image_client.py:125: ModuleNotFoundError
+______________ test_formula_against_diffusers_reference[100-ddim] ______________
+
+sampler = 'ddim', steps = 100
+
+    @pytest.mark.parametrize('sampler', ['ddim', 'euler'])
+    @pytest.mark.parametrize('steps', [1, 3, 20, 100])
+    def test_formula_against_diffusers_reference(sampler, steps):
+        import torch
+>       from diffusers import DDIMScheduler, EulerDiscreteScheduler
+E       ModuleNotFoundError: No module named 'diffusers'
+
+node/test_image_client.py:125: ModuleNotFoundError
+_____________ test_formula_against_diffusers_reference[100-euler] ______________
+
+sampler = 'euler', steps = 100
+
+    @pytest.mark.parametrize('sampler', ['ddim', 'euler'])
+    @pytest.mark.parametrize('steps', [1, 3, 20, 100])
+    def test_formula_against_diffusers_reference(sampler, steps):
+        import torch
+>       from diffusers import DDIMScheduler, EulerDiscreteScheduler
+E       ModuleNotFoundError: No module named 'diffusers'
+
+node/test_image_client.py:125: ModuleNotFoundError
+=============================== warnings summary ===============================
+node/test_image_client.py: 25 warnings
+  /root/autodl-tmp/fix3/work/node/image_client.py:146: DeprecationWarning: 'mode' parameter is deprecated and will be removed in Pillow 13 (2026-10-15)
+    Image.fromarray(pixels, 'RGB').save(encoded, format='PNG', compress_level=9, optimize=False)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED node/test_image_client.py::test_formula_against_diffusers_reference[1-ddim]
+FAILED node/test_image_client.py::test_formula_against_diffusers_reference[1-euler]
+FAILED node/test_image_client.py::test_formula_against_diffusers_reference[3-ddim]
+FAILED node/test_image_client.py::test_formula_against_diffusers_reference[3-euler]
+FAILED node/test_image_client.py::test_formula_against_diffusers_reference[20-ddim]
+FAILED node/test_image_client.py::test_formula_against_diffusers_reference[20-euler]
+FAILED node/test_image_client.py::test_formula_against_diffusers_reference[100-ddim]
+FAILED node/test_image_client.py::test_formula_against_diffusers_reference[100-euler]
+8 failed, 490 passed, 3 skipped, 25 warnings, 63 subtests passed in 107.26s (0:01:47)

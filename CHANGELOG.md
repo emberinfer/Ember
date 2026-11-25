@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The gateway supervisor passes pre-bound HTTP and tunnel listeners to workers, eliminating the port allocation race during startup.
+
 ## 0.10.2 — 2026-11-25
 
 - The gateway supervisor can start serving newly published profiles whose signed sample layers match their verified model manifests.

@@ -162,6 +162,14 @@ func main() {
 	trustFile := flags.String("trust-policy", "", "local per-profile publisher/endorsement policy JSON; default requires governor endorsement for new profiles")
 	manifestFile := flags.String("manifest", "", "signed manifest protobuf (defaults beside genesis)")
 	_ = flags.Parse(os.Args[2:])
+	httpListener, listener, err := supervisor.AdoptWorkerListeners(*httpAddr, *grpcAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if httpListener != nil {
+		defer httpListener.Close()
+		defer listener.Close()
+	}
 	if *faucetTrustedProxy != "" && net.ParseIP(*faucetTrustedProxy) == nil {
 		log.Fatal("--faucet-trusted-proxy must be one IP address")
 	}
@@ -184,7 +192,6 @@ func main() {
 	}
 	var book ledger.Backend
 	var chainBook *ledger.ChainLedger
-	var err error
 	switch *ledgerBackend {
 	case "sqlite":
 		book, err = ledger.Open(*database)
@@ -524,9 +531,11 @@ func main() {
 	}
 	server := grpc.NewServer(opts...)
 	pb.RegisterNodeTunnelServer(server, relay)
-	listener, err := net.Listen("tcp", *grpcAddr)
-	if err != nil {
-		log.Fatal(err)
+	if listener == nil {
+		listener, err = net.Listen("tcp", *grpcAddr)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	go func() {
 		if e := server.Serve(listener); e != nil {
@@ -1352,7 +1361,13 @@ func main() {
 		}
 	}
 	go func() {
-		if *httpCert != "" {
+		if httpListener != nil {
+			if *httpCert != "" {
+				errCh <- httpServer.ServeTLS(httpListener, *httpCert, *httpKey)
+			} else {
+				errCh <- httpServer.Serve(httpListener)
+			}
+		} else if *httpCert != "" {
 			errCh <- httpServer.ListenAndServeTLS(*httpCert, *httpKey)
 		} else {
 			errCh <- httpServer.ListenAndServe()

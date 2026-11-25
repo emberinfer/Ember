@@ -140,15 +140,6 @@ func workerLogTail(path string, logStart int64) string {
 	return strings.TrimSpace(trimmed[strings.LastIndexByte(trimmed, '\n')+1:])
 }
 
-func freeAddress() (string, error) {
-	l, e := net.Listen("tcp", "127.0.0.1:0")
-	if e != nil {
-		return "", e
-	}
-	defer l.Close()
-	return l.Addr().String(), nil
-}
-
 // Run adds an opt-in process supervisor; normal emberd modes are untouched.
 func Run(args []string) error {
 	f := flag.NewFlagSet("supervisor", flag.ContinueOnError)
@@ -219,16 +210,8 @@ func Run(args []string) error {
 		if err = os.WriteFile(trustFile, raw, 0600); err != nil {
 			return nil, err
 		}
-		h, err := freeAddress()
-		if err != nil {
-			return nil, err
-		}
-		t, err := freeAddress()
-		if err != nil {
-			return nil, err
-		}
 		argv := append([]string{"all"}, common...)
-		argv = append(argv, "--ledger-backend", "chain", "--chain-rpc", *rpc, "--chain-id", *chainID, "--profile-id", e.ProfileID, "--http", h, "--grpc", t, "--insecure-localhost", "--db", filepath.Join(home, "ledger.db"), "--trust-policy", trustFile, "--chain-sign-lock", filepath.Join(*dir, "transactions.lock"))
+		argv = append(argv, "--ledger-backend", "chain", "--chain-rpc", *rpc, "--chain-id", *chainID, "--profile-id", e.ProfileID, "--insecure-localhost", "--db", filepath.Join(home, "ledger.db"), "--trust-policy", trustFile, "--chain-sign-lock", filepath.Join(*dir, "transactions.lock"))
 		output, err := os.OpenFile(filepath.Join(home, "worker.log"), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
 			return nil, err
@@ -241,11 +224,12 @@ func Run(args []string) error {
 		cmd := exec.Command(binary, argv...)
 		cmd.Stdout = output
 		cmd.Stderr = output
-		if err = cmd.Start(); err != nil {
+		httpAddress, tunnelAddress, err := startWithWorkerListeners(cmd)
+		if err != nil {
 			output.Close()
 			return nil, err
 		}
-		p := &process{cmd: cmd, http: "http://" + h, tunnel: t, done: make(chan error, 1)}
+		p := &process{cmd: cmd, http: "http://" + httpAddress, tunnel: tunnelAddress, done: make(chan error, 1)}
 		go p.wait(output, logStart)
 		return p, nil
 	}

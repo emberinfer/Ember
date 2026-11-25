@@ -112,4 +112,5 @@ operator sharing one GPU must divide its available memory between processes.
 
 ## Network upgrade
 
-Contribution limits are implemented in the current versioned state machine. The live chain runs AppVersion 12; the source base constant is 11. LoadState accepts supported versions 4 through 12. Follow the coordinated [upgrade procedure](UPGRADE.md) rather than treating the historical introduction version as the live version.
+Contribution limits are implemented in the versioned state machine. Check the
+live AppVersion and build compatibility using the [upgrade procedure](UPGRADE.md).

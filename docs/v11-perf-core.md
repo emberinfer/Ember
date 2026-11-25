@@ -1,8 +1,8 @@
 # Version-11 persistence and transaction core
 
-The source base AppVersion constant is 11; the live chain runs 12 after its
-coordinated activation. The optimizations described here are gated at state
-version 11 or later, not evidence that 11 is the live version.
+The source base AppVersion constant is 11. The optimizations described here are
+gated at state version 11 or later. See the [upgrade procedure](UPGRADE.md) to
+check the live version.
 
 ## Transaction isolation
 

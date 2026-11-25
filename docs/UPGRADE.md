@@ -1,17 +1,18 @@
 # Coordinated application upgrades and recovery
 
-The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
+Use `access.rpc` from the [public network directory](https://emberinfer.org/network.json).
+Query `/status` and read `result.node_info.protocol_version.app` for the reported
+consensus application version. Query `/validators` for the live validator set.
 
 Software release version, source base AppVersion, persisted state version and
 live consensus AppVersion are different values. `services/chain/state.go:22`
-sets base 11; `services/chain/validators.go:436` advances 11 to 12 at the configured
-height. Existing activation manifests are the mechanism; changing documentation
-or replacing a binary alone does not activate consensus rules.
+sets the source base to 11. The coordinated manifest ladder advances the running
+state at configured heights. Apply the matching activation manifest when upgrading.
 
 ## Plan and activate
 
-1. Authenticate the release and exact build. For v0.7.0, checksum signatures are
-   not published; see [signing](SIGNING.md) for the available checks and trust gap.
+1. Authenticate the release and exact build using the
+   [release verification procedure](SIGNING.md).
 2. Query chain ID, current state version, height and parameters. Preserve a
    finalized state snapshot, consensus signing state and all dependent archives.
 3. Validate the matching supported upgrade rung on an isolated copy. Distribute
@@ -23,9 +24,9 @@ or replacing a binary alone does not activate consensus rules.
 5. Retain the manifest ladder for historical replay and recovery. Never restore
    one signing identity backward or run two copies concurrently.
 
-LoadState accepts supported persisted versions 4 through 12. The ladder contains
-separate version gates; do not infer that every old state can skip directly to
-12. An incompatible migration still needs an explicitly reviewed procedure.
+Check the target release's `LoadState` for supported persisted versions. The
+ladder contains separate version gates. An incompatible migration still needs
+an explicitly reviewed procedure.
 Active holds, nonces, registrations, assignments, signed artifact bytes and
 accounting rights must not be silently dropped by a new genesis.
 

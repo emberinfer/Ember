@@ -164,4 +164,6 @@ seven signers, including two signers from outside the founding organization, wit
 These records expose the social restructuring obligation; they do not automate
 membership changes.
 
-Genesis issuance is an optional configured mechanism, not a claim that it is enabled on the live chain. The current loader accepts supported versions 4 through 12; the live chain is AppVersion 12. Follow [Upgrade](UPGRADE.md) for coordinated activation. Starting a new issuance chain does not rewrite an existing chain.
+Genesis issuance is an optional configured mechanism. Follow the
+[upgrade procedure](UPGRADE.md) to check live AppVersion, build compatibility
+and coordinated activation. Issuance configured at genesis applies to the new chain.

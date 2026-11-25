@@ -139,11 +139,13 @@ state version. Core callers select it with `DerivationInput.AppVersion` or
 `ParseConfigScalarsForVersion`; zero and `ParseConfigScalars` retain legacy
 semantics. No other scalar parsing changes across this gate.
 
-## Live correction
+## AppVersion 12 correction
 
-The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
+AppVersion 12 activated on `ember-testnet-1` at height 116582 through the
+coordinated upgrade ladder. See the [upgrade procedure](UPGRADE.md) to check the
+live version.
 
-Kimi is published, not deployed. Its current T is 2,780,110,363,392 total
+For the published Kimi profile, the corrected T is 2,780,110,363,392 total
 parameters, A is 105,542,546,176 active parameters, and F is 208,736,282,112
 FLOPs/token. AppVersion 12 corrected the earlier derivation on-chain (correction
 count 0 to 1). Old-value constants in rejection/correction tests are intentional

@@ -14,7 +14,7 @@ Use Linux amd64 or arm64, Python 3.12 with venv/ensurepip, OpenSSL with Ed25519,
 
 ## Verify a release
 
-The latest software release is on the [releases page](https://github.com/emberinfer/Ember/releases/latest). Releases starting with v0.10.0 publish `SHA256SUMS.sig` alongside `SHA256SUMS` and `release-signing.pub`. If you are installing a different release, set `EMBER_VERSION` to that version without the leading `v`.
+The latest software release is on the [releases page](https://github.com/emberinfer/Ember/releases/latest). If you are installing a different release, set `EMBER_VERSION` to that version without the leading `v`. Check that the selected release includes `SHA256SUMS.sig`, `SHA256SUMS` and `release-signing.pub`. If any are missing, choose a signed release.
 
 Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
 

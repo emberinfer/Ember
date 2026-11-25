@@ -41,10 +41,9 @@ Safety modes and signed offense grading determine whether a rejection is
 slash-eligible. Gray or pending-review handling can suppress penalties. A timeout,
 unconfirmed accusation or missing reference is not confirmed cheating.
 
-On the live chain AppVersion is 12, reached via upgrades from the source base
-constant 11. Do not use historical state-version-3 migration instructions as
-current activation guidance. See [upgrades](UPGRADE.md), [audit design](AUDIT_DESIGN.md)
-and [adjudication](../services/chain/adjudication.md).
+Use the [upgrade procedure](UPGRADE.md) to check the live AppVersion and
+activation requirements. See also [audit design](AUDIT_DESIGN.md) and
+[adjudication](../services/chain/adjudication.md).
 
 Source: `services/chain/slashing.go:30`, `services/chain/slashing.go:112`,
 `services/chain/moe.go:912`, `services/chain/state.go:365`,

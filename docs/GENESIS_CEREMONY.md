@@ -14,8 +14,8 @@ independently verify a network genesis. Only public Ledger node material is exch
 
 ## Operator procedure
 
-On each operator host, use a verified compatible build. For v0.7.0, no checksum
-signature is published; see [release checks](SIGNING.md). Then run:
+On each operator host, use a compatible build and follow the
+[release verification procedure](SIGNING.md). Then run:
 
 ```sh
 install -d -m 0700 "$HOME/ember-operator/validator"

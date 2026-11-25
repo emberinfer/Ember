@@ -31,9 +31,9 @@ a WARNING and uses the last successful in-memory response for that same profile.
 Without a cached response it returns an error. Restart clears this cache. Chain
 freeze validation remains authoritative and rejects amounts that no longer match.
 
-## Current effective tables
+## Effective tables at AppVersion 12 activation
 
-The live tables are already effective, not pending activation instructions:
+These tables record effective prices at AppVersion 12 activation:
 
 | Profile | Input sub/1,000 tokens | Output sub/1,000 tokens |
 | --- | ---: | ---: |
@@ -42,10 +42,11 @@ The live tables are already effective, not pending activation instructions:
 | `ember-olmoe-1b-7b-moe-v1` | 195 | 217 |
 | `ember-kimi-k3.1-pro-v1` | 16660 | 25630 |
 
-Kimi is published but has no serving nodes. Current context override is zero.
+At activation, Kimi was published without serving nodes and the context override was zero.
 For 512 input / 256 output at multiplier 1.0, totals are 178, 382, 156 and
 15092 sub respectively. See [pricing](PRICING.md) for intrinsic derivation,
 rounding and the supply/demand multiplier. Query effective prices instead of
 replaying a historical governor action with guessed coverage targets.
 
-The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
+AppVersion 12 activated on `ember-testnet-1` at height 116582. See the
+[upgrade procedure](UPGRADE.md) to check the live version.

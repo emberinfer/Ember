@@ -1,11 +1,10 @@
 # Release signing and trust anchors
 
 The exact source snapshot for each software release is recorded in its build metadata.
-Releases starting with v0.10.0 publish `SHA256SUMS.sig`, `SHA256SUMS` and
-`release-signing.pub` alongside the archives. Follow the verification procedure in
-the [quickstart](QUICKSTART.md).
-
-**v0.7.0 and v0.6.0 have no published `SHA256SUMS.sig`.** The signing key is offline. Checksum comparison detects mismatched downloaded bytes but does not authenticate unsigned checksums.
+For a verified installation, use a release that publishes `SHA256SUMS.sig`,
+`SHA256SUMS` and `release-signing.pub` alongside the archives. Check the asset list
+for the selected release, including older releases with backfilled signatures.
+If the signature is missing, choose a signed release.
 
 Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
 `d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb`.
@@ -32,12 +31,21 @@ Authenticate the current release fingerprint through a trusted channel; a bundle
 public key is not proof of authenticity. A root-signed rotation statement covering
 the measured current key needs maintainer publication.
 
-## v0.7.0 download checks
+## Verify a release download
 
-Download the archive and `SHA256SUMS` from the same release directory and run
-`sha256sum --ignore-missing -c SHA256SUMS`. At least one intended archive must be
-present and pass. This checks consistency with downloaded sums, not a detached
-signature. Do not run a command that expects `SHA256SUMS.sig` for v0.7.0 or v0.6.0.
+Download the intended archive, `SHA256SUMS`, `SHA256SUMS.sig` and
+`release-signing.pub` from the same release directory. Authenticate the release
+key fingerprint as described above, then verify the signature before checking
+the archive:
+
+```sh
+openssl pkeyutl -verify -pubin -inkey release-signing.pub -rawin \
+  -in SHA256SUMS -sigfile SHA256SUMS.sig || exit 1
+sha256sum --ignore-missing -c SHA256SUMS || exit 1
+```
+
+Confirm the intended archive reports `OK`. See the [quickstart](QUICKSTART.md)
+for the full download and installation example.
 
 ## Release tooling and custody
 

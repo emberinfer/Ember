@@ -26,6 +26,7 @@ const BlockMaxGas int64 = 10000000
 
 type Application struct {
 	abci.BaseApplication
+	snapshots          *snapshotStore
 	mu                 sync.Mutex
 	path               string
 	committed          *State
@@ -348,6 +349,7 @@ func (app *Application) Commit(context.Context, *abci.CommitRequest) (*abci.Comm
 	}
 	app.committed, app.staged = app.staged, nil
 	app.stagedBytes = nil
+	app.pinSnapshot()
 	return &abci.CommitResponse{}, nil
 }
 

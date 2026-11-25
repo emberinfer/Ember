@@ -1,0 +1,35 @@
+=== RUN   TestSnapshotIsolationRestoreAndRejections
+2026/11/25 15:33:55 snapshot rejected: snapshot height, chain or expected app hash mismatch
+    snapshots_test.go:147: height=5002 snapshot=baseline=restored app_hash=31699ceb80248b8bd7d02e6503b6892e31b3e0a619e1660d3a77e72e1f6018c1
+    snapshots_test.go:147: height=5003 snapshot=baseline=restored app_hash=866e28145b99ac0592821189a5f11938fe92237aeb4f76a845fdd44128960f19
+    snapshots_test.go:147: height=5004 snapshot=baseline=restored app_hash=86d1ab4e36b167a017a1d7976d9064882b03f9207de3f45df523d2f6a9824be7
+    snapshots_test.go:147: height=5005 snapshot=baseline=restored app_hash=20f85b7f713d8ab269bf5b67084d97f2beeddee215ce56cd26e023cdd6d68d07
+    snapshots_test.go:147: height=5006 snapshot=baseline=restored app_hash=c0b0195681f2d6b5020102434c183518e1a6f5d60cd62b4d898d065d4b1cfbc9
+    snapshots_test.go:147: height=5007 snapshot=baseline=restored app_hash=567b29b778a43a9e681daa3ffd4d9c2960ad17ae7ca5a6fb109d913859c9fe1c
+    snapshots_test.go:147: height=5008 snapshot=baseline=restored app_hash=54c620ce804f6997689f6c5db93c66b8c77b7d74f9304a55abc9c1f929847772
+    snapshots_test.go:147: height=5009 snapshot=baseline=restored app_hash=860c22935aa98c65aca956717d4e7da7a28bce51c27ebafda35992f32f3907bc
+    snapshots_test.go:147: height=5010 snapshot=baseline=restored app_hash=41f6d9e71171313b60ba831a5f7d74a87645c0c2791f86a2db9f11ffd028f438
+    snapshots_test.go:147: height=5011 snapshot=baseline=restored app_hash=6f4311106890f3de37135ede4c5117a2104fdd55d386a92f6312210614dad71e
+    snapshots_test.go:147: height=5012 snapshot=baseline=restored app_hash=57fb63c4ee86de5b833d61786eda5d755bc6a14db37c22d1901283afd2284007
+    snapshots_test.go:147: height=5013 snapshot=baseline=restored app_hash=08f4306845d0802bfbdc00c804ae94122b2c4a94f016c0446ad246a768c39b17
+    snapshots_test.go:147: height=5014 snapshot=baseline=restored app_hash=bb9b1bc18fcca626bd92395935a3fc97f3db6c94dbed34204c1b231e41656750
+    snapshots_test.go:147: height=5015 snapshot=baseline=restored app_hash=8ebe565567951795fec90446c8ed310ade867460b737304a206e0e56c9b69c51
+    snapshots_test.go:147: height=5016 snapshot=baseline=restored app_hash=5844b09aefb2fe006247c8e9ed9d7f1a68212292b993a0d48cba407590cfa2fb
+    snapshots_test.go:147: height=5017 snapshot=baseline=restored app_hash=1290e6eec0513863bd35c277e8a8b74d0100cce8974f166928e258c950fd6f63
+    snapshots_test.go:147: height=5018 snapshot=baseline=restored app_hash=88103903933a0bfd590e664fb956467d970931fde0656095585745fa24a3a64d
+    snapshots_test.go:147: height=5019 snapshot=baseline=restored app_hash=0c144033dd992f051644b886cd6e403e9ed0f9eff823e652761863ebe22cc7f7
+    snapshots_test.go:147: height=5020 snapshot=baseline=restored app_hash=74118558e32aa8c5f2927b4d8af31a4f23dc6a72dab27205038db8d457481344
+    snapshots_test.go:147: height=5021 snapshot=baseline=restored app_hash=62f4b9d5fcb3cf2d5002959acf61ab52db0236fb5b93f8397b0fcd2b7af336b0
+    snapshots_test.go:147: height=5022 snapshot=baseline=restored app_hash=6f2279fdfeb72eeab56f2025577528e3a6aa85976f067d90ccdb44383ce4fbdb
+=== RUN   TestSnapshotIsolationRestoreAndRejections/corrupt
+=== RUN   TestSnapshotIsolationRestoreAndRejections/out-of-order
+=== NAME  TestSnapshotIsolationRestoreAndRejections
+    snapshots_test.go:175: archive and chunk reads succeeded; app hashes identical across snapshot and 21 following blocks
+--- PASS: TestSnapshotIsolationRestoreAndRejections (0.15s)
+    --- PASS: TestSnapshotIsolationRestoreAndRejections/corrupt (0.00s)
+    --- PASS: TestSnapshotIsolationRestoreAndRejections/out-of-order (0.00s)
+=== RUN   TestSnapshotRestoresActiveProtocolSpool
+    snapshots_test.go:215: restored active hold moe-req: receipt bytes=6690, root verified
+--- PASS: TestSnapshotRestoresActiveProtocolSpool (0.03s)
+PASS
+ok  	ember/services/chain	0.197s

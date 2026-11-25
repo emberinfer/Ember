@@ -1,0 +1,5 @@
+--- FAIL: TestSpotPythonGatewayChainAuditor (0.01s)
+    spot_integration_test.go:22: EMBER_AUDIT_TEST_PYTHON required for cross-line gate
+FAIL
+FAIL	ember/services/chain	22.646s
+FAIL

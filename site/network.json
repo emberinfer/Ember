@@ -9,9 +9,9 @@
   "engine": "CometBFT"
  },
   "release": {
-  "base_url": "https://github.com/emberinfer/Ember/releases/download/v0.10.0",
+  "base_url": "https://github.com/emberinfer/Ember/releases/download/v0.10.1",
   "signing_public_key_sha256_der": "d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb",
-  "version": "0.10.0"
+  "version": "0.10.1"
  },
   "access": {
   "private_gateways": [

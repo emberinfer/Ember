@@ -1,0 +1,11 @@
+ok  	ember/services/ledger	14.557s
+--- FAIL: TestAuditLargePythonPeer (20.13s)
+    audit_transfer_test.go:64: Python peer did not connect
+2026/11/25 15:30:58 LEGACY DEMO node=node
+2026/11/25 15:31:01 JOIN REJECT node=739f872f26aa9bfaa5ba5c267ad469aed64fb19c7c789326216420001273f85b reason=invalid challenge signature or identity
+2026/11/25 15:31:01 JOIN ACCEPT node=739f872f26aa9bfaa5ba5c267ad469aed64fb19c7c789326216420001273f85b score=2
+2026/11/25 15:31:01 LEGACY DEMO node=node
+FAIL
+FAIL	ember/services/tunnel	22.342s
+ok  	ember/cmd/emberd	0.143s
+FAIL

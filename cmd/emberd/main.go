@@ -103,6 +103,7 @@ func main() {
 	grpcAddr := flags.String("grpc", "127.0.0.1:19091", "tunnel listen address")
 	engine := flags.String("engine", "mock", "audit engine")
 	modelPath := flags.String("model-path", "", "model weights")
+	profileID := flags.String("profile-id", "", "load signed artifacts from operator-pinned chain RPC")
 	genesisFile := flags.String("genesis", "", "signed genesis protobuf")
 	auditorPython := flags.String("auditor-python", "node/.venv/bin/python", "Python interpreter for local audit")
 	auditorPythonPath := flags.String("auditor-pythonpath", "core-py:proto:node", "Python import path for local audit")
@@ -148,7 +149,10 @@ func main() {
 	if mode != "all" && mode != "gateway" {
 		log.Fatalf("standalone %s is not wired; use all", mode)
 	}
-	if *engine != "mock" && *genesisFile == "" {
+	if *profileID != "" && (*genesisFile != "" || *manifestFile != "") {
+		log.Fatal("--profile-id and file artifacts are mutually exclusive")
+	}
+	if *engine != "mock" && *genesisFile == "" && *profileID == "" {
 		log.Fatal("real engine requires signed --genesis and manifest")
 	}
 	if *auditJobDir != "" {
@@ -343,8 +347,24 @@ func main() {
 	}
 	auditTolerance := 0.001
 	slashMultiplier := int64(20)
-	if *genesisFile != "" {
-		raw, err := os.ReadFile(*genesisFile)
+	if *genesisFile != "" || *profileID != "" {
+		var raw, fetchedManifest []byte
+		var err error
+		if *profileID != "" {
+			client, e := ledger.NewArtifactClient(*chainRPC, *chainID)
+			if e != nil {
+				log.Fatal(e)
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			materials, e := client.Fetch(ctx, *profileID)
+			if e != nil {
+				log.Fatal(e)
+			}
+			raw, fetchedManifest = materials.Genesis, materials.Manifest
+		} else {
+			raw, err = os.ReadFile(*genesisFile)
+		}
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -367,7 +387,11 @@ func main() {
 		if manifestPath == "" {
 			manifestPath = filepath.Join(filepath.Dir(*genesisFile), "manifest.pb")
 		}
-		manifestRaw, e := os.ReadFile(manifestPath)
+		manifestRaw := fetchedManifest
+		var e error
+		if *profileID == "" {
+			manifestRaw, e = os.ReadFile(manifestPath)
+		}
 		if e != nil {
 			log.Fatal(e)
 		}

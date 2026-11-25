@@ -1,0 +1,2156 @@
+=== RUN   TestV15ActivationMissedAndWrongRung
+--- PASS: TestV15ActivationMissedAndWrongRung (0.00s)
+=== RUN   TestEvidenceBindingGoldenVectors
+--- PASS: TestEvidenceBindingGoldenVectors (0.00s)
+=== RUN   TestEvidenceBindingFromSignedVerdict
+=== RUN   TestEvidenceBindingFromSignedVerdict/valid
+=== RUN   TestEvidenceBindingFromSignedVerdict/tampered_tolerance
+=== RUN   TestEvidenceBindingFromSignedVerdict/class_mismatch
+=== RUN   TestEvidenceBindingFromSignedVerdict/wrong_ref
+=== RUN   TestEvidenceBindingFromSignedVerdict/out_of_range
+=== RUN   TestEvidenceBindingFromSignedVerdict/negative
+=== RUN   TestEvidenceBindingFromSignedVerdict/nan
+=== RUN   TestEvidenceBindingFromSignedVerdict/infinity
+=== RUN   TestEvidenceBindingFromSignedVerdict/legacy
+=== RUN   TestEvidenceBindingFromSignedVerdict/missing_offense
+=== RUN   TestEvidenceBindingFromSignedVerdict/short_ref
+--- PASS: TestEvidenceBindingFromSignedVerdict (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/valid (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/tampered_tolerance (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/class_mismatch (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/wrong_ref (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/out_of_range (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/negative (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/nan (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/infinity (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/legacy (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/missing_offense (0.00s)
+    --- PASS: TestEvidenceBindingFromSignedVerdict/short_ref (0.00s)
+=== RUN   TestAdjudicationTxDrillEscalationConviction
+--- PASS: TestAdjudicationTxDrillEscalationConviction (0.01s)
+=== RUN   TestAdjudicationTxDrillThirdAcquits
+--- PASS: TestAdjudicationTxDrillThirdAcquits (0.01s)
+=== RUN   TestAdjudicationUnboundLegacyByteIdentical
+--- PASS: TestAdjudicationUnboundLegacyByteIdentical (0.02s)
+=== RUN   TestPenaltyCostsPartialConsumption
+--- PASS: TestPenaltyCostsPartialConsumption (0.00s)
+=== RUN   TestAdjudicationMixedBindingsLegacyCorroboration
+--- PASS: TestAdjudicationMixedBindingsLegacyCorroboration (0.01s)
+=== RUN   TestPenaltyCostsAlreadySettledAppeal
+--- PASS: TestPenaltyCostsAlreadySettledAppeal (0.00s)
+=== RUN   TestPenaltyCostsNoSlashRemainsOutstanding
+=== RUN   TestPenaltyCostsNoSlashRemainsOutstanding/gray_gate
+=== RUN   TestPenaltyCostsNoSlashRemainsOutstanding/refund_only
+--- PASS: TestPenaltyCostsNoSlashRemainsOutstanding (0.00s)
+    --- PASS: TestPenaltyCostsNoSlashRemainsOutstanding/gray_gate (0.00s)
+    --- PASS: TestPenaltyCostsNoSlashRemainsOutstanding/refund_only (0.00s)
+=== RUN   TestEvidenceBindingPythonEnvelopes
+--- PASS: TestEvidenceBindingPythonEnvelopes (0.00s)
+=== RUN   TestAdjudicationNotSampled
+--- PASS: TestAdjudicationNotSampled (0.00s)
+=== RUN   TestAdjudicationMissingBinding
+--- PASS: TestAdjudicationMissingBinding (0.00s)
+=== RUN   TestAdjudicationAlreadyCorroborated
+--- PASS: TestAdjudicationAlreadyCorroborated (0.00s)
+=== RUN   TestAdjudicationNoFourthQualifiedNode
+--- PASS: TestAdjudicationNoFourthQualifiedNode (0.00s)
+=== RUN   TestAdjudicationDuplicateAuditor
+--- PASS: TestAdjudicationDuplicateAuditor (0.00s)
+=== RUN   TestAdjudicationDifferentCauses
+--- PASS: TestAdjudicationDifferentCauses (0.00s)
+=== RUN   TestAdjudicationDifferentCommitments
+--- PASS: TestAdjudicationDifferentCommitments (0.00s)
+=== RUN   TestAdjudicationDoubleEvidence
+--- PASS: TestAdjudicationDoubleEvidence (0.00s)
+=== RUN   TestAdjudicationDepositUpheld
+--- PASS: TestAdjudicationDepositUpheld (0.00s)
+=== RUN   TestAdjudicationDepositForged
+--- PASS: TestAdjudicationDepositForged (0.00s)
+=== RUN   TestAdjudicationDepositNotUpheld
+--- PASS: TestAdjudicationDepositNotUpheld (0.00s)
+=== RUN   TestAdjudicationDepositPathInvalid
+--- PASS: TestAdjudicationDepositPathInvalid (0.00s)
+=== RUN   TestAdjudicationBudgetCap
+--- PASS: TestAdjudicationBudgetCap (0.00s)
+=== RUN   TestAdjudicationRevealWithoutCommitment
+--- PASS: TestAdjudicationRevealWithoutCommitment (0.00s)
+=== RUN   TestAdjudicationCommitmentMismatch
+--- PASS: TestAdjudicationCommitmentMismatch (0.00s)
+=== RUN   TestAdjudicationMigration
+--- PASS: TestAdjudicationMigration (0.00s)
+=== RUN   TestAdjudicationAppealAfterWindow
+--- PASS: TestAdjudicationAppealAfterWindow (0.00s)
+=== RUN   TestAdjudicationAppealTierExcluded
+--- PASS: TestAdjudicationAppealTierExcluded (0.00s)
+=== RUN   TestAdjudicationAppealWithinWindow
+--- PASS: TestAdjudicationAppealWithinWindow (0.01s)
+=== RUN   TestAdjudicationThirdSuccessfulReveal
+--- PASS: TestAdjudicationThirdSuccessfulReveal (0.00s)
+=== RUN   TestAdjudicationSecondIncomplete
+--- PASS: TestAdjudicationSecondIncomplete (0.00s)
+=== RUN   TestAdjudicationEscalatesOnlyOnce
+--- PASS: TestAdjudicationEscalatesOnlyOnce (0.01s)
+=== RUN   TestAdjudicationInsufficientDeposit
+--- PASS: TestAdjudicationInsufficientDeposit (0.01s)
+=== RUN   TestAdjudicationNineToTenActivation
+--- PASS: TestAdjudicationNineToTenActivation (0.00s)
+=== RUN   TestAdjudicationMigrationPreservesConfiguredFields
+--- PASS: TestAdjudicationMigrationPreservesConfiguredFields (0.00s)
+=== RUN   TestAdjudicationAppealFailureAtomic
+--- PASS: TestAdjudicationAppealFailureAtomic (0.01s)
+=== RUN   TestAdjudicationSameReplaySource
+--- PASS: TestAdjudicationSameReplaySource (0.00s)
+=== RUN   TestAdjudicationAppealCitesFirstReservedReview
+--- PASS: TestAdjudicationAppealCitesFirstReservedReview (0.00s)
+=== RUN   TestAdjudicationTimeoutRefundsWithoutFourthSeat
+--- PASS: TestAdjudicationTimeoutRefundsWithoutFourthSeat (0.00s)
+=== RUN   TestApplicationCommitAndRestart
+--- PASS: TestApplicationCommitAndRestart (0.01s)
+=== RUN   TestParamV12Golden
+    app_v12_golden_test.go:30: height=1 apphash=c499f2a19702ed9d90a8b5e69fa5a142355c7361ba35037321536cff50cec429
+    app_v12_golden_test.go:30: height=2 apphash=dd53050faac36482f2ce50b556b4167ae93d88697dd9eeab9616b7dff6e572b5
+    app_v12_golden_test.go:30: height=3 apphash=62dc3b416815047aa2e02d21a8bc7238af86a7964c5d3c7d46d1c1b01fd131c1
+--- PASS: TestParamV12Golden (0.00s)
+=== RUN   TestParamActivationEmission
+--- PASS: TestParamActivationEmission (0.01s)
+=== RUN   TestParamMissedAndConsumed
+--- PASS: TestParamMissedAndConsumed (0.00s)
+=== RUN   TestParamLoadVersions
+--- PASS: TestParamLoadVersions (0.01s)
+=== RUN   TestRequestFirstDataFinalityAndIdempotency
+--- PASS: TestRequestFirstDataFinalityAndIdempotency (0.00s)
+=== RUN   TestFutureEntropyArrivalAndOfflineDraw
+--- PASS: TestFutureEntropyArrivalAndOfflineDraw (0.00s)
+=== RUN   TestPairCooldownRotationAndReset
+--- PASS: TestPairCooldownRotationAndReset (0.00s)
+=== RUN   TestAssignmentGrinding100000
+    assignment_test.go:171: requests=100000 pool=100 attacker=30 baseline=30.000% observed=29.830% hits=29830 delta_pp=-0.170 commitment_variants=256
+--- PASS: TestAssignmentGrinding100000 (1.76s)
+=== RUN   TestAuditClassEligibility
+=== RUN   TestAuditClassEligibility/v7_full_executor,_full_auditor
+=== RUN   TestAuditClassEligibility/v7_full_executor,_logprobs_auditor_stays_barred
+=== RUN   TestAuditClassEligibility/v7_full_executor,_full_auditor_topk8
+=== RUN   TestAuditClassEligibility/v7_logprobs_executor,_logprobs_auditor
+=== RUN   TestAuditClassEligibility/v7_logprobs_executor,_logprobs_auditor_topk8
+=== RUN   TestAuditClassEligibility/v7_logprobs_executor,_full_auditor_(superset)
+=== RUN   TestAuditClassEligibility/v7_logprobs_executor,_auditor_on_other_manifest
+=== RUN   TestAuditClassEligibility/v7_logprobs_executor,_auditor_without_auditor_role
+=== RUN   TestAuditClassEligibility/v7_logprobs_executor,_auditor_without_capabilities
+=== RUN   TestAuditClassEligibility/v6_logprobs_executor,_logprobs_auditor_still_barred
+=== RUN   TestAuditClassEligibility/v6_logprobs_executor,_full_auditor_admitted_(v6_rule)
+=== RUN   TestAuditClassEligibility/v6_full_executor,_full_auditor
+--- PASS: TestAuditClassEligibility (0.05s)
+    --- PASS: TestAuditClassEligibility/v7_full_executor,_full_auditor (0.01s)
+    --- PASS: TestAuditClassEligibility/v7_full_executor,_logprobs_auditor_stays_barred (0.00s)
+    --- PASS: TestAuditClassEligibility/v7_full_executor,_full_auditor_topk8 (0.00s)
+    --- PASS: TestAuditClassEligibility/v7_logprobs_executor,_logprobs_auditor (0.00s)
+    --- PASS: TestAuditClassEligibility/v7_logprobs_executor,_logprobs_auditor_topk8 (0.00s)
+    --- PASS: TestAuditClassEligibility/v7_logprobs_executor,_full_auditor_(superset) (0.00s)
+    --- PASS: TestAuditClassEligibility/v7_logprobs_executor,_auditor_on_other_manifest (0.00s)
+    --- PASS: TestAuditClassEligibility/v7_logprobs_executor,_auditor_without_auditor_role (0.00s)
+    --- PASS: TestAuditClassEligibility/v7_logprobs_executor,_auditor_without_capabilities (0.00s)
+    --- PASS: TestAuditClassEligibility/v6_logprobs_executor,_logprobs_auditor_still_barred (0.00s)
+    --- PASS: TestAuditClassEligibility/v6_logprobs_executor,_full_auditor_admitted_(v6_rule) (0.01s)
+    --- PASS: TestAuditClassEligibility/v6_full_executor,_full_auditor (0.00s)
+=== RUN   TestLogprobsAuditSettlement
+    audit_class_test.go:144: logprobs auditor 6f1e5b61ed9a821457aa6b4d7c2a2b37715ffb16e41585d25c4679cda12e441b settled hold lp1: payer -40, executor +40
+--- PASS: TestLogprobsAuditSettlement (0.01s)
+=== RUN   TestLogprobsCheaterRejected
+    audit_class_test.go:193: two logprobs auditors rejected; offense {Version:2 HoldID:lp2 NodeID:e3c1b362c0df36f6b370b8b1479b67dad96392b2440744e05fdf7f1883bff30d Height:8 Class:token Score:4 Band:token-equality-v1 LengthClass: ThetaPair:<nil> Fault: Status:slash}; stake 5000 -> 4750
+--- PASS: TestLogprobsCheaterRejected (0.01s)
+=== RUN   TestAuditClassActivation
+--- PASS: TestAuditClassActivation (0.00s)
+=== RUN   TestAuditCompBoundaries
+    audit_comp_test.go:64: prefix=0 amount=844; cited=8 output available=100 paid=0 shortfall=1257
+--- PASS: TestAuditCompBoundaries (0.00s)
+=== RUN   TestAuditCompConsensusRejectAndFrozenGovernance
+    audit_comp_test.go:107: wrong comp rejected with unchanged state; paid=75 shortfall=821 one settlement
+--- PASS: TestAuditCompConsensusRejectAndFrozenGovernance (0.01s)
+=== RUN   TestAuditWorkCapEpochAndAffordability
+    audit_comp_test.go:131: epoch 0 admits 2/3; epoch 1 resets; fee=1 underfunded request rejected
+--- PASS: TestAuditWorkCapEpochAndAffordability (0.00s)
+=== RUN   TestAuditCompSignedCitation
+--- PASS: TestAuditCompSignedCitation (0.00s)
+=== RUN   TestAuditCompEndToEndAssignmentCitationAndEscrow
+    audit_comp_test.go:185: assigned=1 replayed=1 fee=10000 executor=8000 consumer=500 audit paid=896 retained audit escrow=604
+--- PASS: TestAuditCompEndToEndAssignmentCitationAndEscrow (0.01s)
+=== RUN   TestAuditCompMeasuredTwoEpochLoad
+    audit_comp_test.go:195: set TASK21_AUDIT_LOAD to measured observations
+--- SKIP: TestAuditCompMeasuredTwoEpochLoad (0.00s)
+=== RUN   TestAuditCompPipelineFundingAndExecutorCaps
+    audit_comp_test.go:368: pipeline executor credits sum=8000 consumer=500 audit payment=844 escrow=656 all 3 executor counts=1; refunded request audit payment=0
+--- PASS: TestAuditCompPipelineFundingAndExecutorCaps (0.00s)
+=== RUN   TestAuditPoolProRataRemaindersAndRollover
+--- PASS: TestAuditPoolProRataRemaindersAndRollover (0.00s)
+=== RUN   TestAuditPoolProbationConservation
+--- PASS: TestAuditPoolProbationConservation (0.00s)
+=== RUN   TestSamplingRecomputeProperties
+--- PASS: TestSamplingRecomputeProperties (0.02s)
+=== RUN   TestSamplingTierBoundariesAndAmountGrid
+--- PASS: TestSamplingTierBoundariesAndAmountGrid (0.00s)
+=== RUN   TestSamplingUnsampledSettlementThreePolicies
+=== RUN   TestSamplingUnsampledSettlementThreePolicies/unpriced
+=== RUN   TestSamplingUnsampledSettlementThreePolicies/pricing
+=== RUN   TestSamplingUnsampledSettlementThreePolicies/comp
+--- PASS: TestSamplingUnsampledSettlementThreePolicies (0.01s)
+    --- PASS: TestSamplingUnsampledSettlementThreePolicies/unpriced (0.00s)
+    --- PASS: TestSamplingUnsampledSettlementThreePolicies/pricing (0.00s)
+    --- PASS: TestSamplingUnsampledSettlementThreePolicies/comp (0.00s)
+=== RUN   TestSamplingDisabledLeavesNoSamplingRecord
+--- PASS: TestSamplingDisabledLeavesNoSamplingRecord (0.00s)
+=== RUN   TestSamplingPenaltyStatsFoldAndDust
+--- PASS: TestSamplingPenaltyStatsFoldAndDust (0.00s)
+=== RUN   TestSamplingWeakestPipelineAndMoe
+--- PASS: TestSamplingWeakestPipelineAndMoe (0.00s)
+=== RUN   TestSamplingSingleAuditorFortyCompletedRequests
+--- PASS: TestSamplingSingleAuditorFortyCompletedRequests (0.00s)
+=== RUN   TestSamplingCooldownFallbackKeepsHardRules
+--- PASS: TestSamplingCooldownFallbackKeepsHardRules (0.00s)
+=== RUN   TestSamplingStatisticalAcceptanceBands
+--- PASS: TestSamplingStatisticalAcceptanceBands (0.01s)
+=== RUN   TestSamplingExposureFrozenPolicyAndBoundary
+--- PASS: TestSamplingExposureFrozenPolicyAndBoundary (0.01s)
+=== RUN   TestSamplingCompletionSwitchAndServiceFailure
+--- PASS: TestSamplingCompletionSwitchAndServiceFailure (0.00s)
+=== RUN   TestSamplingSevenToEightActivationAndColdStart
+--- PASS: TestSamplingSevenToEightActivationAndColdStart (0.00s)
+=== RUN   TestConsumerGrayABCI
+    consumer_gray_test.go:248: set FAIRNESS_GRAY_FIXTURE to ops/fairness_gray_probe.py output
+--- SKIP: TestConsumerGrayABCI (0.00s)
+=== RUN   TestConsumerGrayHonestControlsABCI
+    consumer_gray_test.go:269: set FAIRNESS_GRAY_FIXTURE to ops/fairness_gray_probe.py output
+--- SKIP: TestConsumerGrayHonestControlsABCI (0.00s)
+=== RUN   TestConsumerGrayGovernanceSnapshot
+    consumer_gray_test.go:339: hold=before frozen_charge=false scope= terminal=cancelled payer=990
+    consumer_gray_test.go:339: hold=global frozen_charge=true scope=global terminal=settled payer=996
+--- PASS: TestConsumerGrayGovernanceSnapshot (0.10s)
+=== RUN   TestConsumerGrayWindowAndThresholds
+--- PASS: TestConsumerGrayWindowAndThresholds (0.01s)
+=== RUN   TestConsumerGraySampleEligibility
+=== RUN   TestConsumerGraySampleEligibility/gray
+=== RUN   TestConsumerGraySampleEligibility/below-soft
+=== RUN   TestConsumerGraySampleEligibility/hard
+=== RUN   TestConsumerGraySampleEligibility/objective
+=== RUN   TestConsumerGraySampleEligibility/full
+=== RUN   TestConsumerGraySampleEligibility/refund-only
+=== RUN   TestConsumerGraySampleEligibility/off
+=== RUN   TestConsumerGraySampleEligibility/service_failure
+=== RUN   TestConsumerGraySampleEligibility/expire_hold
+=== RUN   TestConsumerGraySampleEligibility/cancel
+--- PASS: TestConsumerGraySampleEligibility (0.11s)
+    --- PASS: TestConsumerGraySampleEligibility/gray (0.01s)
+    --- PASS: TestConsumerGraySampleEligibility/below-soft (0.01s)
+    --- PASS: TestConsumerGraySampleEligibility/hard (0.01s)
+    --- PASS: TestConsumerGraySampleEligibility/objective (0.01s)
+    --- PASS: TestConsumerGraySampleEligibility/full (0.01s)
+    --- PASS: TestConsumerGraySampleEligibility/refund-only (0.01s)
+    --- PASS: TestConsumerGraySampleEligibility/off (0.01s)
+    --- PASS: TestConsumerGraySampleEligibility/service_failure (0.01s)
+    --- PASS: TestConsumerGraySampleEligibility/expire_hold (0.01s)
+    --- PASS: TestConsumerGraySampleEligibility/cancel (0.01s)
+=== RUN   TestConsumerGrayChargeDoesNotOverrideNonGray
+--- PASS: TestConsumerGrayChargeDoesNotOverrideNonGray (0.06s)
+=== RUN   TestConsumerObservationRequiresPayerSignatureAndExactReceipt
+--- PASS: TestConsumerObservationRequiresPayerSignatureAndExactReceipt (0.01s)
+=== RUN   TestConsumerDivergenceReplacesOnlyColludingPairAndRecovers
+--- PASS: TestConsumerDivergenceReplacesOnlyColludingPairAndRecovers (0.16s)
+=== RUN   TestConsumerWholeModelObservationProvenance
+--- PASS: TestConsumerWholeModelObservationProvenance (0.00s)
+=== RUN   TestConsumerEnabledPolicyRequiresIndependentObservationAtSettlement
+--- PASS: TestConsumerEnabledPolicyRequiresIndependentObservationAtSettlement (0.01s)
+=== RUN   TestConsumerPolicyBoundsAndOverflowSafeRatio
+--- PASS: TestConsumerPolicyBoundsAndOverflowSafeRatio (0.00s)
+=== RUN   TestContentPolicyManifestValidation
+--- PASS: TestContentPolicyManifestValidation (0.00s)
+=== RUN   TestContributionCapsHeightAtomicityAndRelease
+--- PASS: TestContributionCapsHeightAtomicityAndRelease (0.01s)
+=== RUN   TestContributionOfferedSetGlobalQualificationAndPersistence
+--- PASS: TestContributionOfferedSetGlobalQualificationAndPersistence (0.00s)
+=== RUN   TestContributionParallelABCIRehearsal
+    contribution_test.go:140: parallel=16 CheckTx_advisory=16 committed=1 in_flight=1 offenses=0
+--- PASS: TestContributionParallelABCIRehearsal (0.01s)
+=== RUN   TestContributionPipelineAggregateAndAuditorReroute
+--- PASS: TestContributionPipelineAggregateAndAuditorReroute (0.00s)
+=== RUN   TestV11PriceGatingAndCompatibility
+--- PASS: TestV11PriceGatingAndCompatibility (0.01s)
+=== RUN   TestV11FreezePinsOverride
+--- PASS: TestV11FreezePinsOverride (0.00s)
+=== RUN   TestV11ActivationAndTargetedQuery
+--- PASS: TestV11ActivationAndTargetedQuery (0.00s)
+=== RUN   TestV11OverrideMultiplierFreeze
+--- PASS: TestV11OverrideMultiplierFreeze (0.00s)
+=== RUN   TestEqualityEligibility
+    equality_test.go:43: enabled=false manifestMismatch=false change=device eligible=false
+    equality_test.go:43: enabled=false manifestMismatch=false change=runtime eligible=false
+    equality_test.go:43: enabled=false manifestMismatch=false change=version eligible=false
+    equality_test.go:43: enabled=false manifestMismatch=false change=score eligible=false
+    equality_test.go:43: enabled=false manifestMismatch=false change=all eligible=false
+    equality_test.go:43: enabled=false manifestMismatch=true change=device eligible=false
+    equality_test.go:43: enabled=false manifestMismatch=true change=runtime eligible=false
+    equality_test.go:43: enabled=false manifestMismatch=true change=version eligible=false
+    equality_test.go:43: enabled=false manifestMismatch=true change=score eligible=false
+    equality_test.go:43: enabled=false manifestMismatch=true change=all eligible=false
+    equality_test.go:43: enabled=true manifestMismatch=false change=device eligible=true
+    equality_test.go:43: enabled=true manifestMismatch=false change=runtime eligible=true
+    equality_test.go:43: enabled=true manifestMismatch=false change=version eligible=true
+    equality_test.go:43: enabled=true manifestMismatch=false change=score eligible=true
+    equality_test.go:43: enabled=true manifestMismatch=false change=all eligible=true
+    equality_test.go:43: enabled=true manifestMismatch=true change=device eligible=false
+    equality_test.go:43: enabled=true manifestMismatch=true change=runtime eligible=false
+    equality_test.go:43: enabled=true manifestMismatch=true change=version eligible=false
+    equality_test.go:43: enabled=true manifestMismatch=true change=score eligible=false
+    equality_test.go:43: enabled=true manifestMismatch=true change=all eligible=false
+--- PASS: TestEqualityEligibility (0.09s)
+=== RUN   TestEqualityLadder
+    equality_test.go:65: [reject reject] => reject rounds=2
+    equality_test.go:65: [reject accept] => accept rounds=2
+    equality_test.go:65: [inconclusive accept] => accept rounds=2
+    equality_test.go:65: [inconclusive reject reject] => reject rounds=3
+    equality_test.go:65: [inconclusive inconclusive inconclusive] => service_failure rounds=3
+    equality_test.go:65: [inconclusive inconclusive reject] => service_failure rounds=3
+    equality_test.go:65: [accept] => accept rounds=1
+    equality_test.go:65: [inconclusive inconclusive accept] => accept rounds=3
+--- PASS: TestEqualityLadder (0.05s)
+=== RUN   TestEqualitySettlement
+    equality_test.go:89: mode=off class=objective status=off slashes=[]
+    equality_test.go:89: mode=off class=token status=off slashes=[]
+    equality_test.go:89: mode=refund_only class=objective status=slash slashes=[{e3c1b362c0df36f6b370b8b1479b67dad96392b2440744e05fdf7f1883bff30d 6 1 5000 50 1 50}]
+    equality_test.go:89: mode=refund_only class=token status=slash slashes=[{e3c1b362c0df36f6b370b8b1479b67dad96392b2440744e05fdf7f1883bff30d 6 1 5000 50 1 50}]
+    equality_test.go:89: mode=gray_gate class=objective status=slash slashes=[{e3c1b362c0df36f6b370b8b1479b67dad96392b2440744e05fdf7f1883bff30d 6 1 5000 50 1 50}]
+    equality_test.go:89: mode=gray_gate class=token status=slash slashes=[{e3c1b362c0df36f6b370b8b1479b67dad96392b2440744e05fdf7f1883bff30d 6 1 5000 50 1 50}]
+    equality_test.go:89: mode=full class=objective status=slash slashes=[{e3c1b362c0df36f6b370b8b1479b67dad96392b2440744e05fdf7f1883bff30d 6 1 5000 50 1 50}]
+    equality_test.go:89: mode=full class=token status=slash slashes=[{e3c1b362c0df36f6b370b8b1479b67dad96392b2440744e05fdf7f1883bff30d 6 1 5000 50 1 50}]
+--- PASS: TestEqualitySettlement (0.08s)
+=== RUN   TestEqualityMigration
+--- PASS: TestEqualityMigration (0.00s)
+=== RUN   TestEqualitySignedLateReject
+--- PASS: TestEqualitySignedLateReject (0.01s)
+=== RUN   TestEqualitySnapshotAndValidation
+--- PASS: TestEqualitySnapshotAndValidation (0.00s)
+=== RUN   TestChunkedEvidenceFailureRefundAndRootBinding
+--- PASS: TestChunkedEvidenceFailureRefundAndRootBinding (0.00s)
+=== RUN   TestEvidenceFrameParameterEnforcedOnReceipt
+=== RUN   TestEvidenceFrameParameterEnforcedOnReceipt/missing
+=== RUN   TestEvidenceFrameParameterEnforcedOnReceipt/bad-root
+=== RUN   TestEvidenceFrameParameterEnforcedOnReceipt/coverage
+--- PASS: TestEvidenceFrameParameterEnforcedOnReceipt (0.00s)
+    --- PASS: TestEvidenceFrameParameterEnforcedOnReceipt/missing (0.00s)
+    --- PASS: TestEvidenceFrameParameterEnforcedOnReceipt/bad-root (0.00s)
+    --- PASS: TestEvidenceFrameParameterEnforcedOnReceipt/coverage (0.00s)
+=== RUN   TestExitWindowsTestChain
+    exit_guard_test.go:27: test-chain=ember-testnet request=last-served submit=2 refund=21 attempt=22 close=42 CheckTx=1 FinalizeBlock=1 error="request challenge window open: height 22 closes 42"
+--- PASS: TestExitWindowsTestChain (0.00s)
+=== RUN   TestExitWindowsClaimsPipelineAndBoundary
+--- PASS: TestExitWindowsClaimsPipelineAndBoundary (0.00s)
+=== RUN   TestExitGuardRetiredPrivacyExecutor
+--- PASS: TestExitGuardRetiredPrivacyExecutor (0.00s)
+=== RUN   TestF7BidirectionalObjectiveOffense
+=== RUN   TestF7BidirectionalObjectiveOffense/32
+=== RUN   TestF7BidirectionalObjectiveOffense/34
+--- PASS: TestF7BidirectionalObjectiveOffense (0.02s)
+    --- PASS: TestF7BidirectionalObjectiveOffense/32 (0.01s)
+    --- PASS: TestF7BidirectionalObjectiveOffense/34 (0.01s)
+=== RUN   TestF7UnavailableRefundWithoutPenalty
+=== RUN   TestF7UnavailableRefundWithoutPenalty/artifact-missing
+=== RUN   TestF7UnavailableRefundWithoutPenalty/tokenizer-missing
+=== RUN   TestF7UnavailableRefundWithoutPenalty/version-mismatch
+--- PASS: TestF7UnavailableRefundWithoutPenalty (0.02s)
+    --- PASS: TestF7UnavailableRefundWithoutPenalty/artifact-missing (0.01s)
+    --- PASS: TestF7UnavailableRefundWithoutPenalty/tokenizer-missing (0.01s)
+    --- PASS: TestF7UnavailableRefundWithoutPenalty/version-mismatch (0.01s)
+=== RUN   TestF7RejectsUnpinnedPricing
+--- PASS: TestF7RejectsUnpinnedPricing (0.00s)
+=== RUN   TestF7PipelineChargesTokenizerSigner
+--- PASS: TestF7PipelineChargesTokenizerSigner (0.01s)
+=== RUN   TestFairnessGrayRefundReproduction
+    fairness_reproduction_test.go:22: set FAIRNESS_GRAY_FIXTURE to ops/fairness_gray_probe.py output
+--- SKIP: TestFairnessGrayRefundReproduction (0.00s)
+=== RUN   TestV15ExposureTwoPhases
+=== RUN   TestV15ExposureTwoPhases/v14/frozen/whole
+=== RUN   TestV15ExposureTwoPhases/v14/frozen/pipeline
+=== RUN   TestV15ExposureTwoPhases/v14/frozen/moe
+=== RUN   TestV15ExposureTwoPhases/v14/dispute/whole
+=== RUN   TestV15ExposureTwoPhases/v14/dispute/pipeline
+=== RUN   TestV15ExposureTwoPhases/v14/dispute/moe
+=== RUN   TestV15ExposureTwoPhases/v14/settled/whole
+=== RUN   TestV15ExposureTwoPhases/v14/settled/pipeline
+=== RUN   TestV15ExposureTwoPhases/v14/settled/moe
+=== RUN   TestV15ExposureTwoPhases/v15/frozen/whole
+=== RUN   TestV15ExposureTwoPhases/v15/frozen/pipeline
+=== RUN   TestV15ExposureTwoPhases/v15/frozen/moe
+=== RUN   TestV15ExposureTwoPhases/v15/dispute/whole
+=== RUN   TestV15ExposureTwoPhases/v15/dispute/pipeline
+=== RUN   TestV15ExposureTwoPhases/v15/dispute/moe
+=== RUN   TestV15ExposureTwoPhases/v15/settled/whole
+=== RUN   TestV15ExposureTwoPhases/v15/settled/pipeline
+=== RUN   TestV15ExposureTwoPhases/v15/settled/moe
+--- PASS: TestV15ExposureTwoPhases (0.02s)
+    --- PASS: TestV15ExposureTwoPhases/v14/frozen/whole (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v14/frozen/pipeline (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v14/frozen/moe (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v14/dispute/whole (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v14/dispute/pipeline (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v14/dispute/moe (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v14/settled/whole (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v14/settled/pipeline (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v14/settled/moe (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v15/frozen/whole (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v15/frozen/pipeline (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v15/frozen/moe (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v15/dispute/whole (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v15/dispute/pipeline (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v15/dispute/moe (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v15/settled/whole (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v15/settled/pipeline (0.00s)
+    --- PASS: TestV15ExposureTwoPhases/v15/settled/moe (0.00s)
+=== RUN   TestV15FateSettlement
+=== RUN   TestV15FateSettlement/v14/U/grace0/h10
+=== RUN   TestV15FateSettlement/v14/U/grace0/h12
+=== RUN   TestV15FateSettlement/v14/U/grace0/h13
+=== RUN   TestV15FateSettlement/v14/U/grace0/h100
+=== RUN   TestV15FateSettlement/v14/U/grace3/h10
+=== RUN   TestV15FateSettlement/v14/U/grace3/h12
+=== RUN   TestV15FateSettlement/v14/U/grace3/h13
+=== RUN   TestV15FateSettlement/v14/U/grace3/h100
+=== RUN   TestV15FateSettlement/v14/N/grace0/h10
+=== RUN   TestV15FateSettlement/v14/N/grace0/h12
+=== RUN   TestV15FateSettlement/v14/N/grace0/h13
+=== RUN   TestV15FateSettlement/v14/N/grace0/h100
+=== RUN   TestV15FateSettlement/v14/N/grace3/h10
+=== RUN   TestV15FateSettlement/v14/N/grace3/h12
+=== RUN   TestV15FateSettlement/v14/N/grace3/h13
+=== RUN   TestV15FateSettlement/v14/N/grace3/h100
+=== RUN   TestV15FateSettlement/v14/A/grace0/h10
+=== RUN   TestV15FateSettlement/v14/A/grace0/h12
+=== RUN   TestV15FateSettlement/v14/A/grace0/h13
+=== RUN   TestV15FateSettlement/v14/A/grace0/h100
+=== RUN   TestV15FateSettlement/v14/A/grace3/h10
+=== RUN   TestV15FateSettlement/v14/A/grace3/h12
+=== RUN   TestV15FateSettlement/v14/A/grace3/h13
+=== RUN   TestV15FateSettlement/v14/A/grace3/h100
+=== RUN   TestV15FateSettlement/v14/unassigned/grace0/h10
+=== RUN   TestV15FateSettlement/v14/unassigned/grace0/h12
+=== RUN   TestV15FateSettlement/v14/unassigned/grace0/h13
+=== RUN   TestV15FateSettlement/v14/unassigned/grace0/h100
+=== RUN   TestV15FateSettlement/v14/unassigned/grace3/h10
+=== RUN   TestV15FateSettlement/v14/unassigned/grace3/h12
+=== RUN   TestV15FateSettlement/v14/unassigned/grace3/h13
+=== RUN   TestV15FateSettlement/v14/unassigned/grace3/h100
+=== RUN   TestV15FateSettlement/v14/pending/grace0/h10
+=== RUN   TestV15FateSettlement/v14/pending/grace0/h12
+=== RUN   TestV15FateSettlement/v14/pending/grace0/h13
+=== RUN   TestV15FateSettlement/v14/pending/grace0/h100
+=== RUN   TestV15FateSettlement/v14/pending/grace3/h10
+=== RUN   TestV15FateSettlement/v14/pending/grace3/h12
+=== RUN   TestV15FateSettlement/v14/pending/grace3/h13
+=== RUN   TestV15FateSettlement/v14/pending/grace3/h100
+=== RUN   TestV15FateSettlement/v14/unaudited_only/grace0/h10
+=== RUN   TestV15FateSettlement/v14/unaudited_only/grace0/h12
+=== RUN   TestV15FateSettlement/v14/unaudited_only/grace0/h13
+=== RUN   TestV15FateSettlement/v14/unaudited_only/grace0/h100
+=== RUN   TestV15FateSettlement/v14/unaudited_only/grace3/h10
+=== RUN   TestV15FateSettlement/v14/unaudited_only/grace3/h12
+=== RUN   TestV15FateSettlement/v14/unaudited_only/grace3/h13
+=== RUN   TestV15FateSettlement/v14/unaudited_only/grace3/h100
+=== RUN   TestV15FateSettlement/v15/U/grace0/h10
+=== RUN   TestV15FateSettlement/v15/U/grace0/h12
+=== RUN   TestV15FateSettlement/v15/U/grace0/h13
+=== RUN   TestV15FateSettlement/v15/U/grace0/h100
+=== RUN   TestV15FateSettlement/v15/U/grace3/h10
+=== RUN   TestV15FateSettlement/v15/U/grace3/h12
+=== RUN   TestV15FateSettlement/v15/U/grace3/h13
+=== RUN   TestV15FateSettlement/v15/U/grace3/h100
+=== RUN   TestV15FateSettlement/v15/N/grace0/h10
+=== RUN   TestV15FateSettlement/v15/N/grace0/h12
+=== RUN   TestV15FateSettlement/v15/N/grace0/h13
+=== RUN   TestV15FateSettlement/v15/N/grace0/h100
+=== RUN   TestV15FateSettlement/v15/N/grace3/h10
+=== RUN   TestV15FateSettlement/v15/N/grace3/h12
+=== RUN   TestV15FateSettlement/v15/N/grace3/h13
+=== RUN   TestV15FateSettlement/v15/N/grace3/h100
+=== RUN   TestV15FateSettlement/v15/A/grace0/h10
+=== RUN   TestV15FateSettlement/v15/A/grace0/h12
+=== RUN   TestV15FateSettlement/v15/A/grace0/h13
+=== RUN   TestV15FateSettlement/v15/A/grace0/h100
+=== RUN   TestV15FateSettlement/v15/A/grace3/h10
+=== RUN   TestV15FateSettlement/v15/A/grace3/h12
+=== RUN   TestV15FateSettlement/v15/A/grace3/h13
+=== RUN   TestV15FateSettlement/v15/A/grace3/h100
+=== RUN   TestV15FateSettlement/v15/unassigned/grace0/h10
+=== RUN   TestV15FateSettlement/v15/unassigned/grace0/h12
+=== RUN   TestV15FateSettlement/v15/unassigned/grace0/h13
+=== RUN   TestV15FateSettlement/v15/unassigned/grace0/h100
+=== RUN   TestV15FateSettlement/v15/unassigned/grace3/h10
+=== RUN   TestV15FateSettlement/v15/unassigned/grace3/h12
+=== RUN   TestV15FateSettlement/v15/unassigned/grace3/h13
+=== RUN   TestV15FateSettlement/v15/unassigned/grace3/h100
+=== RUN   TestV15FateSettlement/v15/pending/grace0/h10
+=== RUN   TestV15FateSettlement/v15/pending/grace0/h12
+=== RUN   TestV15FateSettlement/v15/pending/grace0/h13
+=== RUN   TestV15FateSettlement/v15/pending/grace0/h100
+=== RUN   TestV15FateSettlement/v15/pending/grace3/h10
+=== RUN   TestV15FateSettlement/v15/pending/grace3/h12
+=== RUN   TestV15FateSettlement/v15/pending/grace3/h13
+=== RUN   TestV15FateSettlement/v15/pending/grace3/h100
+=== RUN   TestV15FateSettlement/v15/unaudited_only/grace0/h10
+=== RUN   TestV15FateSettlement/v15/unaudited_only/grace0/h12
+=== RUN   TestV15FateSettlement/v15/unaudited_only/grace0/h13
+=== RUN   TestV15FateSettlement/v15/unaudited_only/grace0/h100
+=== RUN   TestV15FateSettlement/v15/unaudited_only/grace3/h10
+=== RUN   TestV15FateSettlement/v15/unaudited_only/grace3/h12
+=== RUN   TestV15FateSettlement/v15/unaudited_only/grace3/h13
+=== RUN   TestV15FateSettlement/v15/unaudited_only/grace3/h100
+--- PASS: TestV15FateSettlement (0.03s)
+    --- PASS: TestV15FateSettlement/v14/U/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/U/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/U/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/U/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/U/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/U/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/U/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/U/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/N/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/N/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/N/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/N/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/N/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/N/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/N/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/N/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/A/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/A/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/A/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/A/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/A/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/A/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/A/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/A/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unassigned/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unassigned/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unassigned/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unassigned/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unassigned/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unassigned/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unassigned/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unassigned/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/pending/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/pending/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/pending/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/pending/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/pending/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/pending/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/pending/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/pending/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unaudited_only/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unaudited_only/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unaudited_only/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unaudited_only/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unaudited_only/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unaudited_only/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unaudited_only/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v14/unaudited_only/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/U/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/U/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/U/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/U/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/U/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/U/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/U/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/U/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/N/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/N/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/N/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/N/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/N/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/N/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/N/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/N/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/A/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/A/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/A/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/A/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/A/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/A/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/A/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/A/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unassigned/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unassigned/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unassigned/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unassigned/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unassigned/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unassigned/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unassigned/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unassigned/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/pending/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/pending/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/pending/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/pending/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/pending/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/pending/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/pending/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/pending/grace3/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unaudited_only/grace0/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unaudited_only/grace0/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unaudited_only/grace0/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unaudited_only/grace0/h100 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unaudited_only/grace3/h10 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unaudited_only/grace3/h12 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unaudited_only/grace3/h13 (0.00s)
+    --- PASS: TestV15FateSettlement/v15/unaudited_only/grace3/h100 (0.00s)
+=== RUN   TestV15NoAuditorAssignment
+=== RUN   TestV15NoAuditorAssignment/v14/badEntropyfalse
+=== RUN   TestV15NoAuditorAssignment/v14/badEntropytrue
+=== RUN   TestV15NoAuditorAssignment/v15/badEntropyfalse
+=== RUN   TestV15NoAuditorAssignment/v15/badEntropytrue
+--- PASS: TestV15NoAuditorAssignment (0.00s)
+    --- PASS: TestV15NoAuditorAssignment/v14/badEntropyfalse (0.00s)
+    --- PASS: TestV15NoAuditorAssignment/v14/badEntropytrue (0.00s)
+    --- PASS: TestV15NoAuditorAssignment/v15/badEntropyfalse (0.00s)
+    --- PASS: TestV15NoAuditorAssignment/v15/badEntropytrue (0.00s)
+=== RUN   TestV15FateHeights
+=== RUN   TestV15FateHeights/v14/U
+=== RUN   TestV15FateHeights/v14/A
+=== RUN   TestV15FateHeights/v15/U
+=== RUN   TestV15FateHeights/v15/A
+--- PASS: TestV15FateHeights (0.00s)
+    --- PASS: TestV15FateHeights/v14/U (0.00s)
+    --- PASS: TestV15FateHeights/v14/A (0.00s)
+    --- PASS: TestV15FateHeights/v15/U (0.00s)
+    --- PASS: TestV15FateHeights/v15/A (0.00s)
+=== RUN   TestV15RejectSlashUsesActual
+=== RUN   TestV15RejectSlashUsesActual/v14/actual12
+=== RUN   TestV15RejectSlashUsesActual/v14/actual300
+=== RUN   TestV15RejectSlashUsesActual/v15/actual12
+=== RUN   TestV15RejectSlashUsesActual/v15/actual300
+--- PASS: TestV15RejectSlashUsesActual (0.00s)
+    --- PASS: TestV15RejectSlashUsesActual/v14/actual12 (0.00s)
+    --- PASS: TestV15RejectSlashUsesActual/v14/actual300 (0.00s)
+    --- PASS: TestV15RejectSlashUsesActual/v15/actual12 (0.00s)
+    --- PASS: TestV15RejectSlashUsesActual/v15/actual300 (0.00s)
+=== RUN   TestV15LegacyJSONAndGraceParameter
+--- PASS: TestV15LegacyJSONAndGraceParameter (0.00s)
+=== RUN   TestV15SelectionFailureIsNotNoAuditor
+--- PASS: TestV15SelectionFailureIsNotNoAuditor (0.00s)
+=== RUN   TestV15RegisteredSingleNodeNoAuditor
+--- PASS: TestV15RegisteredSingleNodeNoAuditor (0.00s)
+=== RUN   TestGenesisSignedTransactionDrill
+    genesis_drill_test.go:177: genesis drill PASS: initial=7460572672 issued=12844619 recovered=435200 closing=7448163253
+--- PASS: TestGenesisSignedTransactionDrill (0.03s)
+=== RUN   TestGenesisSubsidyPool
+--- PASS: TestGenesisSubsidyPool (0.00s)
+=== RUN   TestPermanentConsumptionCredit
+--- PASS: TestPermanentConsumptionCredit (0.00s)
+=== RUN   TestSubsidyAActivationAndRecovery
+--- PASS: TestSubsidyAActivationAndRecovery (0.00s)
+=== RUN   TestSubsidyNewAccountRequiresNoCleanSpark
+--- PASS: TestSubsidyNewAccountRequiresNoCleanSpark (0.00s)
+=== RUN   TestSubsidyConversionMatchesGenesisPriceTable
+--- PASS: TestSubsidyConversionMatchesGenesisPriceTable (0.00s)
+=== RUN   TestSubsidyPricedSettlementRebateRestricted
+--- PASS: TestSubsidyPricedSettlementRebateRestricted (0.00s)
+=== RUN   TestGPUBudgetRegistration
+--- PASS: TestGPUBudgetRegistration (0.01s)
+=== RUN   TestBlockHashArchiveAndCrash
+--- PASS: TestBlockHashArchiveAndCrash (0.01s)
+=== RUN   TestHoldsArchiveReplayAndCrash
+--- PASS: TestHoldsArchiveReplayAndCrash (0.01s)
+=== RUN   TestArchiveHistoricalConsensusReaders
+--- PASS: TestArchiveHistoricalConsensusReaders (0.00s)
+=== RUN   TestArchiveAcrossCommitsAndCheckTxIsolation
+--- PASS: TestArchiveAcrossCommitsAndCheckTxIsolation (0.01s)
+=== RUN   TestFreezeIdempotency
+--- PASS: TestFreezeIdempotency (0.00s)
+=== RUN   TestFreezeIdempotencyReroute
+=== RUN   TestFreezeIdempotencyReroute/amount
+=== RUN   TestFreezeIdempotencyReroute/profile
+=== RUN   TestFreezeIdempotencyReroute/model
+=== RUN   TestFreezeIdempotencyReroute/payer
+=== RUN   TestFreezeIdempotencyReroute/signer
+--- PASS: TestFreezeIdempotencyReroute (0.00s)
+    --- PASS: TestFreezeIdempotencyReroute/amount (0.00s)
+    --- PASS: TestFreezeIdempotencyReroute/profile (0.00s)
+    --- PASS: TestFreezeIdempotencyReroute/model (0.00s)
+    --- PASS: TestFreezeIdempotencyReroute/payer (0.00s)
+    --- PASS: TestFreezeIdempotencyReroute/signer (0.00s)
+=== RUN   TestFreezeIdempotencyCoverage
+=== RUN   TestFreezeIdempotencyCoverage/pipeline_routing
+=== RUN   TestFreezeIdempotencyCoverage/pipeline_boundary
+=== RUN   TestFreezeIdempotencyCoverage/pipeline_order
+=== RUN   TestFreezeIdempotencyCoverage/expert_regroup
+=== RUN   TestFreezeIdempotencyCoverage/expert_missing
+=== RUN   TestFreezeIdempotencyCoverage/expert_extra
+=== RUN   TestFreezeIdempotencyCoverage/attention_span
+=== RUN   TestFreezeIdempotencyCoverage/coverage_kind
+=== RUN   TestFreezeIdempotencyCoverage/strict_default
+=== RUN   TestFreezeIdempotencyCoverage/moe_tokens
+--- PASS: TestFreezeIdempotencyCoverage (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/pipeline_routing (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/pipeline_boundary (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/pipeline_order (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/expert_regroup (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/expert_missing (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/expert_extra (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/attention_span (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/coverage_kind (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/strict_default (0.00s)
+    --- PASS: TestFreezeIdempotencyCoverage/moe_tokens (0.00s)
+=== RUN   TestFreezeIdempotencyCommitment
+=== RUN   TestFreezeIdempotencyCommitment/routing
+=== RUN   TestFreezeIdempotencyCommitment/input_tokens
+=== RUN   TestFreezeIdempotencyCommitment/input_commitment
+=== RUN   TestFreezeIdempotencyCommitment/seed
+=== RUN   TestFreezeIdempotencyCommitment/client_nonce
+--- PASS: TestFreezeIdempotencyCommitment (0.00s)
+    --- PASS: TestFreezeIdempotencyCommitment/routing (0.00s)
+    --- PASS: TestFreezeIdempotencyCommitment/input_tokens (0.00s)
+    --- PASS: TestFreezeIdempotencyCommitment/input_commitment (0.00s)
+    --- PASS: TestFreezeIdempotencyCommitment/seed (0.00s)
+    --- PASS: TestFreezeIdempotencyCommitment/client_nonce (0.00s)
+=== RUN   TestImagePublicationV16
+=== RUN   TestImagePublicationV16/good
+=== RUN   TestImagePublicationV16/buffer
+=== RUN   TestImagePublicationV16/buffer-short
+=== RUN   TestImagePublicationV16/plus5
+=== RUN   TestImagePublicationV16/minus5
+=== RUN   TestImagePublicationV16/channel
+=== RUN   TestImagePublicationV16/params
+=== RUN   TestImagePublicationV16/scale
+=== RUN   TestImagePublicationV16/header
+=== RUN   TestImagePublicationV16/v15
+=== RUN   TestImagePublicationV16/execution-v1
+--- PASS: TestImagePublicationV16 (0.02s)
+    --- PASS: TestImagePublicationV16/good (0.00s)
+    --- PASS: TestImagePublicationV16/buffer (0.00s)
+    --- PASS: TestImagePublicationV16/buffer-short (0.00s)
+    --- PASS: TestImagePublicationV16/plus5 (0.00s)
+    --- PASS: TestImagePublicationV16/minus5 (0.00s)
+    --- PASS: TestImagePublicationV16/channel (0.00s)
+    --- PASS: TestImagePublicationV16/params (0.00s)
+    --- PASS: TestImagePublicationV16/scale (0.00s)
+    --- PASS: TestImagePublicationV16/header (0.00s)
+    --- PASS: TestImagePublicationV16/v15 (0.00s)
+    --- PASS: TestImagePublicationV16/execution-v1 (0.00s)
+=== RUN   TestImageFreezeAndSubmission
+=== RUN   TestImageFreezeAndSubmission/good
+=== RUN   TestImageFreezeAndSubmission/leaves
+=== RUN   TestImageFreezeAndSubmission/init
+=== RUN   TestImageFreezeAndSubmission/prompt
+=== RUN   TestImageFreezeAndSubmission/final
+=== RUN   TestImageFreezeAndSubmission/pixels
+=== RUN   TestImageFreezeAndSubmission/actual
+=== RUN   TestImageFreezeAndSubmission/text_submit
+=== RUN   TestImageFreezeAndSubmission/root
+=== RUN   TestImageFreezeAndSubmission/format
+--- PASS: TestImageFreezeAndSubmission (0.17s)
+    --- PASS: TestImageFreezeAndSubmission/good (0.02s)
+    --- PASS: TestImageFreezeAndSubmission/leaves (0.01s)
+    --- PASS: TestImageFreezeAndSubmission/init (0.02s)
+    --- PASS: TestImageFreezeAndSubmission/prompt (0.02s)
+    --- PASS: TestImageFreezeAndSubmission/final (0.02s)
+    --- PASS: TestImageFreezeAndSubmission/pixels (0.02s)
+    --- PASS: TestImageFreezeAndSubmission/actual (0.01s)
+    --- PASS: TestImageFreezeAndSubmission/text_submit (0.01s)
+    --- PASS: TestImageFreezeAndSubmission/root (0.02s)
+    --- PASS: TestImageFreezeAndSubmission/format (0.02s)
+=== RUN   TestImagePromptBoundaryAndVersionReplay
+--- PASS: TestImagePromptBoundaryAndVersionReplay (0.00s)
+=== RUN   TestImageFatesSettlementAndSlash
+=== RUN   TestImageFatesSettlementAndSlash/unaudited
+=== RUN   TestImageFatesSettlementAndSlash/accept
+=== RUN   TestImageFatesSettlementAndSlash/reject
+=== RUN   TestImageFatesSettlementAndSlash/noauditor
+=== RUN   TestImageFatesSettlementAndSlash/good_faith
+--- PASS: TestImageFatesSettlementAndSlash (0.12s)
+    --- PASS: TestImageFatesSettlementAndSlash/unaudited (0.02s)
+    --- PASS: TestImageFatesSettlementAndSlash/accept (0.02s)
+    --- PASS: TestImageFatesSettlementAndSlash/reject (0.03s)
+    --- PASS: TestImageFatesSettlementAndSlash/noauditor (0.02s)
+    --- PASS: TestImageFatesSettlementAndSlash/good_faith (0.03s)
+=== RUN   TestImageDeliveryAbsenceAndCounterproof
+=== RUN   TestImageDeliveryAbsenceAndCounterproof/false
+=== RUN   TestImageDeliveryAbsenceAndCounterproof/true
+--- PASS: TestImageDeliveryAbsenceAndCounterproof (0.04s)
+    --- PASS: TestImageDeliveryAbsenceAndCounterproof/false (0.02s)
+    --- PASS: TestImageDeliveryAbsenceAndCounterproof/true (0.02s)
+=== RUN   TestImagePrecisionConfigurationAndEligibility
+--- PASS: TestImagePrecisionConfigurationAndEligibility (0.02s)
+=== RUN   TestImageTimeoutAndFallback
+--- PASS: TestImageTimeoutAndFallback (0.02s)
+=== RUN   TestImageV16ActivationAndRestart
+--- PASS: TestImageV16ActivationAndRestart (0.01s)
+=== RUN   TestImageFrozenMultiplierAndPrecisionProof
+--- PASS: TestImageFrozenMultiplierAndPrecisionProof (0.02s)
+=== RUN   TestImageForkPreservesTextReplay
+--- PASS: TestImageForkPreservesTextReplay (0.02s)
+=== RUN   TestGenesisRehearsal
+    issuance_test.go:255: fresh ABCI chain initialized from zero: /tmp/TestGenesisRehearsal574278549/001/data/ember-state.json; initial=1714286000000; slash_mode=refund_only
+    issuance_test.go:259: rejected subsidy/&{Reason: Op:claim Confirm:false Batch:A-0 ID:missing-confirm To: Amount:0 Notice: GovernanceAction:<nil>}: Subsidies are consumption vouchers, usable only for inference fees; they cannot be transferred, staked, or used as deposits.
+    issuance_test.go:264: rejected transfer/<nil>: insufficient funds or missing account
+    issuance_test.go:265: rejected freeze/<nil>: executor registration unavailable or opted out
+    issuance_test.go:268: rejected transfer/<nil>: pool replenishment requires a governance process
+    issuance_test.go:283: PASS A claim -> 127 tokens rejected for activation -> settled 128-token inference activates
+    issuance_test.go:287: rejected transfer/<nil>: insufficient funds or missing account
+    issuance_test.go:288: rejected stake/<nil>: insufficient funds or missing account
+    issuance_test.go:306: PASS permanent marked transfer/stake rejection; inference executor and auditor receive clean transferable Spark; payer rebate retains mark
+    issuance_test.go:314: rejected subsidy/&{Reason: Op:claim Confirm:true Batch:A-2 ID:replay-expiry To: Amount:0 Notice: GovernanceAction:<nil>}: lifetime A/B claim already used
+    issuance_test.go:315: PASS automatic empty-block expiry -> original A pool; expired lifetime claim cannot repeat
+    issuance_test.go:338: PASS B item 77cfe5ce6696f8498aedc7ba14c124383a29c9356bb87d58d3fc783ed1da108d: supply=0 audit=0 consume=510 score=510 award=510000000
+    issuance_test.go:338: PASS B item e3c1b362c0df36f6b370b8b1479b67dad96392b2440744e05fdf7f1883bff30d: supply=455 audit=0 consume=0 score=2730 award=1000000000
+    issuance_test.go:338: PASS B item 6f1e5b61ed9a821457aa6b4d7c2a2b37715ffb16e41585d25c4679cda12e441b: supply=0 audit=170 consume=0 score=510 award=510000000
+    issuance_test.go:338: PASS B item fa4d86c3b551aa6cd7c3759d040c037ef2c6379f01880f453c7ef5374406e4be: supply=0 audit=0 consume=170 score=170 award=170000000
+    issuance_test.go:338: PASS B item a6e7b6810df8120580f2a81710e228f454f99c9790324eecca758333f759ca6d: supply=170 audit=0 consume=0 score=1020 award=1000000000
+    issuance_test.go:338: PASS B item 1cdb5b17b4ab6972268f84f1a4fceb2523b9fb2809d8ace52470708e347b3553: supply=170 audit=0 consume=0 score=1020 award=1000000000
+    issuance_test.go:338: PASS B item ed5374fad2efec691cc6d8ed95e347ebd04907a356f19e57d0d2deb929599c8b: supply=170 audit=0 consume=0 score=1020 award=1000000000
+    issuance_test.go:338: PASS B item d77a915ef4d5cb3848ec441492aed19a25dde69e717b44a2a44a070d6c4d1196: supply=0 audit=0 consume=285 score=285 award=285000000
+    issuance_test.go:341: rejected subsidy/&{Reason: Op:claim Confirm:true Batch:A-3 ID:A-after-B To: Amount:0 Notice: GovernanceAction:<nil>}: lifetime A/B claim already used
+    issuance_test.go:346: rejected subsidy/&{Reason: Op:claim Confirm:true Batch:B-rate ID:B-over-day To: Amount:0 Notice: GovernanceAction:<nil>}: non-fungible daily issuance cap exceeded
+    issuance_test.go:349: rejected subsidy/&{Reason: Op:claim Confirm:true Batch:B-rate ID:B-last-second To: Amount:0 Notice: GovernanceAction:<nil>}: non-fungible daily issuance cap exceeded
+    issuance_test.go:352: PASS B daily issuance 4285 equivalents within 4285.715 cap; next 510-equivalent grant rejected despite idle A/C budgets; UTC midnight reset
+    issuance_test.go:357: PASS B 6:3:1, 10x cap, self-dealing excludes supply/audit/consume, A/B higher-only lifetime choice
+    issuance_test.go:358: rejected subsidy/&{Reason: Op:propose_c Confirm:false Batch: ID:C-over To:3d7d738b5326b1090975299685c44e2c30ab13ef3421ebd3b7fc004a617598a3 Amount:4285715001 Notice:over cap GovernanceAction:<nil>}: invalid developer proposal or 0.25% grant cap exceeded
+    issuance_test.go:365: rejected subsidy/&{Reason: Op:issue_c Confirm:false Batch:C-1 ID:C-good To: Amount:0 Notice: GovernanceAction:<nil>}: developer grant requires four governors, seven days notice and an open inventory window
+    issuance_test.go:368: rejected subsidy/&{Reason: Op:issue_c Confirm:false Batch:C-1 ID:C-good To: Amount:0 Notice: GovernanceAction:<nil>}: developer grant requires four governors, seven days notice and an open inventory window
+    issuance_test.go:399: rejected subsidy/&{Reason: Op:issue_c Confirm:false Batch:C-4 ID:C-extra To: Amount:0 Notice: GovernanceAction:<nil>}: non-fungible daily issuance cap exceeded
+    issuance_test.go:402: rejected subsidy/&{Reason: Op:issue_c Confirm:false Batch:C-4 ID:C-extra To: Amount:0 Notice: GovernanceAction:<nil>}: non-fungible daily issuance cap exceeded
+    issuance_test.go:405: PASS C >0.25% rejected, 7-day notice checked to the second, 4-of-5 approval, exact C daily cap, cross-channel borrowing rejected and UTC midnight reset
+    issuance_test.go:408: rejected subsidy/&{Reason: Op:distribute_c Confirm:false Batch:C-users ID:C-good To:7146a40cf90f90fddb953d4b40055fcc1f3b20d5137f6ef2f5c30b0d13dd5b42 Amount:10 Notice: GovernanceAction:<nil>}: invalid developer distribution or missing recipient confirmation
+    issuance_test.go:417: PASS C recipient disclosure, pending activation and expired child recycle; quarterly inventory reconciliation tested below
+    issuance_test.go:423: rejected subsidy/&{Reason: Op:claim Confirm:true Batch:A-rate ID:A-rate-102 To: Amount:0 Notice: GovernanceAction:<nil>}: non-fungible daily issuance cap exceeded
+    issuance_test.go:427: rejected subsidy/&{Reason: Op:claim Confirm:true Batch:A-rate ID:A-last-second To: Amount:0 Notice: GovernanceAction:<nil>}: non-fungible daily issuance cap exceeded
+    issuance_test.go:430: PASS A daily cap accepts 102 fixed-size grants and rejects next grant; no B/C borrowing; UTC boundary resets
+    issuance_test.go:441: rejected subsidy/&{Reason: Op:issue_c Confirm:false Batch:C-max-too-early ID:C-maximum To: Amount:0 Notice: GovernanceAction:<nil>}: non-fungible daily issuance cap exceeded
+    issuance_test.go:444: rejected subsidy/&{Reason: Op:issue_c Confirm:false Batch:C-max-over ID:C-maximum To: Amount:1 Notice: GovernanceAction:<nil>}: developer grant requires four governors, seven days notice and an open inventory window
+    issuance_test.go:446: PASS maximum 0.25% C proposal funded in two daily-compliant tranches; same-day remainder and over-funding rejected; end-user distribution spans traceable parents
+    issuance_test.go:449: rejected transfer/<nil>: insufficient funds or missing account
+    issuance_test.go:450: rejected stake/<nil>: insufficient funds or missing account
+    issuance_test.go:454: PASS activated mark remains consume-only after more than twelve months
+    issuance_test.go:480: PASS restart and public queries; FINAL POOL initial=1714286000000 issued=27395002002 recycled=22500002002 balance=1709391000000 grants=122
+--- PASS: TestGenesisRehearsal (2.87s)
+=== RUN   TestGenesisIssuanceExactCaps
+    issuance_test.go:499: PASS A cap exactly 10285716000 subunits, next subunit rejected
+    issuance_test.go:499: PASS B cap exactly 4285715000 subunits, next subunit rejected
+    issuance_test.go:499: PASS C cap exactly 2571429000 subunits, next subunit rejected
+    issuance_test.go:517: PASS sum of non-fungible channel caps equals exact 1% daily total; reset at UTC midnight only
+--- PASS: TestGenesisIssuanceExactCaps (0.00s)
+=== RUN   TestGenesisIssuanceRefundAndRestrictions
+    issuance_test.go:565: PASS mixed funding consumes marked first; unused escrow and cancellation preserve marks; bond/deposit cannot debit marked; legacy issuance disabled
+--- PASS: TestGenesisIssuanceRefundAndRestrictions (0.00s)
+=== RUN   TestGenesisGovernorAndCPolicies
+    issuance_test.go:618: PASS governor 3-of-5 with replay protection, C independently 4-of-5, recipient-signed disclosure required, governance revocation and permanent developer disqualification
+--- PASS: TestGenesisGovernorAndCPolicies (0.01s)
+=== RUN   TestGenesisGovernorTriggerMetrics
+    issuance_test.go:673: PASS three governor triggers, 20% threshold for 30 complete UTC days, mixed pipeline amounts, zero-data exclusion, 90-day reminders and 4-of-7 / two outside signers
+--- PASS: TestGenesisGovernorTriggerMetrics (0.00s)
+=== RUN   TestGenesisRetrospectiveScalingAndValidation
+    issuance_test.go:726: PASS B proportional scaling with deterministic rounding and unused budget retained; duplicate records, guardrail violations, changed fixed numbers and duplicate governors rejected
+--- PASS: TestGenesisRetrospectiveScalingAndValidation (0.07s)
+=== RUN   TestLatencyUsesIndependentCountersignaturesOnly
+--- PASS: TestLatencyUsesIndependentCountersignaturesOnly (0.01s)
+=== RUN   TestLivenessGhostAndFrozenMask
+    liveness_test.go:103: auditor hits=139
+    liveness_test.go:103: auditor2 hits=129
+    liveness_test.go:103: extra hits=115
+    liveness_test.go:103: extra2 hits=117
+    liveness_test.go:108: recomputed=500 consistent=500 (100%)
+    liveness_test.go:113: ghost draws=0/500 disabled-liveness-control=78/500 historical-recompute-height=5000
+--- PASS: TestLivenessGhostAndFrozenMask (0.98s)
+=== RUN   TestLivenessJitterAndProofDiscipline
+    liveness_test.go:162: recomputed=1 consistent=1 (100%)
+    liveness_test.go:163: W/2 outage=480 blocks no dropout; expiry=961 blocks; recovery latency=1 finalized snapshot/block
+--- PASS: TestLivenessJitterAndProofDiscipline (0.01s)
+=== RUN   TestLivenessSilentAudit
+=== RUN   TestLivenessSilentAudit/false
+    liveness_test.go:195: recomputed=2 consistent=2 (100%)
+    liveness_test.go:196: recomputed=2 consistent=2 (100%)
+    liveness_test.go:246: recomputed=4 consistent=4 (100%)
+    liveness_test.go:247: normal=false reassignments=3 assignments=4 total-blocks=1205 payer=1000 executor=0
+=== RUN   TestLivenessSilentAudit/true
+    liveness_test.go:195: recomputed=2 consistent=2 (100%)
+    liveness_test.go:196: recomputed=2 consistent=2 (100%)
+    liveness_test.go:246: recomputed=2 consistent=2 (100%)
+    liveness_test.go:247: normal=true reassignments=1 assignments=2 total-blocks=303 payer=996 executor=4
+--- PASS: TestLivenessSilentAudit (0.04s)
+    --- PASS: TestLivenessSilentAudit/false (0.02s)
+    --- PASS: TestLivenessSilentAudit/true (0.02s)
+=== RUN   TestLivenessMigrationActivation
+    liveness_test.go:293: recomputed=1 consistent=1 (100%)
+--- PASS: TestLivenessMigrationActivation (0.00s)
+=== RUN   TestLivenessProofLoad
+    liveness_test.go:332: nodes=100 blocks=480 accepted=200 proofs/block=0.416667 peak/block=1 state-before=46488 state-after=46690 growth=202 serialized-last-height-overhead=2400
+--- PASS: TestLivenessProofLoad (0.08s)
+=== RUN   TestLivenessEmptyPoolAndEntropyErrors
+--- PASS: TestLivenessEmptyPoolAndEntropyErrors (0.00s)
+=== RUN   TestMembershipInitActivationAndF6
+--- PASS: TestMembershipInitActivationAndF6 (0.00s)
+=== RUN   TestMembershipInitActivationRejectsMismatch
+=== RUN   TestMembershipInitActivationRejectsMismatch/missing
+=== RUN   TestMembershipInitActivationRejectsMismatch/extra
+=== RUN   TestMembershipInitActivationRejectsMismatch/unknown_operator
+=== RUN   TestMembershipInitActivationRejectsMismatch/duplicate_operator
+=== RUN   TestMembershipInitActivationRejectsMismatch/power
+=== RUN   TestMembershipInitActivationRejectsMismatch/duplicate_vote
+=== RUN   TestMembershipInitActivationRejectsMismatch/unknown_vote
+=== RUN   TestMembershipInitActivationRejectsMismatch/missed_height
+--- PASS: TestMembershipInitActivationRejectsMismatch (0.01s)
+    --- PASS: TestMembershipInitActivationRejectsMismatch/missing (0.00s)
+    --- PASS: TestMembershipInitActivationRejectsMismatch/extra (0.00s)
+    --- PASS: TestMembershipInitActivationRejectsMismatch/unknown_operator (0.00s)
+    --- PASS: TestMembershipInitActivationRejectsMismatch/duplicate_operator (0.00s)
+    --- PASS: TestMembershipInitActivationRejectsMismatch/power (0.00s)
+    --- PASS: TestMembershipInitActivationRejectsMismatch/duplicate_vote (0.00s)
+    --- PASS: TestMembershipInitActivationRejectsMismatch/unknown_vote (0.00s)
+    --- PASS: TestMembershipInitActivationRejectsMismatch/missed_height (0.00s)
+=== RUN   TestMembershipInitArmValidation
+=== RUN   TestMembershipInitArmValidation/height
+=== RUN   TestMembershipInitArmValidation/chain
+=== RUN   TestMembershipInitArmValidation/delay
+=== RUN   TestMembershipInitArmValidation/window
+=== RUN   TestMembershipInitArmValidation/readiness
+=== RUN   TestMembershipInitArmValidation/max
+=== RUN   TestMembershipInitArmValidation/size
+=== RUN   TestMembershipInitArmValidation/hex
+=== RUN   TestMembershipInitArmValidation/key_length
+=== RUN   TestMembershipInitArmValidation/operator
+=== RUN   TestMembershipInitArmValidation/duplicate_operator
+--- PASS: TestMembershipInitArmValidation (0.01s)
+    --- PASS: TestMembershipInitArmValidation/height (0.00s)
+    --- PASS: TestMembershipInitArmValidation/chain (0.00s)
+    --- PASS: TestMembershipInitArmValidation/delay (0.00s)
+    --- PASS: TestMembershipInitArmValidation/window (0.00s)
+    --- PASS: TestMembershipInitArmValidation/readiness (0.00s)
+    --- PASS: TestMembershipInitArmValidation/max (0.00s)
+    --- PASS: TestMembershipInitArmValidation/size (0.00s)
+    --- PASS: TestMembershipInitArmValidation/hex (0.00s)
+    --- PASS: TestMembershipInitArmValidation/key_length (0.00s)
+    --- PASS: TestMembershipInitArmValidation/operator (0.00s)
+    --- PASS: TestMembershipInitArmValidation/duplicate_operator (0.00s)
+=== RUN   TestMembershipInitNoInitAndDefaultOrg
+--- PASS: TestMembershipInitNoInitAndDefaultOrg (0.00s)
+=== RUN   TestMembershipInitV10RoundTrip
+--- PASS: TestMembershipInitV10RoundTrip (0.00s)
+=== RUN   TestMembershipInitABCITrials
+--- PASS: TestMembershipInitABCITrials (0.01s)
+=== RUN   TestMembershipInitTrialValidationAndVersion
+--- PASS: TestMembershipInitTrialValidationAndVersion (0.00s)
+=== RUN   TestV2MigrationDefaultsDeterminismAndRoundTrip
+--- PASS: TestV2MigrationDefaultsDeterminismAndRoundTrip (0.00s)
+=== RUN   TestV2MigrationPreservesPresentPoliciesAndSignedBytes
+--- PASS: TestV2MigrationPreservesPresentPoliciesAndSignedBytes (0.00s)
+=== RUN   TestMigratedLegacyHoldTransitions
+=== RUN   TestMigratedLegacyHoldTransitions/accept
+=== RUN   TestMigratedLegacyHoldTransitions/reject
+=== RUN   TestMigratedLegacyHoldTransitions/service_failure
+--- PASS: TestMigratedLegacyHoldTransitions (0.01s)
+    --- PASS: TestMigratedLegacyHoldTransitions/accept (0.00s)
+    --- PASS: TestMigratedLegacyHoldTransitions/reject (0.01s)
+    --- PASS: TestMigratedLegacyHoldTransitions/service_failure (0.00s)
+=== RUN   TestV2MigrationHandshakeBridge
+--- PASS: TestV2MigrationHandshakeBridge (0.00s)
+=== RUN   TestMisjudgePerturbationInjection
+    misjudge_test.go:93: measured empirical cross-hardware-class injections=7 numerical slashes=0 objective slashes=1 objective amount=50 gray observations=1 (5 measured request rows + 2 historical Thor group maxima)
+--- PASS: TestMisjudgePerturbationInjection (0.04s)
+=== RUN   TestMisjudgeModesAndGovernance
+=== RUN   TestMisjudgeModesAndGovernance/off/numerical
+=== RUN   TestMisjudgeModesAndGovernance/off/objective
+=== RUN   TestMisjudgeModesAndGovernance/refund_only/numerical
+=== RUN   TestMisjudgeModesAndGovernance/refund_only/objective
+=== RUN   TestMisjudgeModesAndGovernance/gray_gate/numerical
+=== RUN   TestMisjudgeModesAndGovernance/gray_gate/objective
+=== RUN   TestMisjudgeModesAndGovernance/full/numerical
+=== RUN   TestMisjudgeModesAndGovernance/full/objective
+--- PASS: TestMisjudgeModesAndGovernance (0.23s)
+    --- PASS: TestMisjudgeModesAndGovernance/off/numerical (0.02s)
+    --- PASS: TestMisjudgeModesAndGovernance/off/objective (0.02s)
+    --- PASS: TestMisjudgeModesAndGovernance/refund_only/numerical (0.02s)
+    --- PASS: TestMisjudgeModesAndGovernance/refund_only/objective (0.03s)
+    --- PASS: TestMisjudgeModesAndGovernance/gray_gate/numerical (0.03s)
+    --- PASS: TestMisjudgeModesAndGovernance/gray_gate/objective (0.02s)
+    --- PASS: TestMisjudgeModesAndGovernance/full/numerical (0.03s)
+    --- PASS: TestMisjudgeModesAndGovernance/full/objective (0.03s)
+=== RUN   TestMisjudgeSameBlockCapAndMergedLadder
+    misjudge_test.go:179: stake=10001 cap=500, 8 offenses -> 1 ladder step; next-block multiplier=2 amount=192; stake=1 protected floor=1
+--- PASS: TestMisjudgeSameBlockCapAndMergedLadder (0.00s)
+=== RUN   TestMisjudgeSignedGradeAndFrozenThresholds
+--- PASS: TestMisjudgeSignedGradeAndFrozenThresholds (0.06s)
+=== RUN   TestMisjudgePipelineRefundOnly
+=== RUN   TestMisjudgePipelineRefundOnly/off
+    misjudge_test.go:282: mode=off payer=1000 records=1 status=off theta=nil slashes=[]
+=== RUN   TestMisjudgePipelineRefundOnly/refund_only
+    misjudge_test.go:282: mode=refund_only payer=1000 records=1 status=refund-only theta=nil slashes=[]
+=== RUN   TestMisjudgePipelineRefundOnly/gray_gate
+    misjudge_test.go:282: mode=gray_gate payer=1000 records=1 status=refund-only theta=nil slashes=[]
+=== RUN   TestMisjudgePipelineRefundOnly/full
+    misjudge_test.go:282: mode=full payer=1080 records=1 status=slash theta=nil slashes=[{d504bb7f7214db9391aa483c267b2311f116f782fffb501ddba94ae10157c4c7 7 4 5000 50 1 80}]
+--- PASS: TestMisjudgePipelineRefundOnly (0.02s)
+    --- PASS: TestMisjudgePipelineRefundOnly/off (0.01s)
+    --- PASS: TestMisjudgePipelineRefundOnly/refund_only (0.01s)
+    --- PASS: TestMisjudgePipelineRefundOnly/gray_gate (0.01s)
+    --- PASS: TestMisjudgePipelineRefundOnly/full (0.01s)
+=== RUN   TestMoeFreezeUniversalExemptionReserve
+--- PASS: TestMoeFreezeUniversalExemptionReserve (0.02s)
+=== RUN   TestMoeChunkHistoryDrill
+    moe_chunk_history_test.go:18: drill signed receipt: 6030151 bytes, 6 chunks, 11003 segments
+    moe_chunk_history_test.go:37: block-history receipt=6030151 bytes chunks=6 sha256=7a0899766efb2063300b210f799df5884d92c953cd01851729fe7fb21de65c7b
+--- PASS: TestMoeChunkHistoryDrill (5.37s)
+=== RUN   TestMoeChunkV12Gate
+=== RUN   TestMoeChunkV12Gate/submit_moe_manifest
+=== RUN   TestMoeChunkV12Gate/submit_moe_chunk
+=== RUN   TestMoeChunkV12Gate/submit_moe_finalize
+--- PASS: TestMoeChunkV12Gate (0.02s)
+    --- PASS: TestMoeChunkV12Gate/submit_moe_manifest (0.01s)
+    --- PASS: TestMoeChunkV12Gate/submit_moe_chunk (0.01s)
+    --- PASS: TestMoeChunkV12Gate/submit_moe_finalize (0.01s)
+=== RUN   TestMoeChunkManifestValidation
+=== RUN   TestMoeChunkManifestValidation/total_zero
+=== RUN   TestMoeChunkManifestValidation/bytes_zero
+=== RUN   TestMoeChunkManifestValidation/bytes_too_large
+=== RUN   TestMoeChunkManifestValidation/inconsistent_size
+=== RUN   TestMoeChunkManifestValidation/hash_count
+=== RUN   TestMoeChunkManifestValidation/root_size
+=== RUN   TestMoeChunkManifestValidation/wrong_state
+=== RUN   TestMoeChunkManifestValidation/total_too_large
+=== RUN   TestMoeChunkManifestValidation/hash_size
+=== RUN   TestMoeChunkManifestValidation/actual_zero
+=== RUN   TestMoeChunkManifestValidation/actual_over
+=== RUN   TestMoeChunkManifestValidation/unknown_hold
+=== RUN   TestMoeChunkManifestValidation/expired
+=== RUN   TestMoeChunkManifestValidation/not_coordinator
+--- PASS: TestMoeChunkManifestValidation (0.10s)
+    --- PASS: TestMoeChunkManifestValidation/total_zero (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/bytes_zero (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/bytes_too_large (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/inconsistent_size (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/hash_count (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/root_size (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/wrong_state (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/total_too_large (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/hash_size (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/actual_zero (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/actual_over (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/unknown_hold (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/expired (0.01s)
+    --- PASS: TestMoeChunkManifestValidation/not_coordinator (0.01s)
+=== RUN   TestMoeChunkManifestStateSizeAndCompatibility
+    moe_chunk_test.go:126: chunk hold metadata delta: 204 bytes
+--- PASS: TestMoeChunkManifestStateSizeAndCompatibility (0.01s)
+=== RUN   TestMoeChunksOrderingValidationAndHealing
+--- PASS: TestMoeChunksOrderingValidationAndHealing (0.20s)
+=== RUN   TestMoeChunkFinalizeEquivalenceAndSpoolFailure
+--- PASS: TestMoeChunkFinalizeEquivalenceAndSpoolFailure (0.02s)
+=== RUN   TestMoeChunkExpireRefundAndArchiveCleanup
+--- PASS: TestMoeChunkExpireRefundAndArchiveCleanup (0.02s)
+=== RUN   TestMoeChunkSizeMatchesSegaudit
+--- PASS: TestMoeChunkSizeMatchesSegaudit (0.00s)
+=== RUN   TestMoeChunkLargeDrill
+    moe_chunk_test.go:500: drill signed receipt: 6030151 bytes, 6 chunks, 11003 segments
+--- PASS: TestMoeChunkLargeDrill (4.84s)
+=== RUN   TestMoeChunkAuditSettlementAndTamper
+--- PASS: TestMoeChunkAuditSettlementAndTamper (0.02s)
+=== RUN   TestMoeChunkMaximumMetadataBound
+    moe_chunk_test.go:569: maximum 256-chunk hold metadata delta: 251 bytes
+--- PASS: TestMoeChunkMaximumMetadataBound (0.01s)
+=== RUN   TestMoeChunkCorruptionAndFinalizeAuthorization
+--- PASS: TestMoeChunkCorruptionAndFinalizeAuthorization (0.01s)
+=== RUN   TestMoeDrillIngestAccept
+    moe_drill_test.go:278: MOE_DRILL_DIR not set
+--- SKIP: TestMoeDrillIngestAccept (0.00s)
+=== RUN   TestMoeDrillIngestPlanB
+    moe_drill_test.go:332: MOE_DRILL_DIR not set
+--- SKIP: TestMoeDrillIngestPlanB (0.00s)
+=== RUN   TestMoeDrillIngestPlanBDefaultGovernance
+    moe_drill_test.go:411: MOE_DRILL_DIR not set
+--- SKIP: TestMoeDrillIngestPlanBDefaultGovernance (0.00s)
+=== RUN   TestMoeEightToNineConfigure
+--- PASS: TestMoeEightToNineConfigure (0.00s)
+=== RUN   TestMoeEightToNineActivation
+--- PASS: TestMoeEightToNineActivation (0.00s)
+=== RUN   TestMoeEightStateRoundTripWithoutUpgrade
+--- PASS: TestMoeEightStateRoundTripWithoutUpgrade (0.00s)
+=== RUN   TestMoeEightToNineOptionalParameters
+--- PASS: TestMoeEightToNineOptionalParameters (0.00s)
+=== RUN   TestMoeEightToNineProposalBoundary
+--- PASS: TestMoeEightToNineProposalBoundary (0.02s)
+=== RUN   TestMoeGranularNumericalSlashByDefault
+--- PASS: TestMoeGranularNumericalSlashByDefault (0.01s)
+=== RUN   TestMoeGranularNumericalSlashUnderRefundOnlyGlobal
+--- PASS: TestMoeGranularNumericalSlashUnderRefundOnlyGlobal (0.01s)
+=== RUN   TestMoeMisjudgeSlashOffOptOut
+--- PASS: TestMoeMisjudgeSlashOffOptOut (0.01s)
+=== RUN   TestMoeMisjudgeGlobalOffWins
+--- PASS: TestMoeMisjudgeGlobalOffWins (0.01s)
+=== RUN   TestMoeAtomicNumericalInheritsGlobal
+--- PASS: TestMoeAtomicNumericalInheritsGlobal (0.01s)
+=== RUN   TestMoeLayoutMisjudgeSlashModeValidation
+--- PASS: TestMoeLayoutMisjudgeSlashModeValidation (0.00s)
+=== RUN   TestMoeChainAcceptSettlement
+--- PASS: TestMoeChainAcceptSettlement (0.01s)
+=== RUN   TestMoeChainPlanBReject
+--- PASS: TestMoeChainPlanBReject (0.01s)
+=== RUN   TestMoeCoverageGateAndEnableGate
+--- PASS: TestMoeCoverageGateAndEnableGate (0.01s)
+=== RUN   TestMoeDynamicPricingRequiresSignedCommitment
+--- PASS: TestMoeDynamicPricingRequiresSignedCommitment (0.01s)
+=== RUN   TestMoeV2SignedExpansionAndTransportEquivalence
+=== RUN   TestMoeV2SignedExpansionAndTransportEquivalence/v1/legacy
+=== RUN   TestMoeV2SignedExpansionAndTransportEquivalence/v1/chunked
+=== RUN   TestMoeV2SignedExpansionAndTransportEquivalence/v2/legacy
+=== RUN   TestMoeV2SignedExpansionAndTransportEquivalence/v2/chunked
+=== NAME  TestMoeV2SignedExpansionAndTransportEquivalence
+    moe_v2_test.go:116: real signed fixture v1=6690 bytes v2=5776 bytes
+--- PASS: TestMoeV2SignedExpansionAndTransportEquivalence (0.03s)
+    --- PASS: TestMoeV2SignedExpansionAndTransportEquivalence/v1/legacy (0.01s)
+    --- PASS: TestMoeV2SignedExpansionAndTransportEquivalence/v1/chunked (0.01s)
+    --- PASS: TestMoeV2SignedExpansionAndTransportEquivalence/v2/legacy (0.00s)
+    --- PASS: TestMoeV2SignedExpansionAndTransportEquivalence/v2/chunked (0.01s)
+=== RUN   TestMoeV2GateAndHeaderTamper
+=== RUN   TestMoeV2GateAndHeaderTamper/legacy
+=== RUN   TestMoeV2GateAndHeaderTamper/chunked
+--- PASS: TestMoeV2GateAndHeaderTamper (0.03s)
+    --- PASS: TestMoeV2GateAndHeaderTamper/legacy (0.01s)
+    --- PASS: TestMoeV2GateAndHeaderTamper/chunked (0.01s)
+=== RUN   TestMoeV2SpoolFaultAttributionAndAudit
+--- PASS: TestMoeV2SpoolFaultAttributionAndAudit (0.01s)
+=== RUN   TestV14ParameterActivationHoldDeadlines
+--- PASS: TestV14ParameterActivationHoldDeadlines (0.01s)
+=== RUN   TestParametersLegacyByteIdentical
+--- PASS: TestParametersLegacyByteIdentical (0.00s)
+=== RUN   TestParametersAdjudicationRoundTrip
+--- PASS: TestParametersAdjudicationRoundTrip (0.00s)
+=== RUN   TestAdjudicationDepositJSONRoundTrip
+--- PASS: TestAdjudicationDepositJSONRoundTrip (0.00s)
+=== RUN   TestPerfActivation
+    perf_activation_test.go:16: PERF_LIVE unset
+--- SKIP: TestPerfActivation (0.00s)
+=== RUN   TestPerfAtomicDifferential
+--- PASS: TestPerfAtomicDifferential (0.38s)
+=== RUN   TestPerfAtomicPartialMutationRollback
+--- PASS: TestPerfAtomicPartialMutationRollback (0.02s)
+=== RUN   TestPerfCopyMatchesJSONProjection
+--- PASS: TestPerfCopyMatchesJSONProjection (0.00s)
+=== RUN   TestPerfV10Oracle
+    perf_bench_test.go:100: PERF_ORACLE unset
+--- SKIP: TestPerfV10Oracle (0.00s)
+=== RUN   TestPerfMarshalOnce
+--- PASS: TestPerfMarshalOnce (0.00s)
+=== RUN   TestPerfLiveRoundtrip
+    perf_persistence_test.go:40: PERF_LIVE unset
+--- SKIP: TestPerfLiveRoundtrip (0.00s)
+=== RUN   TestPipelineRegisteredPool
+    pipeline_equality_test.go:53: equality=false CPU auditor vs CUDA stage eligible=false; stage owners excluded
+    pipeline_equality_test.go:53: equality=true CPU auditor vs CUDA stage eligible=true; stage owners excluded
+    pipeline_equality_test.go:67: legacy enabled-only list and empty list: 2/2
+--- PASS: TestPipelineRegisteredPool (0.01s)
+=== RUN   TestPipelineGradeValidation
+    pipeline_grading_test.go:31: pipeline grading validation 7/7 including missing-grade fail-closed
+--- PASS: TestPipelineGradeValidation (0.00s)
+=== RUN   TestResolvePipelineManifest
+--- PASS: TestResolvePipelineManifest (0.00s)
+=== RUN   TestSelectPipelineScheme
+--- PASS: TestSelectPipelineScheme (0.00s)
+=== RUN   TestResolvePipelineManifestInvalid
+=== RUN   TestResolvePipelineManifestInvalid/atoms
+=== RUN   TestResolvePipelineManifestInvalid/zero_layers
+=== RUN   TestResolvePipelineManifestInvalid/zero_minimum
+=== RUN   TestResolvePipelineManifestInvalid/large_minimum
+--- PASS: TestResolvePipelineManifestInvalid (0.00s)
+    --- PASS: TestResolvePipelineManifestInvalid/atoms (0.00s)
+    --- PASS: TestResolvePipelineManifestInvalid/zero_layers (0.00s)
+    --- PASS: TestResolvePipelineManifestInvalid/zero_minimum (0.00s)
+    --- PASS: TestResolvePipelineManifestInvalid/large_minimum (0.00s)
+=== RUN   TestPipelineConsensusSettlementByUnits
+--- PASS: TestPipelineConsensusSettlementByUnits (0.00s)
+=== RUN   TestPipelineConsensusRejectsBoundaryForgeryAndCoverageGap
+--- PASS: TestPipelineConsensusRejectsBoundaryForgeryAndCoverageGap (0.00s)
+=== RUN   TestCoverageDoesNotRedistributeOrIssue
+--- PASS: TestCoverageDoesNotRedistributeOrIssue (0.00s)
+=== RUN   TestCoverageUsesPriorFinalizedSnapshot
+--- PASS: TestCoverageUsesPriorFinalizedSnapshot (0.00s)
+=== RUN   TestCoverageRejectsUnbackedAndDuplicateIdentities
+--- PASS: TestCoverageRejectsUnbackedAndDuplicateIdentities (0.00s)
+=== RUN   TestActiveCoverageCannotWithdrawUntilTTL
+--- PASS: TestActiveCoverageCannotWithdrawUntilTTL (0.00s)
+=== RUN   TestFeeRoundingAndOverflowBoundaries
+--- PASS: TestFeeRoundingAndOverflowBoundaries (0.00s)
+=== RUN   TestPrivacyLedgerParityAndEntropy
+=== RUN   TestPrivacyLedgerParityAndEntropy/false
+=== RUN   TestPrivacyLedgerParityAndEntropy/true
+--- PASS: TestPrivacyLedgerParityAndEntropy (0.03s)
+    --- PASS: TestPrivacyLedgerParityAndEntropy/false (0.01s)
+    --- PASS: TestPrivacyLedgerParityAndEntropy/true (0.02s)
+=== RUN   TestPrivacyCommonSlashingLadder
+--- PASS: TestPrivacyCommonSlashingLadder (0.01s)
+=== RUN   TestPrivacyMigrationConsensus
+--- PASS: TestPrivacyMigrationConsensus (0.01s)
+=== RUN   TestPrivacyRefundAndAssignmentTiming
+--- PASS: TestPrivacyRefundAndAssignmentTiming (0.01s)
+=== RUN   TestPrivacyRejectsStaleQuoteBeforeLock
+--- PASS: TestPrivacyRejectsStaleQuoteBeforeLock (0.01s)
+=== RUN   TestPrivacyLifecycle
+--- PASS: TestPrivacyLifecycle (0.02s)
+=== RUN   TestLegacyPrivacyTier
+--- PASS: TestLegacyPrivacyTier (0.00s)
+=== RUN   TestProbationShareRedirectPaysShadow
+--- PASS: TestProbationShareRedirectPaysShadow (0.00s)
+=== RUN   TestProbationShareRedirectDefaultOff
+--- PASS: TestProbationShareRedirectDefaultOff (0.00s)
+=== RUN   TestProbationShareRedirectSkipsGraduated
+--- PASS: TestProbationShareRedirectSkipsGraduated (0.00s)
+=== RUN   TestSubmitRejectsInvalidShadow
+--- PASS: TestSubmitRejectsInvalidShadow (0.00s)
+=== RUN   TestPermissionlessBondEndorsementTrust
+--- PASS: TestPermissionlessBondEndorsementTrust (0.00s)
+=== RUN   TestPublicationRejectsJunkAndWrongSigner
+--- PASS: TestPublicationRejectsJunkAndWrongSigner (0.00s)
+=== RUN   TestPinnedOriginFraudAndForgedProof
+--- PASS: TestPinnedOriginFraudAndForgedProof (0.00s)
+=== RUN   TestPublisherEarlyRefundAfterAuditedSettlements
+--- PASS: TestPublisherEarlyRefundAfterAuditedSettlements (0.00s)
+=== RUN   TestPublishDynamicComputeTable
+=== RUN   TestPublishDynamicComputeTable/legacy
+=== RUN   TestPublishDynamicComputeTable/wide
+=== RUN   TestPublishDynamicComputeTable/short
+=== RUN   TestPublishDynamicComputeTable/long
+=== RUN   TestPublishDynamicComputeTable/overflow
+=== RUN   TestPublishDynamicComputeTable/zero-layer
+=== RUN   TestPublishDynamicComputeTable/zero-head
+--- PASS: TestPublishDynamicComputeTable (0.01s)
+    --- PASS: TestPublishDynamicComputeTable/legacy (0.00s)
+    --- PASS: TestPublishDynamicComputeTable/wide (0.00s)
+    --- PASS: TestPublishDynamicComputeTable/short (0.00s)
+    --- PASS: TestPublishDynamicComputeTable/long (0.00s)
+    --- PASS: TestPublishDynamicComputeTable/overflow (0.00s)
+    --- PASS: TestPublishDynamicComputeTable/zero-layer (0.00s)
+    --- PASS: TestPublishDynamicComputeTable/zero-head (0.00s)
+=== RUN   TestPublishTokenizerHashBinding
+--- PASS: TestPublishTokenizerHashBinding (0.00s)
+=== RUN   TestTargetedQueryDifferential
+--- PASS: TestTargetedQueryDifferential (0.07s)
+=== RUN   TestSpotAssignmentAuditRoute
+--- PASS: TestSpotAssignmentAuditRoute (0.01s)
+=== RUN   TestRangeAssignmentFreezesBothRoutes
+--- PASS: TestRangeAssignmentFreezesBothRoutes (0.01s)
+=== RUN   TestRangePoolFiltering
+=== RUN   TestRangePoolFiltering/short
+=== RUN   TestRangePoolFiltering/embedding
+=== RUN   TestRangePoolFiltering/head
+=== RUN   TestRangePoolFiltering/device
+=== RUN   TestRangePoolFiltering/role
+=== RUN   TestRangePoolFiltering/class
+=== RUN   TestRangePoolFiltering/full
+=== RUN   TestRangePoolFiltering/larger
+=== RUN   TestRangePoolFiltering/payer
+--- PASS: TestRangePoolFiltering (0.07s)
+    --- PASS: TestRangePoolFiltering/short (0.01s)
+    --- PASS: TestRangePoolFiltering/embedding (0.01s)
+    --- PASS: TestRangePoolFiltering/head (0.01s)
+    --- PASS: TestRangePoolFiltering/device (0.01s)
+    --- PASS: TestRangePoolFiltering/role (0.01s)
+    --- PASS: TestRangePoolFiltering/class (0.01s)
+    --- PASS: TestRangePoolFiltering/full (0.01s)
+    --- PASS: TestRangePoolFiltering/larger (0.01s)
+    --- PASS: TestRangePoolFiltering/payer (0.01s)
+=== RUN   TestRangeAtomicThresholdRoutes
+--- PASS: TestRangeAtomicThresholdRoutes (0.01s)
+=== RUN   TestRangeAssignAuditTransitionAndFrozenFormula
+--- PASS: TestRangeAssignAuditTransitionAndFrozenFormula (0.01s)
+=== RUN   TestRangeAssignmentShardProducerFullReference
+=== RUN   TestRangeAssignmentShardProducerFullReference/#00
+=== RUN   TestRangeAssignmentShardProducerFullReference/torch
+=== RUN   TestRangeAssignmentShardProducerFullReference/transformers
+=== RUN   TestRangeAssignmentShardProducerFullReference/format
+=== RUN   TestRangeAssignmentShardProducerFullReference/engine
+--- PASS: TestRangeAssignmentShardProducerFullReference (0.04s)
+    --- PASS: TestRangeAssignmentShardProducerFullReference/#00 (0.01s)
+    --- PASS: TestRangeAssignmentShardProducerFullReference/torch (0.01s)
+    --- PASS: TestRangeAssignmentShardProducerFullReference/transformers (0.01s)
+    --- PASS: TestRangeAssignmentShardProducerFullReference/format (0.01s)
+    --- PASS: TestRangeAssignmentShardProducerFullReference/engine (0.01s)
+=== RUN   TestRangeDrawExcludesUnusedStandbyAndIncludesFailover
+--- PASS: TestRangeDrawExcludesUnusedStandbyAndIncludesFailover (0.02s)
+=== RUN   TestTrainRangeUncalibratedGPUPairsFailClosed
+--- PASS: TestTrainRangeUncalibratedGPUPairsFailClosed (0.02s)
+=== RUN   TestDynamicCapabilitiesConstrainExecutionsAndExpire
+--- PASS: TestDynamicCapabilitiesConstrainExecutionsAndExpire (0.01s)
+=== RUN   TestDynamicComputeReservesAndCredits
+--- PASS: TestDynamicComputeReservesAndCredits (0.01s)
+=== RUN   TestRegistrationDefaultFullAndOptOutLottery
+=== RUN   TestRegistrationDefaultFullAndOptOutLottery/default
+=== RUN   TestRegistrationDefaultFullAndOptOutLottery/no-audit
+=== RUN   TestRegistrationDefaultFullAndOptOutLottery/no-exec
+--- PASS: TestRegistrationDefaultFullAndOptOutLottery (0.07s)
+    --- PASS: TestRegistrationDefaultFullAndOptOutLottery/default (0.03s)
+    --- PASS: TestRegistrationDefaultFullAndOptOutLottery/no-audit (0.02s)
+    --- PASS: TestRegistrationDefaultFullAndOptOutLottery/no-exec (0.03s)
+=== RUN   TestRegistrationRolesMigrationItemEquivalence
+--- PASS: TestRegistrationRolesMigrationItemEquivalence (0.04s)
+=== RUN   TestRegistrationNineToTenManifestActivation
+--- PASS: TestRegistrationNineToTenManifestActivation (0.01s)
+=== RUN   TestRegistrationRangeMigrationLotteryItemEquivalence
+--- PASS: TestRegistrationRangeMigrationLotteryItemEquivalence (0.08s)
+=== RUN   TestRegistrationOptOutsRespectCoverageTTLLock
+--- PASS: TestRegistrationOptOutsRespectCoverageTTLLock (0.01s)
+=== RUN   TestExecExitLifecycle
+--- PASS: TestExecExitLifecycle (0.01s)
+=== RUN   TestExecExitRejectsAtomically
+=== RUN   TestExecExitRejectsAtomically/version
+=== RUN   TestExecExitRejectsAtomically/missing
+=== RUN   TestExecExitRejectsAtomically/expired
+=== RUN   TestExecExitRejectsAtomically/opted-out
+--- PASS: TestExecExitRejectsAtomically (0.02s)
+    --- PASS: TestExecExitRejectsAtomically/version (0.01s)
+    --- PASS: TestExecExitRejectsAtomically/missing (0.00s)
+    --- PASS: TestExecExitRejectsAtomically/expired (0.00s)
+    --- PASS: TestExecExitRejectsAtomically/opted-out (0.01s)
+=== RUN   TestExecExitRenewal
+--- PASS: TestExecExitRenewal (0.02s)
+=== RUN   TestExecExitLegacyJSON
+--- PASS: TestExecExitLegacyJSON (0.00s)
+=== RUN   TestRegisteredAuditSelection
+--- PASS: TestRegisteredAuditSelection (0.00s)
+=== RUN   TestSingleAuditorCooldownEvidence
+--- PASS: TestSingleAuditorCooldownEvidence (0.00s)
+=== RUN   TestSlashFloorConfirmedLadderWindowAndRefund
+--- PASS: TestSlashFloorConfirmedLadderWindowAndRefund (0.04s)
+=== RUN   TestSlashBPSCeilingRevenueCapAndOverflow
+=== RUN   TestSlashBPSCeilingRevenueCapAndOverflow/ceiling
+=== RUN   TestSlashBPSCeilingRevenueCapAndOverflow/one-basis-point
+=== RUN   TestSlashBPSCeilingRevenueCapAndOverflow/revenue-primary
+=== RUN   TestSlashBPSCeilingRevenueCapAndOverflow/full-stake
+=== RUN   TestSlashBPSCeilingRevenueCapAndOverflow/revenue-overflow-capped
+=== RUN   TestSlashBPSCeilingRevenueCapAndOverflow/floor-overflow-safe
+--- PASS: TestSlashBPSCeilingRevenueCapAndOverflow (0.00s)
+    --- PASS: TestSlashBPSCeilingRevenueCapAndOverflow/ceiling (0.00s)
+    --- PASS: TestSlashBPSCeilingRevenueCapAndOverflow/one-basis-point (0.00s)
+    --- PASS: TestSlashBPSCeilingRevenueCapAndOverflow/revenue-primary (0.00s)
+    --- PASS: TestSlashBPSCeilingRevenueCapAndOverflow/full-stake (0.00s)
+    --- PASS: TestSlashBPSCeilingRevenueCapAndOverflow/revenue-overflow-capped (0.00s)
+    --- PASS: TestSlashBPSCeilingRevenueCapAndOverflow/floor-overflow-safe (0.00s)
+=== RUN   TestSlashFalseAccusationAndHonestExitHaveNoOffense
+--- PASS: TestSlashFalseAccusationAndHonestExitHaveNoOffense (0.01s)
+=== RUN   TestSlashPipelineOnlyConfirmedAttributedOffender
+--- PASS: TestSlashPipelineOnlyConfirmedAttributedOffender (0.01s)
+=== RUN   TestSlashGenesisPolicyBounds
+--- PASS: TestSlashGenesisPolicyBounds (0.00s)
+=== RUN   TestSlashServiceFailureAndExpiryRefundWithoutOffenses
+--- PASS: TestSlashServiceFailureAndExpiryRefundWithoutOffenses (0.00s)
+=== RUN   TestSlashStateVersionRequiresExplicitMigration
+--- PASS: TestSlashStateVersionRequiresExplicitMigration (0.00s)
+=== RUN   TestSnapshotIsolationRestoreAndRejections
+2026/11/25 15:39:50 snapshot rejected: snapshot height, chain or expected app hash mismatch
+2026/11/25 15:39:50 snapshot installed height=5001 app_hash=b2c738b13c8190be7fe7002d2b07ad1d4d8c04fe48b04356d0b5e74b59a89991
+    snapshots_test.go:153: height=5002 snapshot=baseline=restored app_hash=31699ceb80248b8bd7d02e6503b6892e31b3e0a619e1660d3a77e72e1f6018c1
+    snapshots_test.go:153: height=5003 snapshot=baseline=restored app_hash=866e28145b99ac0592821189a5f11938fe92237aeb4f76a845fdd44128960f19
+    snapshots_test.go:153: height=5004 snapshot=baseline=restored app_hash=86d1ab4e36b167a017a1d7976d9064882b03f9207de3f45df523d2f6a9824be7
+    snapshots_test.go:153: height=5005 snapshot=baseline=restored app_hash=20f85b7f713d8ab269bf5b67084d97f2beeddee215ce56cd26e023cdd6d68d07
+    snapshots_test.go:153: height=5006 snapshot=baseline=restored app_hash=c0b0195681f2d6b5020102434c183518e1a6f5d60cd62b4d898d065d4b1cfbc9
+    snapshots_test.go:153: height=5007 snapshot=baseline=restored app_hash=567b29b778a43a9e681daa3ffd4d9c2960ad17ae7ca5a6fb109d913859c9fe1c
+    snapshots_test.go:153: height=5008 snapshot=baseline=restored app_hash=54c620ce804f6997689f6c5db93c66b8c77b7d74f9304a55abc9c1f929847772
+    snapshots_test.go:153: height=5009 snapshot=baseline=restored app_hash=860c22935aa98c65aca956717d4e7da7a28bce51c27ebafda35992f32f3907bc
+    snapshots_test.go:153: height=5010 snapshot=baseline=restored app_hash=41f6d9e71171313b60ba831a5f7d74a87645c0c2791f86a2db9f11ffd028f438
+    snapshots_test.go:153: height=5011 snapshot=baseline=restored app_hash=6f4311106890f3de37135ede4c5117a2104fdd55d386a92f6312210614dad71e
+    snapshots_test.go:153: height=5012 snapshot=baseline=restored app_hash=57fb63c4ee86de5b833d61786eda5d755bc6a14db37c22d1901283afd2284007
+    snapshots_test.go:153: height=5013 snapshot=baseline=restored app_hash=08f4306845d0802bfbdc00c804ae94122b2c4a94f016c0446ad246a768c39b17
+    snapshots_test.go:153: height=5014 snapshot=baseline=restored app_hash=bb9b1bc18fcca626bd92395935a3fc97f3db6c94dbed34204c1b231e41656750
+    snapshots_test.go:153: height=5015 snapshot=baseline=restored app_hash=8ebe565567951795fec90446c8ed310ade867460b737304a206e0e56c9b69c51
+    snapshots_test.go:153: height=5016 snapshot=baseline=restored app_hash=5844b09aefb2fe006247c8e9ed9d7f1a68212292b993a0d48cba407590cfa2fb
+    snapshots_test.go:153: height=5017 snapshot=baseline=restored app_hash=1290e6eec0513863bd35c277e8a8b74d0100cce8974f166928e258c950fd6f63
+    snapshots_test.go:153: height=5018 snapshot=baseline=restored app_hash=88103903933a0bfd590e664fb956467d970931fde0656095585745fa24a3a64d
+    snapshots_test.go:153: height=5019 snapshot=baseline=restored app_hash=0c144033dd992f051644b886cd6e403e9ed0f9eff823e652761863ebe22cc7f7
+    snapshots_test.go:153: height=5020 snapshot=baseline=restored app_hash=74118558e32aa8c5f2927b4d8af31a4f23dc6a72dab27205038db8d457481344
+    snapshots_test.go:153: height=5021 snapshot=baseline=restored app_hash=62f4b9d5fcb3cf2d5002959acf61ab52db0236fb5b93f8397b0fcd2b7af336b0
+    snapshots_test.go:153: height=5022 snapshot=baseline=restored app_hash=6f2279fdfeb72eeab56f2025577528e3a6aa85976f067d90ccdb44383ce4fbdb
+=== RUN   TestSnapshotIsolationRestoreAndRejections/corrupt
+=== RUN   TestSnapshotIsolationRestoreAndRejections/out-of-order
+=== NAME  TestSnapshotIsolationRestoreAndRejections
+    snapshots_test.go:176: archive and chunk reads succeeded; app hashes identical across snapshot and 21 following blocks
+--- PASS: TestSnapshotIsolationRestoreAndRejections (0.16s)
+    --- PASS: TestSnapshotIsolationRestoreAndRejections/corrupt (0.00s)
+    --- PASS: TestSnapshotIsolationRestoreAndRejections/out-of-order (0.00s)
+=== RUN   TestSnapshotRestoresActiveProtocolSpool
+2026/11/25 15:39:50 snapshot installed height=3 app_hash=06252d92307731ea2811d67212e37f840b5aad1d49c110b72113c3f9d3a9e279
+    snapshots_test.go:216: restored active hold moe-req: receipt bytes=6690, root verified
+--- PASS: TestSnapshotRestoresActiveProtocolSpool (0.03s)
+=== RUN   TestBoundedSpotDrawV15
+--- PASS: TestBoundedSpotDrawV15 (0.00s)
+=== RUN   TestBoundedSpotVerdictsV15
+--- PASS: TestBoundedSpotVerdictsV15 (0.03s)
+=== RUN   TestBoundedSpotRetainsAllDisputesV15
+--- PASS: TestBoundedSpotRetainsAllDisputesV15 (0.00s)
+=== RUN   TestSpotPythonGatewayChainAuditor
+--- PASS: TestSpotPythonGatewayChainAuditor (0.18s)
+=== RUN   TestSpotRejectWithoutLegacyGradeAndSuperset
+--- PASS: TestSpotRejectWithoutLegacyGradeAndSuperset (0.01s)
+=== RUN   TestSpotBoundExecutionCount
+--- PASS: TestSpotBoundExecutionCount (0.01s)
+=== RUN   TestSpotSubmissionCountMatchesReceipt
+--- PASS: TestSpotSubmissionCountMatchesReceipt (0.02s)
+=== RUN   TestSpotCommitmentAndLegacyBytes
+--- PASS: TestSpotCommitmentAndLegacyBytes (0.01s)
+=== RUN   TestSpotDrawAndEntropy
+--- PASS: TestSpotDrawAndEntropy (0.01s)
+=== RUN   TestSpotAccusationCounterproof
+--- PASS: TestSpotAccusationCounterproof (0.01s)
+=== RUN   TestSpotTwoRoundsAndLateOpening
+--- PASS: TestSpotTwoRoundsAndLateOpening (0.01s)
+=== RUN   TestSpotEscalationUnopened
+--- PASS: TestSpotEscalationUnopened (0.01s)
+=== RUN   TestSpotAvailabilityWindowsAndFine
+--- PASS: TestSpotAvailabilityWindowsAndFine (0.01s)
+=== RUN   TestSpotEscalationGoodFaithAndCorroboration
+--- PASS: TestSpotEscalationGoodFaithAndCorroboration (0.01s)
+=== RUN   TestSpotSubstituteUsesNextFinalizedEntropy
+--- PASS: TestSpotSubstituteUsesNextFinalizedEntropy (0.01s)
+=== RUN   TestSpotMerkleGolden
+--- PASS: TestSpotMerkleGolden (0.00s)
+=== RUN   TestSpotSignedAuditsAndSettlement
+--- PASS: TestSpotSignedAuditsAndSettlement (0.03s)
+=== RUN   TestSpotDisputeExpiry
+--- PASS: TestSpotDisputeExpiry (0.01s)
+=== RUN   TestSpotManifestLadderAndLoad
+--- PASS: TestSpotManifestLadderAndLoad (0.00s)
+=== RUN   TestSpotProfileCountAndGates
+--- PASS: TestSpotProfileCountAndGates (0.01s)
+=== RUN   TestSpotSignedReceiptAndRejectFormat
+--- PASS: TestSpotSignedReceiptAndRejectFormat (0.01s)
+=== RUN   TestSpotLegacyByteEquivalence
+--- PASS: TestSpotLegacyByteEquivalence (0.01s)
+=== RUN   TestSpotUndeliveredDoesNotBlameAuditor
+--- PASS: TestSpotUndeliveredDoesNotBlameAuditor (0.01s)
+=== RUN   TestSpotLegacyIgnoresUnknownActionFields
+--- PASS: TestSpotLegacyIgnoresUnknownActionFields (0.00s)
+=== RUN   TestSpotPureDeadlineProgression
+--- PASS: TestSpotPureDeadlineProgression (0.01s)
+=== RUN   TestSpotPendingAccusationOwnsDeadline
+--- PASS: TestSpotPendingAccusationOwnsDeadline (0.01s)
+=== RUN   TestSpotEscPureDeadlineAndTotalPriority
+--- PASS: TestSpotEscPureDeadlineAndTotalPriority (0.01s)
+=== RUN   TestSpotHistoricalEvidenceAfterAutomaticAdvance
+--- PASS: TestSpotHistoricalEvidenceAfterAutomaticAdvance (0.01s)
+=== RUN   TestSpotTerminalEvidenceNeverRefundsTwice
+--- PASS: TestSpotTerminalEvidenceNeverRefundsTwice (0.01s)
+=== RUN   TestSpotSubstitutePreservesEscalationBudget
+--- PASS: TestSpotSubstitutePreservesEscalationBudget (0.01s)
+=== RUN   TestSpotSignedHistoricalClaimAndAssignmentQuery
+--- PASS: TestSpotSignedHistoricalClaimAndAssignmentQuery (0.01s)
+=== RUN   TestSpotHistoricalEvidenceBindingAndCutoff
+--- PASS: TestSpotHistoricalEvidenceBindingAndCutoff (0.01s)
+=== RUN   TestSpotExpiredEscalationDoesNotBlameFreshSubstitute
+--- PASS: TestSpotExpiredEscalationDoesNotBlameFreshSubstitute (0.01s)
+=== RUN   TestLifecycleTransferAndSubsidy
+--- PASS: TestLifecycleTransferAndSubsidy (0.00s)
+=== RUN   TestReplayWrongChainSlashAndUnbond
+--- PASS: TestReplayWrongChainSlashAndUnbond (0.00s)
+=== RUN   TestGenesisPreservesAccountReplayAndUnbondingState
+--- PASS: TestGenesisPreservesAccountReplayAndUnbondingState (0.00s)
+=== RUN   TestNodeRegistrationRequiresStakeAndRateLimitsUpdates
+--- PASS: TestNodeRegistrationRequiresStakeAndRateLimitsUpdates (0.00s)
+=== RUN   TestFalseRejectCannotSlashWithoutIndependentConfirmation
+--- PASS: TestFalseRejectCannotSlashWithoutIndependentConfirmation (0.00s)
+=== RUN   TestExpiredHoldCanBeRefundedPermissionlessly
+--- PASS: TestExpiredHoldCanBeRefundedPermissionlessly (0.00s)
+=== RUN   TestModelImmutableAndHashStable
+--- PASS: TestModelImmutableAndHashStable (0.00s)
+=== RUN   TestApplyIsAtomicOnLateFailure
+--- PASS: TestApplyIsAtomicOnLateFailure (0.00s)
+=== RUN   TestV7SettledSharesRoundTrip
+--- PASS: TestV7SettledSharesRoundTrip (0.00s)
+=== RUN   TestCoverageMultipliersUseV7Formula
+--- PASS: TestCoverageMultipliersUseV7Formula (0.00s)
+=== RUN   TestV7StateWithSettledHoldRoundTrip
+--- PASS: TestV7StateWithSettledHoldRoundTrip (0.00s)
+=== RUN   TestMigrateAuditSamplingSeedsGovernorsFromCoordinators
+--- PASS: TestMigrateAuditSamplingSeedsGovernorsFromCoordinators (0.00s)
+=== RUN   TestMigrateAuditSamplingSeedsProductionCoordinator
+--- PASS: TestMigrateAuditSamplingSeedsProductionCoordinator (0.00s)
+=== RUN   TestMigrateAuditSamplingKeepsExistingGovernors
+--- PASS: TestMigrateAuditSamplingKeepsExistingGovernors (0.00s)
+=== RUN   TestRetrospectiveScoresCapAndExclusion
+--- PASS: TestRetrospectiveScoresCapAndExclusion (0.00s)
+=== RUN   TestRetrospectiveProportionalScale
+--- PASS: TestRetrospectiveProportionalScale (0.00s)
+=== RUN   TestRetrospectiveRejectsUnverifiableIdentity
+--- PASS: TestRetrospectiveRejectsUnverifiableIdentity (0.00s)
+=== RUN   TestRetrospectiveSelectionTakeHigher
+--- PASS: TestRetrospectiveSelectionTakeHigher (0.00s)
+=== RUN   TestDeveloperApprovalPublicationAndDistribution
+--- PASS: TestDeveloperApprovalPublicationAndDistribution (0.00s)
+=== RUN   TestSubsidyDailyIndependentCaps
+--- PASS: TestSubsidyDailyIndependentCaps (0.00s)
+=== RUN   TestDeveloperTranchesAndPermanentDisqualification
+--- PASS: TestDeveloperTranchesAndPermanentDisqualification (0.00s)
+=== RUN   TestDeveloperRevocationRecoversAllOutstandingGrants
+--- PASS: TestDeveloperRevocationRecoversAllOutstandingGrants (0.00s)
+=== RUN   TestSupplyDemandRehearsal
+    supply_demand_test.go:320: {
+          "app_version": 11,
+          "chain": "local-deterministic-abci",
+          "default_step_policy": {
+            "epoch_blocks": 6,
+            "min_ppm": 800000,
+            "max_ppm": 2000000,
+            "step_ppm": 100000,
+            "min_settled_samples": 1
+          },
+          "double_supply": {
+            "after_supply": 4,
+            "before_supply": 2,
+            "expected_ppm": 1000000,
+            "observed": {
+              "multiplier_ppm": 1000000,
+              "effective_height": 41,
+              "cumulative_samples": 2,
+              "window": {
+                "requests": 0,
+                "tokens": 0
+              },
+              "previous_window": {
+                "requests": 1,
+                "tokens": 65
+              },
+              "supply": 4,
+              "target": 4,
+              "raw_ppm": 1000000,
+              "corridor_ppm": 1000000
+            }
+          },
+          "epoch_blocks": 20,
+          "formula": "P=min(1000000,(Q+ceil(T/1024))*1000000/L); raw=1000000+trunc(P*(K-S)/max(K,S,1)); corridor then relative step clamp",
+          "half_supply": {
+            "after_supply": 2,
+            "before_supply": 4,
+            "expected_ppm": 1050000,
+            "observed": {
+              "multiplier_ppm": 1050000,
+              "effective_height": 21,
+              "cumulative_samples": 1,
+              "window": {
+                "requests": 0,
+                "tokens": 0
+              },
+              "previous_window": {
+                "requests": 1,
+                "tokens": 65
+              },
+              "supply": 2,
+              "target": 4,
+              "raw_ppm": 1050000,
+              "corridor_ppm": 1050000
+            }
+          },
+          "issuance": {
+            "audit_formula_unchanged": true,
+            "authorized_work_output": 30,
+            "genesis_pool_used": false,
+            "split": "80/15/5, largest remainder",
+            "subsidy_after": 0,
+            "subsidy_after_work_output": 30,
+            "subsidy_before": 0,
+            "total_after": 180000000,
+            "total_after_work_output": 180000030,
+            "total_before": 180000000
+          },
+          "lower_corridor": {
+            "multiplier_ppm": 980000,
+            "effective_height": 21,
+            "cumulative_samples": 1,
+            "window": {
+              "requests": 0,
+              "tokens": 0
+            },
+            "previous_window": {
+              "requests": 1,
+              "tokens": 65
+            },
+            "supply": 8,
+            "target": 4,
+            "raw_ppm": 950000,
+            "corridor_ppm": 980000
+          },
+          "protected": {
+            "multiplier_ppm": 1000000,
+            "effective_height": 81,
+            "cumulative_samples": 0,
+            "window": {
+              "requests": 0,
+              "tokens": 0
+            },
+            "previous_window": {
+              "requests": 0,
+              "tokens": 0
+            },
+            "supply": 0,
+            "target": 1,
+            "raw_ppm": 1000000,
+            "corridor_ppm": 1000000
+          },
+          "quote_spam": {
+            "after_ppm": 1000000,
+            "before_ppm": 1000000,
+            "queries": 10000,
+            "settled_requests": 0,
+            "state_hash_matches_control": true
+          },
+          "requests": [
+            {
+              "audit_escrow": 1571,
+              "audit_receipts": [
+                {
+                  "version": 2,
+                  "request_id": "20ebc202771bcbe387c705bc4efaa2c8fcc4364f8ece46528e31591502eb140e",
+                  "audit_comp": {
+                    "auditor": "6f1e5b61ed9a821457aa6b4d7c2a2b37715ffb16e41585d25c4679cda12e441b",
+                    "formula_ver": 2,
+                    "n_in": 33,
+                    "n_out_billed": 1,
+                    "comp_subunits": 896
+                  }
+                }
+              ],
+              "base_fee": 16449,
+              "effective_height": 1,
+              "freeze": 16449,
+              "freeze_height": 5,
+              "id": "first",
+              "multiplier_ppm": 1000000,
+              "quote": 16449,
+              "settle": 16449,
+              "settle_height": 11,
+              "shares": {
+                "fee": 16449,
+                "executor": 13159,
+                "auditor": 2467,
+                "consumer": 823,
+                "coverage": {
+                  "height": 10,
+                  "profile": "ember-unit-test",
+                  "runtime": "transformers/4.45.2|torch=2.5.1",
+                  "executors": 4,
+                  "auditors": 3,
+                  "target_executors": 4,
+                  "target_auditors": 3,
+                  "executor_multiplier_ppm": 1000000,
+                  "auditor_multiplier_ppm": 1000000
+                }
+              }
+            },
+            {
+              "audit_escrow": 1695,
+              "audit_receipts": [
+                {
+                  "version": 2,
+                  "request_id": "61a84688523c45edcf7fd7673fc66a482704ebb7b771c0e133198f2e356b52b9",
+                  "audit_comp": {
+                    "auditor": "6f1e5b61ed9a821457aa6b4d7c2a2b37715ffb16e41585d25c4679cda12e441b",
+                    "formula_ver": 2,
+                    "n_in": 33,
+                    "n_out_billed": 1,
+                    "comp_subunits": 896
+                  }
+                }
+              ],
+              "base_fee": 16449,
+              "effective_height": 21,
+              "freeze": 17271,
+              "freeze_height": 23,
+              "id": "second",
+              "multiplier_ppm": 1050000,
+              "quote": 17271,
+              "settle": 17271,
+              "settle_height": 29,
+              "shares": {
+                "fee": 17271,
+                "executor": 13817,
+                "auditor": 2591,
+                "consumer": 863,
+                "coverage": {
+                  "height": 28,
+                  "profile": "ember-unit-test",
+                  "runtime": "transformers/4.45.2|torch=2.5.1",
+                  "executors": 4,
+                  "auditors": 3,
+                  "target_executors": 4,
+                  "target_auditors": 3,
+                  "executor_multiplier_ppm": 1000000,
+                  "auditor_multiplier_ppm": 1000000
+                }
+              }
+            },
+            {
+              "audit_escrow": 1695,
+              "audit_receipts": [
+                {
+                  "version": 2,
+                  "request_id": "cf864f40703523bd360fc56e2fdc1b006646557882a1ab2edd4582e0298880d3",
+                  "audit_comp": {
+                    "auditor": "4071cd657e3033082dcebb6ef1c25f2f8ab58ef26f234c58bef965f505082a3f",
+                    "formula_ver": 2,
+                    "n_in": 33,
+                    "n_out_billed": 1,
+                    "comp_subunits": 896
+                  }
+                }
+              ],
+              "base_fee": 16449,
+              "effective_height": 21,
+              "freeze": 17271,
+              "freeze_height": 39,
+              "id": "cross-epoch",
+              "multiplier_ppm": 1050000,
+              "quote": 17271,
+              "settle": 17271,
+              "settle_height": 45,
+              "shares": {
+                "fee": 17271,
+                "executor": 13817,
+                "auditor": 2591,
+                "consumer": 863,
+                "coverage": {
+                  "height": 44,
+                  "profile": "ember-unit-test",
+                  "runtime": "transformers/4.45.2|torch=2.5.1",
+                  "executors": 4,
+                  "auditors": 3,
+                  "target_executors": 4,
+                  "target_auditors": 3,
+                  "executor_multiplier_ppm": 1000000,
+                  "auditor_multiplier_ppm": 1000000
+                }
+              }
+            }
+          ],
+          "restart_hash_preserved": true,
+          "sampled_protection": {
+            "multiplier_ppm": 1000000,
+            "effective_height": 21,
+            "cumulative_samples": 1,
+            "window": {
+              "requests": 0,
+              "tokens": 0
+            },
+            "previous_window": {
+              "requests": 1,
+              "tokens": 65
+            },
+            "supply": 2,
+            "target": 4,
+            "raw_ppm": 1000000,
+            "corridor_ppm": 1000000
+          },
+          "step_clamp": {
+            "multiplier_ppm": 1100000,
+            "effective_height": 13,
+            "cumulative_samples": 1,
+            "window": {
+              "requests": 0,
+              "tokens": 0
+            },
+            "previous_window": {
+              "requests": 1,
+              "tokens": 65
+            },
+            "supply": 2,
+            "target": 4,
+            "raw_ppm": 1166666,
+            "corridor_ppm": 1166666
+          },
+          "upper_corridor": {
+            "multiplier_ppm": 1020000,
+            "effective_height": 21,
+            "cumulative_samples": 1,
+            "window": {
+              "requests": 0,
+              "tokens": 0
+            },
+            "previous_window": {
+              "requests": 1,
+              "tokens": 65
+            },
+            "supply": 2,
+            "target": 4,
+            "raw_ppm": 1050000,
+            "corridor_ppm": 1020000
+          }
+        }
+--- PASS: TestSupplyDemandRehearsal (0.27s)
+=== RUN   TestPriceStepIntegerAndProtectionBoundaries
+--- PASS: TestPriceStepIntegerAndProtectionBoundaries (0.01s)
+=== RUN   TestPriceGovernanceAndStaleQuote
+--- PASS: TestPriceGovernanceAndStaleQuote (0.02s)
+=== RUN   TestPricedPipelineChecksFreezeReceiptAndFinalSettlement
+--- PASS: TestPricedPipelineChecksFreezeReceiptAndFinalSettlement (0.01s)
+=== RUN   TestPricedSingleBindsServingCountAndReceiptCommitment
+--- PASS: TestPricedSingleBindsServingCountAndReceiptCommitment (0.01s)
+=== RUN   TestLegacyHoldAndActionJSONUnchanged
+--- PASS: TestLegacyHoldAndActionJSONUnchanged (0.00s)
+=== RUN   TestOutputOnlyAnchoredProfileStillVerifiesExactLegacyFee
+--- PASS: TestOutputOnlyAnchoredProfileStillVerifiesExactLegacyFee (0.00s)
+=== RUN   TestTrainPricingGovernanceAndGenesisSeed
+--- PASS: TestTrainPricingGovernanceAndGenesisSeed (0.00s)
+=== RUN   TestTrainPipelinePricingExactShares
+--- PASS: TestTrainPipelinePricingExactShares (0.00s)
+=== RUN   TestTrainPipelinePricingUsesFrozenStageProfileAndWork
+--- PASS: TestTrainPipelinePricingUsesFrozenStageProfileAndWork (0.00s)
+=== RUN   TestVersionedEnvelopeBoundaries
+--- PASS: TestVersionedEnvelopeBoundaries (1.04s)
+=== RUN   TestV12Activation
+--- PASS: TestV12Activation (0.00s)
+=== RUN   TestUnifiedPublicationAndFreeze
+--- PASS: TestUnifiedPublicationAndFreeze (0.01s)
+=== RUN   TestPinnedSources
+--- PASS: TestPinnedSources (0.00s)
+=== RUN   TestModelAndSchemeIdentity
+--- PASS: TestModelAndSchemeIdentity (0.01s)
+=== RUN   TestIdentityConfigMustMatchArtifact
+--- PASS: TestIdentityConfigMustMatchArtifact (0.00s)
+=== RUN   TestMoeSchemeCoverageAndSettlement
+--- PASS: TestMoeSchemeCoverageAndSettlement (0.01s)
+=== RUN   TestCanonicalConfigPublisherBytes
+--- PASS: TestCanonicalConfigPublisherBytes (0.00s)
+=== RUN   TestConsumedUpgradeDecisionTable
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v4/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v5/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v6/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v7/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v8/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v9/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v10/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v11/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v12/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v13/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v14/membership=true/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=false/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=false/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=false/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=false/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=false/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=false/matching=true/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=true/matching=false/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=true/matching=false/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=true/matching=false/activation=21
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=true/matching=true/activation=19
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=true/matching=true/activation=20
+=== RUN   TestConsumedUpgradeDecisionTable/v15/membership=true/matching=true/activation=21
+--- PASS: TestConsumedUpgradeDecisionTable (0.09s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v4/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v5/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v6/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v7/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v8/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v9/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v10/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v11/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v12/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v13/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v14/membership=true/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=false/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=false/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=false/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=false/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=false/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=false/matching=true/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=true/matching=false/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=true/matching=false/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=true/matching=false/activation=21 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=true/matching=true/activation=19 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=true/matching=true/activation=20 (0.00s)
+    --- PASS: TestConsumedUpgradeDecisionTable/v15/membership=true/matching=true/activation=21 (0.00s)
+=== RUN   TestConsumedPureUpgradeRestart
+--- PASS: TestConsumedPureUpgradeRestart (0.00s)
+=== RUN   TestMembershipJoinExitAndFloor
+--- PASS: TestMembershipJoinExitAndFloor (0.01s)
+=== RUN   TestMembershipQuorumFailClosed
+--- PASS: TestMembershipQuorumFailClosed (0.00s)
+=== RUN   TestMembershipReadinessAndAdmission
+--- PASS: TestMembershipReadinessAndAdmission (0.00s)
+=== RUN   TestMembershipUpgradePreservesLegacyUntilActivation
+--- PASS: TestMembershipUpgradePreservesLegacyUntilActivation (0.01s)
+=== RUN   TestMembershipRegistrationProofAndCancellation
+--- PASS: TestMembershipRegistrationProofAndCancellation (0.00s)
+=== RUN   TestMembershipAnnouncementRenewsShortAdmission
+--- PASS: TestMembershipAnnouncementRenewsShortAdmission (0.00s)
+=== RUN   TestMembershipExpiredAdmissionAtExecution
+--- PASS: TestMembershipExpiredAdmissionAtExecution (0.00s)
+=== RUN   TestMembershipHistoricalReplayAndConsensusVersion
+--- PASS: TestMembershipHistoricalReplayAndConsensusVersion (0.00s)
+=== RUN   TestMembershipActivationRejectsMismatchedConsensusSet
+--- PASS: TestMembershipActivationRejectsMismatchedConsensusSet (0.00s)
+=== RUN   TestV11KimiPublication
+=== RUN   TestV11KimiPublication/correct
+=== RUN   TestV11KimiPublication/floor1
+=== RUN   TestV11KimiPublication/wrongtable
+=== RUN   TestV11KimiPublication/wrongtotal
+=== RUN   TestV11KimiPublication/hidden
+=== RUN   TestV11KimiPublication/bytes
+=== RUN   TestV11KimiPublication/missing
+=== RUN   TestV11KimiPublication/floor2
+=== RUN   TestV11KimiPublication/scheme
+=== RUN   TestV11KimiPublication/configHash
+--- PASS: TestV11KimiPublication (0.51s)
+    --- PASS: TestV11KimiPublication/correct (0.07s)
+    --- PASS: TestV11KimiPublication/floor1 (0.08s)
+    --- PASS: TestV11KimiPublication/wrongtable (0.05s)
+    --- PASS: TestV11KimiPublication/wrongtotal (0.07s)
+    --- PASS: TestV11KimiPublication/hidden (0.04s)
+    --- PASS: TestV11KimiPublication/bytes (0.05s)
+    --- PASS: TestV11KimiPublication/missing (0.03s)
+    --- PASS: TestV11KimiPublication/floor2 (0.05s)
+    --- PASS: TestV11KimiPublication/scheme (0.03s)
+    --- PASS: TestV11KimiPublication/configHash (0.04s)
+=== RUN   TestV10ComputeFieldsIgnored
+--- PASS: TestV10ComputeFieldsIgnored (0.00s)
+=== RUN   TestV11GovernanceComputeCorrection
+--- PASS: TestV11GovernanceComputeCorrection (0.19s)
+=== RUN   TestV11VerifiedPipelineWeights
+--- PASS: TestV11VerifiedPipelineWeights (0.01s)
+=== RUN   TestV11TiedHeadAndDerivationErrors
+--- PASS: TestV11TiedHeadAndDerivationErrors (0.00s)
+=== RUN   TestV11TiedHeadOverflowBoundary
+--- PASS: TestV11TiedHeadOverflowBoundary (0.00s)
+=== RUN   TestKimiRealConsensusVersionGate
+--- PASS: TestKimiRealConsensusVersionGate (0.03s)
+=== RUN   TestBothVoucherSystemsRefundWithoutConversion
+--- PASS: TestBothVoucherSystemsRefundWithoutConversion (0.00s)
+PASS
+ok  	ember/services/chain	22.826s

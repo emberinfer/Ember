@@ -3,6 +3,7 @@ package chain
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"os"
 	"path/filepath"
@@ -113,7 +114,12 @@ func TestSnapshotIsolationRestoreAndRejections(t *testing.T) {
 	}
 
 	mismatch := target()
-	if snapshotTransfer(t, donor, mismatch, snap, bytes.Repeat([]byte{99}, 32), nil) {
+	badSnap := *snap
+	var badMeta snapshotMetadata
+	json.Unmarshal(snap.Metadata, &badMeta)
+	badMeta.AppHash = bytes.Repeat([]byte{99}, 32)
+	badSnap.Metadata, _ = json.Marshal(badMeta)
+	if snapshotTransfer(t, donor, mismatch, &badSnap, badMeta.AppHash, nil) {
 		t.Fatal("wrong expected app hash accepted")
 	}
 	if mismatch.committed != nil {
@@ -146,11 +152,6 @@ func TestSnapshotIsolationRestoreAndRejections(t *testing.T) {
 		}
 		t.Logf("height=%d snapshot=baseline=restored app_hash=%x", h, a)
 	}
-	// Keep the original snapshot pinned while retention tests generate later ones.
-	// Negative cases use a separate donor from the same immutable bundle.
-	original := filepath.Join(donor.snapshots.root, "00000000000000005001")
-	// Later builds may have pruned it; copy the chunks retained during initial read.
-	_ = original
 	for name, mut := range map[string]func(uint32, []byte) (uint32, []byte){"corrupt": func(i uint32, b []byte) (uint32, []byte) { b[0] ^= 1; return i, b }, "out-of-order": func(i uint32, b []byte) (uint32, []byte) { return i + 1, b }} {
 		t.Run(name, func(t *testing.T) {
 			a := target()

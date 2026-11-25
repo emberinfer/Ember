@@ -25,9 +25,11 @@ const snapshotChunkSize = 1 << 20
 const snapshotMaxBytes int64 = 256 << 20
 
 type snapshotMetadata struct {
-	Chain  string   `json:"chain"`
-	Size   int64    `json:"size"`
-	Hashes [][]byte `json:"hashes"`
+	Chain        string   `json:"chain"`
+	AppHash      []byte   `json:"app_hash"`
+	StateVersion uint64   `json:"state_version"`
+	Size         int64    `json:"size"`
+	Hashes       [][]byte `json:"hashes"`
 }
 type snapshotStore struct {
 	workers     sync.WaitGroup
@@ -49,7 +51,21 @@ func (app *Application) ConfigureSnapshots(chain string, interval uint64, keep i
 		return errors.New("snapshots require a state path, chain ID and keep_recent in 1..20")
 	}
 	app.snapshots = &snapshotStore{root: app.path + ".snapshots", chain: chain, interval: interval, keep: keep}
-	return os.MkdirAll(app.snapshots.root, 0700)
+	if err := os.MkdirAll(app.snapshots.root, 0700); err != nil {
+		return err
+	}
+	entries, err := os.ReadDir(app.snapshots.root)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".") {
+			if err = os.RemoveAll(filepath.Join(app.snapshots.root, entry.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Called with the application lock. Pin inodes before later commits can remove
@@ -168,7 +184,15 @@ func (s *snapshotStore) build(tmp string, height uint64) error {
 		return err
 	}
 	defer os.RemoveAll(dir)
-	m := snapshotMetadata{Chain: s.chain}
+	state, err := LoadState(filepath.Join(tmp, "state"))
+	if err != nil {
+		return err
+	}
+	appHash, err := state.AppHash()
+	if err != nil {
+		return err
+	}
+	m := snapshotMetadata{Chain: s.chain, AppHash: appHash, StateVersion: state.Version}
 	all := sha256.New()
 	for i := 0; ; i++ {
 		b := make([]byte, snapshotChunkSize)
@@ -286,7 +310,7 @@ func (app *Application) OfferSnapshot(_ context.Context, r *abci.OfferSnapshotRe
 		return out, nil
 	}
 	var m snapshotMetadata
-	if json.Unmarshal(v.Metadata, &m) != nil || m.Chain != s.chain || m.Size <= 0 || m.Size > snapshotMaxBytes || len(m.Hashes) != int(v.Chunks) || uint32((m.Size+snapshotChunkSize-1)/snapshotChunkSize) != v.Chunks {
+	if json.Unmarshal(v.Metadata, &m) != nil || m.Chain != s.chain || len(m.AppHash) != 32 || !bytes.Equal(m.AppHash, r.AppHash) || m.StateVersion < 4 || m.StateVersion > 16 || m.Size <= 0 || m.Size > snapshotMaxBytes || len(m.Hashes) != int(v.Chunks) || uint32((m.Size+snapshotChunkSize-1)/snapshotChunkSize) != v.Chunks {
 		return out, nil
 	}
 	for _, h := range m.Hashes {
@@ -419,7 +443,7 @@ func (app *Application) installSnapshot(s *snapshotStore) error {
 	if e != nil {
 		return e
 	}
-	if state.Height != int64(s.offer.Height) || state.Parameters.ChainID != s.chain || !bytes.Equal(got, s.expected) {
+	if state.Height != int64(s.offer.Height) || state.Version != s.meta.StateVersion || state.Parameters.ChainID != s.chain || !bytes.Equal(got, s.expected) {
 		return errors.New("snapshot height, chain or expected app hash mismatch")
 	}
 	for _, h := range state.Holds {
@@ -451,6 +475,23 @@ func (app *Application) installSnapshot(s *snapshotStore) error {
 	}
 	if app.committed != nil && app.committed.Height != 0 {
 		return errors.New("snapshot target is not empty")
+	}
+	// Persist directory entries as well as file contents before exposing state.
+	if e = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			return nil
+		}
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		return f.Sync()
+	}); e != nil {
+		return e
 	}
 	// Dependencies first; the state-file rename is the atomic visibility point.
 	// A crash before it leaves only orphan dependencies in a height-zero home.

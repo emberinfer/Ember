@@ -29,6 +29,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -54,6 +55,19 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/proto"
 )
+
+func validatePolicyLayerBounds(policy *pb.NumericAuditPolicy, manifest *pb.ModelManifest) error {
+	if manifest.TotalLayers == 0 {
+		return nil
+	}
+	for _, layer := range policy.GetLayers() {
+		index, err := strconv.ParseUint(layer, 10, 32)
+		if err != nil || index >= uint64(manifest.TotalLayers) {
+			return fmt.Errorf("numeric policy layer %q is outside manifest with %d total layers", layer, manifest.TotalLayers)
+		}
+	}
+	return nil
+}
 
 func main() {
 	mode := "all"
@@ -416,6 +430,11 @@ func main() {
 		}
 		if manifest.ChainId != genesis.ChainId || !bytes.Equal(digest, genesis.ModelManifestRoot) {
 			log.Fatal("genesis manifest mismatch")
+		}
+		if !moeMode {
+			if err := validatePolicyLayerBounds(genesis.NumericAuditPolicy, manifest); err != nil {
+				log.Fatal(err)
+			}
 		}
 		relay.Genesis, relay.GenesisBytes, relay.ManifestBytes = genesis, raw, manifestRaw
 		relay.Manifest = manifest

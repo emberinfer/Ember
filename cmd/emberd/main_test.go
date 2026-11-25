@@ -4,8 +4,28 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	pb "ember/proto"
 )
+
+func TestPolicyLayerBounds(t *testing.T) {
+	manifest := &pb.ModelManifest{TotalLayers: 24}
+	policy := &pb.NumericAuditPolicy{Layers: []string{"0", "11", "23"}}
+	if err := validatePolicyLayerBounds(policy, manifest); err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []string{"24", "999999999999999999999"} {
+		policy.Layers[2] = layer
+		if err := validatePolicyLayerBounds(policy, manifest); err == nil || !strings.Contains(err.Error(), layer) || !strings.Contains(err.Error(), "24 total layers") {
+			t.Fatalf("layer %s: %v", layer, err)
+		}
+	}
+	if err := validatePolicyLayerBounds(policy, &pb.ModelManifest{}); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestPersistentAuditKey(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state", "audit.key")

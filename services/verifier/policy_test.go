@@ -53,6 +53,24 @@ func TestNumericPolicyGuards(t *testing.T) {
 	}
 }
 
+func TestNumericPolicySampleLayers(t *testing.T) {
+	genesis := &pb.ChainGenesis{ChainId: "ember-qwen2.5-0.5b-gate-v1", ExecutionProfileVer: "transformers-qwen2.5-union-v1",
+		NumericAuditPolicy: &pb.NumericAuditPolicy{Metric: "union-interval-v1", TopK: 16, CalibrationRef: make([]byte, 32),
+			Bands: []*pb.ToleranceBand{{ProducerEngine: "cpu-runtime", ProducerDevice: "cpu", ReferenceEngine: "cpu-runtime", ReferenceDevice: "cpu", Tolerance: .001, Mode: "enforce"}}}}
+	for _, layers := range [][]string{{"0", "11", "23"}, {"0", "14", "27"}, {"23"}, {"0", "1", "9", "10", "100000000000000000000"}} {
+		genesis.NumericAuditPolicy.Layers = layers
+		if err := ValidateNumericPolicy(genesis); err != nil {
+			t.Fatalf("layers %q: %v", layers, err)
+		}
+	}
+	for _, layers := range [][]string{nil, {""}, {"11", "0"}, {"9", "9"}, {"10", "9"}, {"01"}, {"+1"}, {"-1"}, {" 1"}, {"１"}} {
+		genesis.NumericAuditPolicy.Layers = layers
+		if err := ValidateNumericPolicy(genesis); err == nil {
+			t.Fatalf("accepted layers %q", layers)
+		}
+	}
+}
+
 func TestPipelineUnionPolicy(t *testing.T) {
 	g := &pb.ChainGenesis{ChainId: "ember-qwen2.5-1.5b-pipeline3",
 		ExecutionProfileVer: "transformers-qwen2.5-pipeline3-v1",

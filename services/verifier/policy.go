@@ -13,6 +13,7 @@ import (
 const GPUProfile = "transformers-qwen2.5-gpu-v1"
 
 var gpuFingerprint = regexp.MustCompile(`^transformers/[^|\s]+\|torch=[^|\s]+\|cuda=[0-9]+\.[0-9]+\|gpu=(gb10|thor|orin|rtx2080ti)$`)
+var canonicalLayer = regexp.MustCompile(`^(0|[1-9][0-9]*)$`)
 
 // ValidateNumericPolicy only opts a new profile into the new metric. Legacy
 // genesis bytes retain their exact-ID comparator and numeric tolerance.
@@ -40,8 +41,15 @@ func ValidateNumericPolicy(g *pb.ChainGenesis) error {
 	if gpuProfile {
 		metric = "rank-probability-v1"
 	}
-	if g.ChainId == "ember-qwen2.5-1.5b" || g.ExecutionProfileVer == "" || p.Metric != metric || p.TopK != 16 || len(p.Layers) != 3 || p.Layers[0] != "0" || p.Layers[1] != "14" || p.Layers[2] != "27" || len(p.CalibrationRef) != 32 || len(p.Bands) == 0 {
+	if g.ChainId == "ember-qwen2.5-1.5b" || g.ExecutionProfileVer == "" || p.Metric != metric || p.TopK != 16 || len(p.Layers) == 0 || len(p.CalibrationRef) != 32 || len(p.Bands) == 0 {
 		return errors.New("invalid or unsupported signed numeric policy")
+	}
+	previous := ""
+	for _, layer := range p.Layers {
+		if !canonicalLayer.MatchString(layer) || len(layer) < len(previous) || (len(layer) == len(previous) && layer <= previous) {
+			return errors.New("invalid or unsupported signed numeric policy")
+		}
+		previous = layer
 	}
 	seen := map[[4]string]bool{}
 	for _, b := range p.Bands {

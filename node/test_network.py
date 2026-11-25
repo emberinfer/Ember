@@ -16,6 +16,13 @@ class NetworkParametersTest(unittest.TestCase):
 
     def test_bundled_profile_binding_and_safe_config(self):
         d=self.artifact()
+        # The current profile's artifacts arrive via the deployment
+        # channel, not chain-genesis; bind against a bundled profile.
+        d['current_profile'].update(
+            id='ember-qwen2.5-1.5b-gpu-v1',
+            genesis_sha256='188f1cb4bbff0f90fa3730a1d49fb5df0e235c2a9202cb23512ba3b71db0254c',
+            manifest_sha256='4b820e746e59faf067502460594b34de9b64e3f405506cdd253bee52192f137e')
+        d['current_profile'].pop('scheme_hash', None)
         output=node_config(d,"/models/a model; literal",ROOT/'chain-genesis')
         self.assertIn("EMBER_MODEL_PATH='/models/a model; literal'",output)
         self.assertIn('EMBER_REGISTRATION_TTL=200000',output)

@@ -11,6 +11,8 @@ if [[ ${EMBER_RELEASE_UNSIGNED:-0} != 1 ]]; then
   : "${EMBER_RELEASE_SIGNING_KEY:?set EMBER_RELEASE_SIGNING_KEY for a distributable release (or EMBER_RELEASE_UNSIGNED=1 for build regression only)}"
   test -r "$EMBER_RELEASE_SIGNING_KEY"
 fi
+python3 release/check_network_json.py \
+  --network-json site/network.json --version-file VERSION
 rm -rf "$out"
 mkdir -p "$out"
 

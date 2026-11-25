@@ -9,9 +9,9 @@
   "engine": "CometBFT"
  },
   "release": {
-  "base_url": "https://github.com/emberinfer/Ember/releases/download/v0.7.0",
+  "base_url": "https://github.com/emberinfer/Ember/releases/download/v0.9.1",
   "signing_public_key_sha256_der": "d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb",
-  "version": "0.7.0"
+  "version": "0.9.1"
  },
   "access": {
   "private_gateways": [
@@ -67,7 +67,7 @@
     "relay": "relay1 (Contabo, DE)",
     "serving": "main gateway",
     "url": "http://relay.emberinfer.org:39090",
-    "profiles": ["ember-qwen2.5-1.5b-s22-cpu-v1"],
+    "profiles": ["ember-qwen2.5-1.5b-unified-v1"],
     "node_tunnel": {"endpoint": "relay.emberinfer.org:39091", "tls_fingerprint": "2336b348ef739fef7c80ea018e50ee182b2e2be1421f03831c315dbb977e254d"}
    },
    {
@@ -186,9 +186,10 @@
   },
   "source_note": "Repository website baseline; live website is built from a separate repository. Network configuration parameters are synchronized with the live network.json for configure, including access, current_profile, ledger, links, public_testnet and release. Descriptions, profile listings, coverage presentation, pricing presentation and Spark wording are maintained independently.",
   "current_profile": {
-  "genesis_sha256": "188f1cb4bbff0f90fa3730a1d49fb5df0e235c2a9202cb23512ba3b71db0254c",
-  "id": "ember-qwen2.5-1.5b-gpu-v1",
-  "manifest_sha256": "4b820e746e59faf067502460594b34de9b64e3f405506cdd253bee52192f137e",
+  "genesis_sha256": "00973f5dc58bcbe2bad729d164f8f6171f20ad68c4535930799aa70f7495b668",
+  "id": "ember-qwen2.5-1.5b-unified-v1",
+  "manifest_sha256": "5b065539711780be0133faa3f9e4e37a177c4f2b400e7ad5cfa4d5702407da75",
+  "scheme_hash": "400120b65600b51587238ea514a711bb57c68d267194e6ed400a1e2b64a7a142",
   "model": "Qwen/Qwen2.5-1.5B-Instruct",
   "model_revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
   "weights": "operator-supplied, verified against the on-chain manifest hash"

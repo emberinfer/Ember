@@ -295,7 +295,18 @@ Then start and check the loopback health listener:
 curl -fsS http://127.0.0.1:19192/readyz
 ```
 
-Since AppVersion 10, registration offers both execution and on-chain audit eligibility by default. `--no-exec` and `--no-audit` select registration-time opt-outs. Eligibility still requires the appropriate evidence and replay capabilities. Registration binds the identity, exact signed profile, layer range and capacity. There is no deregistration or mid-term removal of an enabled role. Registrations lapse after the live 200,000-block TTL; stopping a process does not erase its registration.
+Since AppVersion 10, registration offers both execution and on-chain audit
+eligibility by default. The packaged `ember-role node` command above uses
+these defaults. Setting `EMBER_AUDIT_ROLE=true` in the config passes the
+legacy `--audit-role` flag. To opt out at registration, run `ember-node join`
+directly with the same node settings and add `--no-exec` to opt out of gateway
+execution or `--no-audit` to opt out of on-chain audits.
+
+Eligibility still requires the appropriate evidence and replay capabilities.
+Registration binds the identity, exact signed profile, layer range and
+capacity. There is no deregistration or mid-term removal of an enabled role.
+Registrations lapse after the live 200,000-block TTL. Stopping a process does
+not erase its registration.
 
 Keep identity keys mode 0600, private directories mode 0700, and health listeners and local transport bridges on loopback. See [contribution limits](https://github.com/emberinfer/Ember/blob/master/docs/CONTRIBUTION_CAPS.md).
 

@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/proto"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -89,7 +90,6 @@ type process struct {
 	cmd          *exec.Cmd
 	http, tunnel string
 	done         chan error
-	log          *os.File
 }
 
 func (p *process) HTTP() string       { return p.http }
@@ -108,6 +108,36 @@ func (p *process) Stop() {
 		_ = p.cmd.Process.Kill()
 		<-p.done
 	}
+}
+
+func (p *process) wait(output *os.File, logStart int64) {
+	err := p.cmd.Wait()
+	output.Close()
+	if line := workerLogTail(output.Name(), logStart); line != "" {
+		err = errors.New(line)
+	}
+	p.done <- err
+	close(p.done)
+}
+
+func workerLogTail(path string, logStart int64) string {
+	logFile, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer logFile.Close()
+	info, err := logFile.Stat()
+	if err != nil || info.Size() <= logStart {
+		return ""
+	}
+	const tailBytes = 8192
+	start := max(logStart, info.Size()-tailBytes)
+	tail, err := io.ReadAll(io.NewSectionReader(logFile, start, info.Size()-start))
+	if err != nil {
+		return ""
+	}
+	trimmed := strings.TrimRight(string(tail), " \t\r\n")
+	return strings.TrimSpace(trimmed[strings.LastIndexByte(trimmed, '\n')+1:])
 }
 
 func freeAddress() (string, error) {
@@ -203,6 +233,11 @@ func Run(args []string) error {
 		if err != nil {
 			return nil, err
 		}
+		logStart, err := output.Seek(0, io.SeekEnd)
+		if err != nil {
+			output.Close()
+			return nil, err
+		}
 		cmd := exec.Command(binary, argv...)
 		cmd.Stdout = output
 		cmd.Stderr = output
@@ -210,8 +245,8 @@ func Run(args []string) error {
 			output.Close()
 			return nil, err
 		}
-		p := &process{cmd: cmd, http: "http://" + h, tunnel: t, done: make(chan error, 1), log: output}
-		go func() { p.done <- cmd.Wait(); close(p.done); output.Close() }()
+		p := &process{cmd: cmd, http: "http://" + h, tunnel: t, done: make(chan error, 1)}
+		go p.wait(output, logStart)
 		return p, nil
 	}
 	defer manager.Close()

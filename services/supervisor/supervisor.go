@@ -15,6 +15,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -44,13 +45,31 @@ type Source interface {
 }
 type Start func(context.Context, Entry) (Worker, error)
 type slot struct {
-	entry    Entry
-	worker   Worker
-	last     time.Time
-	retry    time.Time
-	failures int
-	active   int
+	entry       Entry
+	worker      Worker
+	last        time.Time
+	retry       time.Time
+	failures    int
+	lastFailure string
+	active      int
 }
+
+func workerFailureReason(err error, fallback string) string {
+	if err == nil || strings.TrimSpace(err.Error()) == "" {
+		return fallback
+	}
+	reason := err.Error()
+	const limit = 200
+	count := 0
+	for index := range reason {
+		if count == limit {
+			return reason[:index]
+		}
+		count++
+	}
+	return reason
+}
+
 type Manager struct {
 	pb.UnimplementedNodeTunnelServer
 	mu            sync.Mutex
@@ -121,8 +140,9 @@ func (m *Manager) Tick(ctx context.Context) error {
 		}
 		if s.worker != nil {
 			select {
-			case <-s.worker.Done():
+			case err := <-s.worker.Done():
 				s.worker = nil
+				s.lastFailure = workerFailureReason(err, "worker exited")
 				s.failures++
 				delay := time.Second << min(s.failures, 6)
 				s.retry = now.Add(delay)
@@ -172,11 +192,13 @@ func (m *Manager) Tick(ctx context.Context) error {
 		}
 		w, e := m.Start(ctx, s.entry)
 		if e != nil {
+			s.lastFailure = workerFailureReason(e, "worker could not start")
 			s.failures++
 			s.retry = now.Add(time.Second << min(s.failures, 6))
 			continue
 		}
 		s.worker = w
+		s.lastFailure = ""
 		s.last = now
 		count++
 	}
@@ -197,6 +219,9 @@ func (m *Manager) probe(ctx context.Context, s *slot) Entry {
 	}
 	if s.worker == nil {
 		e.Reason = "worker pending or restarting"
+		if s.lastFailure != "" {
+			e.Reason = "worker failed: " + s.lastFailure
+		}
 		return e
 	}
 	e.WorkerState = "running"

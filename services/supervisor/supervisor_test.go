@@ -11,6 +11,9 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -147,6 +150,50 @@ func TestCrashBackoffLRUAndActiveProtection(t *testing.T) {
 	tick(t, m)
 	if len(m.slots) != 0 {
 		t.Fatal("removed publication remains")
+	}
+}
+
+func TestCatalogReportsStartFailure(t *testing.T) {
+	m, _, _, _ := fixture(t)
+	start := m.Start
+	m.Start = func(context.Context, Entry) (Worker, error) {
+		return nil, errors.New("cannot spawn: " + strings.Repeat("é", 250))
+	}
+	tick(t, m)
+	entry := m.Catalog(context.Background())[0]
+	if entry.Reason != "worker failed: cannot spawn: "+strings.Repeat("é", 186) || entry.Ready {
+		t.Fatal(entry)
+	}
+	m.Start = start
+	m.slots["ember-a"].retry = time.Time{}
+	tick(t, m)
+	if entry := m.Catalog(context.Background())[0]; !entry.Ready || entry.Reason != "no eligible online executor" {
+		t.Fatal(entry)
+	}
+}
+
+func TestCatalogReportsWorkerExitLog(t *testing.T) {
+	m, _, _, _ := fixture(t)
+	path := filepath.Join(t.TempDir(), "worker.log")
+	m.Start = func(context.Context, Entry) (Worker, error) {
+		output, err := os.Create(path)
+		if err != nil {
+			return nil, err
+		}
+		cmd := exec.Command("sh", "-c", "printf 'starting\ninvalid numeric policy\n  \n' >&2; exit 1")
+		cmd.Stderr = output
+		if err := cmd.Start(); err != nil {
+			output.Close()
+			return nil, err
+		}
+		worker := &process{cmd: cmd, done: make(chan error, 1)}
+		worker.wait(output, 0)
+		return worker, nil
+	}
+	tick(t, m)
+	tick(t, m)
+	if entry := m.Catalog(context.Background())[0]; entry.Reason != "worker failed: invalid numeric policy" || entry.Ready {
+		t.Fatal(entry)
 	}
 }
 

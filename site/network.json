@@ -190,6 +190,7 @@
   "id": "ember-qwen2.5-1.5b-unified-v1",
   "manifest_sha256": "5b065539711780be0133faa3f9e4e37a177c4f2b400e7ad5cfa4d5702407da75",
   "scheme_hash": "400120b65600b51587238ea514a711bb57c68d267194e6ed400a1e2b64a7a142",
+  "publisher": "c0058cba3b9014581b4f88679d24f3fc1c524e33668c4974fadfebf3bb29307d",
   "model": "Qwen/Qwen2.5-1.5B-Instruct",
   "model_revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
   "weights": "operator-supplied, verified against the on-chain manifest hash"

@@ -15,12 +15,19 @@ Checks (all hard failures):
   * release.base_url is the download URL of that same version;
   * current_profile.id is not a retired profile;
   * current_profile genesis/manifest hashes are 64-hex;
+  * current_profile.publisher exists and is a 64-hex account id;
+  * the bundled profile directory for current_profile.id contains
+    genesis.pb and manifest.pb whose SHA-256 equal the published
+    genesis/manifest anchors -- configure verifies the same pair at
+    runtime, so a bundle missing them (or carrying different bytes)
+    fails here instead of on an operator's machine;
   * every gateway whose node tunnel endpoint is the public seed
     (access.seed) advertises the current profile -- the seed tunnel
     serves the current profile, so listing any other profile for it
     contradicts the live network.
 """
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -42,6 +49,10 @@ def main(argv=None):
     parser = argparse.ArgumentParser(prog='check_network_json')
     parser.add_argument('--network-json', default='site/network.json')
     parser.add_argument('--version-file', default='VERSION')
+    parser.add_argument('--profiles-root', default='chain-genesis',
+                        help='directory holding one <profile-id>/ folder '
+                             'per bundled profile (the release build '
+                             'copies chain-genesis/ember-* to profiles/)')
     args = parser.parse_args(argv)
 
     version = Path(args.version_file).read_text().strip()
@@ -76,6 +87,27 @@ def main(argv=None):
         value = profile.get(key)
         if not (isinstance(value, str) and HEX64.fullmatch(value)):
             problems.append(f'current_profile.{key} is not a 64-hex hash')
+    publisher = profile.get('publisher')
+    if not (isinstance(publisher, str) and HEX64.fullmatch(publisher)):
+        problems.append(
+            'current_profile.publisher is missing or not a 64-hex account id')
+
+    if profile_id:
+        profile_dir = Path(args.profiles_root) / profile_id
+        for name, key in (('genesis.pb', 'genesis_sha256'),
+                          ('manifest.pb', 'manifest_sha256')):
+            artifact = profile_dir / name
+            expected = profile.get(key)
+            if not artifact.is_file():
+                problems.append(
+                    f'bundled profile artifact missing: {artifact} '
+                    f'(configure requires it for profile {profile_id})')
+            elif isinstance(expected, str) and HEX64.fullmatch(expected):
+                actual = hashlib.sha256(artifact.read_bytes()).hexdigest()
+                if actual != expected.lower():
+                    problems.append(
+                        f'bundled {artifact} sha256={actual}; '
+                        f'expected current_profile.{key}={expected.lower()}')
 
     access = document.get('access') or {}
     seed = access.get('seed')

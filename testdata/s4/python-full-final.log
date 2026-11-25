@@ -1,0 +1,20 @@
+............................................................ [ 10%]
+................................................ [ 18%]
+..................................................................... [ 30%]
+......................s.................................... [ 40%]
+..................................................................... [ 51%]
+................................................................... [ 63%]
+..................................................................... [ 75%]
+.........ss............................................................. [ 87%]
+................................................................... [ 98%]
+.......                                                                  [100%]
+=============================== warnings summary ===============================
+node/test_image_client.py::test_formula_against_diffusers_reference[1-euler]
+node/test_image_client.py::test_formula_against_diffusers_reference[3-euler]
+node/test_image_client.py::test_formula_against_diffusers_reference[20-euler]
+node/test_image_client.py::test_formula_against_diffusers_reference[100-euler]
+  /root/autodl-tmp/fix3/s4-test-venv/lib/python3.12/site-packages/diffusers/schedulers/scheduling_euler_discrete.py:405: DeprecationWarning: __array__ implementation doesn't accept a copy keyword, so passing copy=False failed. __array__ must implement 'dtype' and 'copy' keyword arguments. To learn more, see the migration guide https://numpy.org/devdocs/numpy_2_0_migration_guide.html#adapting-to-changes-in-the-copy-keyword
+    sigmas = np.array(((1 - self.alphas_cumprod) / self.alphas_cumprod) ** 0.5)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+584 passed, 3 skipped, 4 warnings, 68 subtests passed in 135.60s (0:02:15)

@@ -98,3 +98,17 @@ records these measurements and uses observe bands; it makes no production false
 rate or cross-device slashing claim. The installed command also built and
 conformance-verified a new dry-run profile from its packaged builder modules,
 proving this path works outside the source checkout.
+
+## 3. Pre-copy venv probe
+
+The selected target Python actually creates a temporary venv with pip and runs
+its pip before any prefix directory creation/copy. Cleanup uses TemporaryDirectory.
+All probe failures give one actionable message including the exact Ubuntu command
+`sudo apt-get install -y python3.12-venv`. A PATH-provided Python wrapper simulated
+an importable venv whose creation fails (disabled ensurepip). The installer failed
+before copying, printed the repair command and left no prefix. A real normal
+probe/CPU install test also passed; installer tests: 6 passed. Both fresh real
+CPU/CUDA installs above used the final probe-enabled installer.
+
+Full Python suite after all runtime/schema changes: 584 passed, 3 skipped,
+68 subtests. Four diffusers/NumPy deprecation warnings remain; no test failures.

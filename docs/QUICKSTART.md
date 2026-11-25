@@ -15,8 +15,8 @@ Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
 Authenticate the fingerprint through a trusted channel. The downloaded key alone is not a trust anchor. The repository trust statement names an older key; its detached signature fails verification against the checked-in root key and current statement bytes. See [signing](SIGNING.md).
 
 ```sh
-# Take <version> from the releases page above, e.g. EMBER_VERSION=0.9.2
-EMBER_VERSION=<version>
+# Matching release version; verify its assets and signing status.
+EMBER_VERSION=0.9.3
 EMBER_RELEASE="https://github.com/emberinfer/Ember/releases/download/v$EMBER_VERSION"
 # Use arm64 instead of amd64 for ARM64.
 for file in "ember-$EMBER_VERSION-linux-amd64.tar.gz" SHA256SUMS release-signing.pub; do
@@ -167,3 +167,9 @@ Set `RPC` to your verified chain RPC and use the live ledger chain ID:
 ```
 
 Wait for `registration_blocks_remaining` to reach zero and for outstanding holds to finish or expire. Repeat with `--action unbond`, then wait for the returned `release_height` and repeat with `--action claim`. The health-listener check must use the node's actual port (`--health-url` if changed). Registration expiry, pending work exposure and unbonding delay are separate constraints. Recoverable stake is the amount remaining after any finalized penalties. Serving payments remain in the account; unbonding creates no new credit.
+
+The node installer requires Python 3.12 with working venv/pip support. Before
+copying any files into the prefix, it creates a temporary pip-enabled venv with
+the selected interpreter and runs pip. On Ubuntu, repair missing support with
+`sudo apt-get install -y python3.12-venv` and retry. Probe failure leaves no
+partially installed prefix.

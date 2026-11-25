@@ -51,14 +51,23 @@ if [[ "$role" == node ]]; then
   fi
   "$python" - <<'PREFLIGHT'
 import sys
+import subprocess
+import tempfile
+from pathlib import Path
 if sys.version_info[:2] != (3, 12):
     raise SystemExit('Python 3.12 is required (found %s). Install python3.12 + python3.12-venv, then pass --python python3.12.' % sys.version.split()[0])
 try:
     import venv
     import ensurepip
     ensurepip.version()
-except (ImportError, OSError) as exc:
-    raise SystemExit('Python 3.12 venv/pip support is missing. Install the python3.12-venv package using your host package manager, then retry. Details: %s' % exc)
+    # Importability does not establish that distro ensurepip can seed pip.
+    # Probe the target interpreter before any prefix creation or copying.
+    with tempfile.TemporaryDirectory(prefix='ember-venv-probe-') as probe:
+        venv.EnvBuilder(with_pip=True).create(probe)
+        subprocess.run([str(Path(probe) / 'bin/python'), '-m', 'pip', '--version'],
+                       check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+except Exception as exc:
+    raise SystemExit('Python 3.12 venv/pip support is missing. On Ubuntu run: sudo apt-get install -y python3.12-venv; then retry. Details: %s' % exc)
 PREFLIGHT
 fi
 

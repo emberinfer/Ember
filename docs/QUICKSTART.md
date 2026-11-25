@@ -188,6 +188,10 @@ NETWORK_PARAMETERS="$HOME/ember/network.json"
 "$HOME/ember/bin/ember-node" id --state-dir "$HOME/ember/var/node"
 ```
 
+By default, `configure` selects all eligible coordinators for the profile from
+the gateway directory. To select a single coordinator, pass `--gateway <url>`
+with its directory URL or `--gateway <id>` with its directory ID.
+
 ## Profile anchors: genesis hash, manifest hash and scheme hash
 
 A profile is pinned by three hashes, and a node must present all of them

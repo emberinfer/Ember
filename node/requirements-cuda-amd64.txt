@@ -1,0 +1,4 @@
+# x86_64 Transformers runtime measured from active GPU ResourceProfiles at height 414581.
+--index-url https://download.pytorch.org/whl/cu124
+--extra-index-url https://pypi.org/simple
+torch==2.5.1+cu124

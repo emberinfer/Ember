@@ -65,6 +65,9 @@ for arch in $arches; do
     --bundle-root "$root/lib/ember/proto"
   cp node/requirements-spi.txt VERSION "$root/lib/ember/"
   cp "node/requirements-cpu-$arch.txt" "$root/lib/ember/requirements-cpu.txt"
+  if [[ "$arch" == amd64 ]]; then
+    cp node/requirements-cuda-amd64.txt "$root/lib/ember/requirements-cuda.txt"
+  fi
   cp -a chain-genesis/ember-* "$root/profiles/"
   cp config/*.example "$root/config/"
   cp config/trust-policy.json "$root/config/"
@@ -85,6 +88,7 @@ for arch in $arches; do
     go version -m "$root/bin/emberchain" | sed '1c\\bin/emberchain'
     printf '\n[python requirements]\n'
     cat "node/requirements-cpu-$arch.txt" node/requirements-spi.txt
+    if [[ "$arch" == amd64 ]]; then cat node/requirements-cuda-amd64.txt; fi
   } >"$root/DEPENDENCIES.txt"
   find "$root" -exec touch -h -d "@$epoch" {} +
   tar --sort=name --mtime="@$epoch" --owner=0 --group=0 --numeric-owner \

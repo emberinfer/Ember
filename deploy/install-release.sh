@@ -19,10 +19,32 @@ done
 case "$role" in node|validator|gateway) ;; *) exit 2 ;; esac
 
 if [[ "$role" == node ]]; then
-  if [[ "$profile_family" != cpu ]]; then
-    printf 'Unsupported runtime family: %s. This release ships measured CPU profiles only.\n' "$profile_family" >&2
-    exit 2
-  fi
+  case "$profile_family" in
+    cpu)
+      if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1; then
+        printf 'NVIDIA GPU detected; CPU family remains selected. For CUDA use --profile-family cuda on x86_64 with a supported driver.\n' >&2
+      fi
+      ;;
+    cuda)
+      if [[ "$(uname -m)" != x86_64 ]]; then
+        printf 'CUDA family supports x86_64 only; choose a supported architecture/runtime explicitly.\n' >&2
+        exit 2
+      fi
+      if ! command -v nvidia-smi >/dev/null 2>&1 || ! nvidia-smi -L >/dev/null 2>&1; then
+        printf 'CUDA family requires a working NVIDIA GPU and driver (nvidia-smi). Install the driver before retrying.\n' >&2
+        exit 2
+      fi
+      drivers=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader)
+      while IFS= read -r driver; do
+        if [[ ! "$driver" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] ||
+           [[ "$(printf '%s\n' 550.54.14 "$driver" | sort -V | head -n1)" != 550.54.14 ]]; then
+          printf 'CUDA 12.4 requires NVIDIA Linux driver >=550.54.14; found %s. Upgrade the driver before retrying.\n' "$driver" >&2
+          exit 2
+        fi
+      done <<<"$drivers"
+      ;;
+    *) printf 'Unsupported runtime family: %s. Choose cpu or cuda explicitly.\n' "$profile_family" >&2; exit 2 ;;
+  esac
   if ! command -v "$python" >/dev/null 2>&1; then
     printf 'Python 3.12 is required. Install python3.12 and its venv package, then pass --python python3.12.\n' >&2
     exit 2
@@ -60,9 +82,19 @@ install -m 0644 "$source_root/config/trust-policy.json" "$install_root/config/tr
 if [[ "$role" == node ]]; then
   "$python" -m venv "$install_root/venv"
   "$install_root/venv/bin/python" -m pip install --disable-pip-version-check \
-    -r "$install_root/lib/ember/requirements-cpu.txt"
+    -r "$install_root/lib/ember/requirements-$profile_family.txt"
   "$install_root/venv/bin/python" -m pip install --disable-pip-version-check \
     -r "$install_root/lib/ember/requirements-spi.txt"
+  if [[ "$profile_family" == cuda ]]; then
+    "$install_root/venv/bin/python" - <<'CUDA_CHECK'
+import torch
+if torch.__version__ != '2.5.1+cu124' or torch.version.cuda != '12.4' or not torch.cuda.is_available():
+    raise SystemExit('CUDA installation failed runtime verification: expected torch 2.5.1+cu124 / CUDA 12.4 and an available GPU. Check the NVIDIA driver.')
+torch.empty(1, device='cuda')
+torch.cuda.synchronize()
+print('CUDA runtime verified: torch=%s cuda=%s GPU=%s' % (torch.__version__, torch.version.cuda, torch.cuda.get_device_name(0)))
+CUDA_CHECK
+  fi
 fi
 printf 'installed role=%s prefix=%s config=%s/config/%s.env\n' \
   "$role" "$install_root" "$install_root" "$role"

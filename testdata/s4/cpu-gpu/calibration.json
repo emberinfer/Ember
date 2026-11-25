@@ -1,0 +1,51 @@
+{
+  "cross_distances": [
+    0.03990639675440458,
+    0.018803347543083035
+  ],
+  "runtime": {
+    "cpu": {
+      "accelerator_name": "",
+      "actual_device": "cpu",
+      "available_memory_bytes": 329145364480,
+      "cuda_version": "12.4",
+      "device_reason": "cpu explicitly requested",
+      "memory_budget_bytes": {
+        "maximum_cuda": 8589934592,
+        "maximum_rss": 8589934592,
+        "minimum_available": 17179869184,
+        "reserve": 0
+      },
+      "requested_device": "cpu",
+      "torch_version": "2.5.1+cu124",
+      "transformers_version": "4.45.2"
+    },
+    "cuda": {
+      "accelerator_name": "NVIDIA GeForce RTX 2080 Ti",
+      "actual_device": "cuda",
+      "available_memory_bytes": 327016841216,
+      "cuda_version": "12.4",
+      "device_reason": "CUDA selected",
+      "memory_budget_bytes": {
+        "maximum_cuda": 8589934592,
+        "maximum_rss": 8589934592,
+        "minimum_available": 17179869184,
+        "reserve": 0
+      },
+      "requested_device": "cuda",
+      "torch_version": "2.5.1+cu124",
+      "transformers_version": "4.45.2"
+    }
+  },
+  "scope": "Isolated acceptance; same-host 2-prompt CPU/CUDA replay, no production calibration claim",
+  "self_distances": {
+    "cpu": [
+      0.0,
+      0.0
+    ],
+    "cuda": [
+      0.0,
+      0.0
+    ]
+  }
+}

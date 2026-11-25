@@ -1,0 +1,4 @@
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+{"model_id": "s4-installed-dry05", "manifest_root": "a0c4167dca594415bf1a4305bc2ff2346ca42397afec6538bc7a835a6f750bc2", "profile_hash": "708154b557f224dfa33488551df7370a179f631738ac1fa0ba0b09aa592bcf09"}
+{"artifacts": 7, "conformance": [{"distance": 0.0, "seed": 7, "tokens": 2}, {"distance": 0.0, "seed": 19, "tokens": 2}], "manifest_root": "a0c4167dca594415bf1a4305bc2ff2346ca42397afec6538bc7a835a6f750bc2", "profile_hash": "708154b557f224dfa33488551df7370a179f631738ac1fa0ba0b09aa592bcf09", "result": "PASS"}
+{"result": "PASS", "dry_run": true, "output": "/tmp/s4-evidence/installed-dry05"}

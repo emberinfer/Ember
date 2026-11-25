@@ -1,0 +1,43 @@
+NVIDIA GPU detected; CPU family remains selected. For CUDA use --profile-family cuda on x86_64 with a supported driver.
+Looking in links: /root/autodl-tmp/fix3/s4-wheelhouse
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/torch-2.5.1+cpu-cp312-cp312-linux_x86_64.whl (from -r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/filelock-4.3.1-py3-none-any.whl (from torch==2.5.1+cpu->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/typing_extensions-4.16.0-py3-none-any.whl (from torch==2.5.1+cpu->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/networkx-3.7-py3-none-any.whl (from torch==2.5.1+cpu->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/Jinja2-3.1.6-py3-none-any.whl (from torch==2.5.1+cpu->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/fsspec-2026.9.0-py3-none-any.whl (from torch==2.5.1+cpu->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/setuptools-84.2.1-py3-none-any.whl (from torch==2.5.1+cpu->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/sympy-1.13.1-py3-none-any.whl (from torch==2.5.1+cpu->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/mpmath-1.3.0-py3-none-any.whl (from sympy==1.13.1->torch==2.5.1+cpu->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/MarkupSafe-3.0.4-cp312-cp312-manylinux_2_17_x86_64.whl (from jinja2->torch==2.5.1+cpu->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-cpu.txt (line 4))
+Installing collected packages: mpmath, typing-extensions, sympy, setuptools, networkx, MarkupSafe, fsspec, filelock, jinja2, torch
+Successfully installed MarkupSafe-3.0.4 filelock-4.3.1 fsspec-2026.9.0 jinja2-3.1.6 mpmath-1.3.0 networkx-3.7 setuptools-84.2.1 sympy-1.13.1 torch-2.5.1+cpu typing-extensions-4.16.0
+Looking in links: /root/autodl-tmp/fix3/s4-wheelhouse
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/transformers-4.45.2-py3-none-any.whl (from -r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/tokenizers-0.20.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (from -r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 4))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/grpcio-1.85.1-cp312-cp312-manylinux_2_17_x86_64.whl (from -r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 5))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/grpcio_tools-1.85.1-cp312-cp312-manylinux_2_17_x86_64.whl (from -r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 6))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl (from -r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 7))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/numpy-2.5.4-cp312-cp312-manylinux_2_27_x86_64.whl (from -r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 8))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/safetensors-0.8.0-cp310-abi3-manylinux_2_17_x86_64.whl (from -r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 9))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (from -r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 10))
+Requirement already satisfied: filelock in /root/autodl-tmp/fix3/s4-installed-cpu-final/venv/lib/python3.12/site-packages (from transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3)) (4.3.1)
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/huggingface_hub-0.36.2-py3-none-any.whl (from transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/packaging-26.4-py3-none-any.whl (from transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/PyYAML-6.0.4-cp312-cp312-manylinux_2_17_x86_64.whl (from transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/regex-2026.11.23-cp312-cp312-manylinux_2_17_x86_64.whl (from transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/requests-2.34.2-py3-none-any.whl (from transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/tqdm-4.70.1-py3-none-any.whl (from transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Requirement already satisfied: typing-extensions~=4.12 in /root/autodl-tmp/fix3/s4-installed-cpu-final/venv/lib/python3.12/site-packages (from grpcio==1.85.1->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 5)) (4.16.0)
+Requirement already satisfied: setuptools>=77.0.1 in /root/autodl-tmp/fix3/s4-installed-cpu-final/venv/lib/python3.12/site-packages (from grpcio-tools==1.85.1->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 6)) (84.2.1)
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/cffi-2.1.1-cp312-cp312-manylinux_2_17_x86_64.whl (from cryptography==50.0.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 10))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/pycparser-3.12-py3-none-any.whl (from cffi>=2.0.0->cryptography==50.0.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 10))
+Requirement already satisfied: fsspec>=2023.5.0 in /root/autodl-tmp/fix3/s4-installed-cpu-final/venv/lib/python3.12/site-packages (from huggingface-hub<1.0,>=0.23.2->transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3)) (2026.9.0)
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/hf_xet-1.8.0-cp38-abi3-manylinux2014_x86_64.whl (from huggingface-hub<1.0,>=0.23.2->transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/charset_normalizer-3.5.3-cp312-cp312-manylinux_2_5_x86_64.whl (from requests->transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/idna-3.20-py3-none-any.whl (from requests->transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/urllib3-2.8.0-py3-none-any.whl (from requests->transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Processing /root/autodl-tmp/fix3/s4-wheelhouse/certifi-2026.11.20-py3-none-any.whl (from requests->transformers==4.45.2->-r /root/autodl-tmp/fix3/s4-installed-cpu-final/lib/ember/requirements-spi.txt (line 3))
+Installing collected packages: urllib3, tqdm, safetensors, regex, pyyaml, pycparser, protobuf, packaging, numpy, idna, hf-xet, grpcio, charset_normalizer, certifi, requests, grpcio-tools, cffi, huggingface-hub, cryptography, tokenizers, transformers
+Successfully installed certifi-2026.11.20 cffi-2.1.1 charset_normalizer-3.5.3 cryptography-50.0.2 grpcio-1.85.1 grpcio-tools-1.85.1 hf-xet-1.8.0 huggingface-hub-0.36.2 idna-3.20 numpy-2.5.4 packaging-26.4 protobuf-7.36.2 pycparser-3.12 pyyaml-6.0.4 regex-2026.11.23 requests-2.34.2 safetensors-0.8.0 tokenizers-0.20.3 tqdm-4.70.1 transformers-4.45.2 urllib3-2.8.0
+installed role=node prefix=/root/autodl-tmp/fix3/s4-installed-cpu-final config=/root/autodl-tmp/fix3/s4-installed-cpu-final/config/node.env

@@ -1,0 +1,44 @@
+{
+  "metric": "union-interval-v1",
+  "top_k": 16,
+  "layers": [
+    "0",
+    "12",
+    "23"
+  ],
+  "bands": [
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+      "reference_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+      "producer_device": "cpu",
+      "reference_device": "cpu",
+      "mode": "observe",
+      "tolerance": 1.1920928955078125e-07
+    },
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+      "reference_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+      "producer_device": "cpu",
+      "reference_device": "cuda",
+      "mode": "observe",
+      "tolerance": 0.03990651596369413
+    },
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+      "reference_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+      "producer_device": "cuda",
+      "reference_device": "cpu",
+      "mode": "observe",
+      "tolerance": 0.03990651596369413
+    },
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+      "reference_engine": "transformers/4.45.2|torch=2.5.1+cu124",
+      "producer_device": "cuda",
+      "reference_device": "cuda",
+      "mode": "observe",
+      "tolerance": 1.1920928955078125e-07
+    }
+  ],
+  "calibration_ref": "V9HcNrz2Fl/B+EfkcoU/Xn+Dv7Mny8CTwnhXj81TBe8="
+}

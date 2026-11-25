@@ -40,7 +40,7 @@ def gateway_coordinators(access, profile, *, same_host_684=False):
     return selected
 
 
-def node_config(document, model_path, profiles, *, same_host_684=False):
+def node_config(document, model_path, profiles, *, same_host_684=False, trust_policy=None):
     if document.get('schema_version') != 1:
         raise ValueError('unsupported network-parameters schema')
     access, ledger, profile = (document[k] for k in ('access', 'ledger', 'current_profile'))
@@ -59,6 +59,13 @@ def node_config(document, model_path, profiles, *, same_host_684=False):
     for key in ['EMBER_TLS_FINGERPRINT', 'EMBER_SCHEDULER_ID', 'EMBER_GENESIS_SHA256', 'EMBER_MANIFEST_SHA256']:
         if not re.fullmatch('[0-9a-fA-F]{64}', fields[key]):
             raise ValueError('invalid hash/account field: ' + key)
+    scheme_hash = profile.get('scheme_hash')
+    if scheme_hash:
+        if not isinstance(scheme_hash, str) or not re.fullmatch('[0-9a-fA-F]{64}', scheme_hash):
+            raise ValueError('invalid hash field: current_profile.scheme_hash')
+        fields['EMBER_SCHEME_HASH'] = scheme_hash
+    if trust_policy:
+        fields['EMBER_PROFILE_TRUST_POLICY'] = str(trust_policy)
     ident = fields['EMBER_MODEL_CHAIN']
     if not re.fullmatch(r'ember-[a-zA-Z0-9_.-]+', ident):
         raise ValueError('invalid profile identity')
@@ -80,7 +87,13 @@ def main(args=None):
     parser.add_argument('--profiles', default=str(Path(__file__).resolve().parents[4]/'profiles'))
     parser.add_argument('--same-host-684', action='store_true', help='explicitly attest client runs on gateway host 684')
     opts = parser.parse_args(args)
-    content = node_config(json.loads(Path(opts.network_parameters).read_text()), opts.model_path, opts.profiles, same_host_684=opts.same_host_684)
+    # Point the generated config at the trust policy example bundled
+    # with the release (config/trust-policy.json next to profiles/) so
+    # a published profile passes the node's local publisher check out
+    # of the box; operators may replace it with their own pin.
+    bundled_policy = Path(__file__).resolve().parents[4] / 'config' / 'trust-policy.json'
+    content = node_config(json.loads(Path(opts.network_parameters).read_text()), opts.model_path, opts.profiles, same_host_684=opts.same_host_684,
+                          trust_policy=str(bundled_policy) if bundled_policy.is_file() else None)
     target = Path(opts.config)
     target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     # Never overwrite an operator's existing configuration implicitly.

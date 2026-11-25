@@ -72,7 +72,28 @@ def identity(state):
     return key, node_id(public)
 
 
+def resolve_scheme_hash(args, environ=None):
+    """Return the pinned scheme hash for this join.
+
+    The --scheme-hash flag wins.  When it is absent, fall back to
+    EMBER_SCHEME_HASH from the process environment -- which is where
+    the node config file lands it when the ember-role launcher sources
+    that file -- and record the value on args so every later consumer
+    (resource profile, receipts) sees the same pin.  Returns None when
+    neither source provides one.
+    """
+    pinned = getattr(args, 'scheme_hash', None)
+    if pinned:
+        return pinned
+    environ = os.environ if environ is None else environ
+    value = environ.get('EMBER_SCHEME_HASH') or None
+    if value:
+        args.scheme_hash = value
+    return value
+
+
 def join(args):
+    resolve_scheme_hash(args)
     peers = coordinators(args.coordinator, args.tls_fingerprint)
     # Create the identity before threads start (exclusive key creation).
     identity(args.state_dir)

@@ -16,6 +16,7 @@ case "$role" in
     : "${EMBER_LEDGER_CHAIN_ID:?}" "${EMBER_GENESIS_SHA256:?}" "${EMBER_MANIFEST_SHA256:?}"
     node_args=()
     if [[ -n ${EMBER_PROFILE_TRUST_POLICY:-} ]]; then node_args+=(--trust-policy "$EMBER_PROFILE_TRUST_POLICY"); fi
+    if [[ -n ${EMBER_SCHEME_HASH:-} ]]; then node_args+=(--scheme-hash "$EMBER_SCHEME_HASH"); fi
     if [[ ${EMBER_AUDIT_ROLE:-false} == true ]]; then node_args+=(--audit-role); fi
     exec "$root/bin/ember-node" join --state-dir "$root/var/node" \
       --coordinator "$EMBER_COORDINATOR" --tls-fingerprint "$EMBER_TLS_FINGERPRINT" \

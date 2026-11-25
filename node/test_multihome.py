@@ -137,9 +137,9 @@ def test_failed_session_does_not_block_healthy_task_and_stub_is_bound():
 
 
 @pytest.mark.parametrize('profile,public,local', [
-    ('ember-qwen2.5-1.5b-unified-v1', 4, 2),
-    ('ember-qwen3.6-35b-a3b-fp8-unified-v1', 2, 1),
-    ('ember-olmoe-1b-7b-moe-v1', 0, 1)])
+    ('ember-qwen2.5-1.5b-unified-v1', 5, 2),
+    ('ember-qwen3.6-35b-a3b-fp8-unified-v1', 3, 1),
+    ('ember-olmoe-1b-7b-moe-v1', 1, 1)])
 @pytest.mark.parametrize('same_host', [False, True])
 def test_real_directory_context(profile, public, local, same_host, capsys):
     from pathlib import Path

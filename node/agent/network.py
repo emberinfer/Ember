@@ -75,15 +75,21 @@ def fetch_profile(document, ident, profiles, rpc, cli, trust_policy=None):
 def gateway_coordinators(access, profile, *, same_host_684=False):
     selected = []
     matched = False
+    checked = skipped = 0
     for private, gateways in ((False, access.get('gateways', [])),
                               (True, access.get('private_gateways', []))):
         for gateway in gateways:
+            checked += 1
+            ident = str(gateway.get('id', gateway.get('url')))
             if 'profiles' not in gateway and gateway.get('dynamic_profiles') is not True:
-                raise ValueError('gateway directory lacks exact profile membership')
+                if 'node_tunnel' in gateway:
+                    raise ValueError('gateway directory lacks exact profile membership: ' + ident)
+                skipped += 1
+                print(f'{ident} skipped: no profile membership declared', file=sys.stderr)
+                continue
             if profile not in gateway.get('profiles', []) and gateway.get('dynamic_profiles') is not True:
                 continue
             matched = True
-            ident = str(gateway.get('id', gateway.get('url')))
             if private and not same_host_684:
                 print(f'MULTIHOME excluded={ident} reason=private gateway requires same-host-684 context', file=sys.stderr)
                 continue
@@ -94,7 +100,8 @@ def gateway_coordinators(access, profile, *, same_host_684=False):
                 raise ValueError('gateway node ingress missing: ' + ident)
             selected.append(entry)
     if not matched:
-        raise ValueError('no node gateways for profile: ' + profile)
+        raise ValueError(f'no node gateways for profile {profile} (checked {checked} entries, skipped {skipped}); '
+                         'use network.json from the release package or select a node ingress with explicit --gateway')
     from .multihome import coordinators
     if selected:
         coordinators(selected)
@@ -227,7 +234,7 @@ def main(args=None):
     # Validate the document (and the bundled profile binding) before
     # resolving the trust policy, so a refused configure leaves no
     # generated policy file behind.
-    node_config(document, opts.model_path, opts.profiles, same_host_684=opts.same_host_684)
+    content = node_config(document, opts.model_path, opts.profiles, same_host_684=opts.same_host_684)
     # Point the generated config at the installation's trust policy
     # (config/trust-policy.json) so a published profile passes the
     # node's local publisher check out of the box; operators may
@@ -235,8 +242,8 @@ def main(args=None):
     # an existing file is kept, a missing one is generated from the
     # network document's current_profile.publisher.
     trust_policy = opts.trust_policy or (None if dynamic else resolve_trust_policy(document, opts.config, opts.profiles))
-    content = node_config(document, opts.model_path, opts.profiles, same_host_684=opts.same_host_684,
-                          trust_policy=trust_policy)
+    if trust_policy:
+        content += 'EMBER_PROFILE_TRUST_POLICY=' + shlex.quote(str(trust_policy)) + '\n'
     target = Path(opts.config)
     target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     # Never overwrite an operator's existing configuration implicitly.

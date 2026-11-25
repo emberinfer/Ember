@@ -1,0 +1,4 @@
+network.json OK: release 0.9.3, current profile ember-qwen2.5-1.5b-unified-v1
+import closure OK: 95 modules shipped, all local imports resolve inside the bundle
+import closure OK: 95 modules shipped, all local imports resolve inside the bundle
+UNSIGNED build regression: not a distributable release set

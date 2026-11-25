@@ -162,3 +162,51 @@ A stale public-routing-vetted sentence in llms.txt was removed as well.
 Additional actual installed-family conformance logs are retained here:
 conformance-cuda.log, conformance-cpu-cu-wheel.log and conformance-cpu-wheel.log.
 All returned PASS with replay distance 0 on both prompts.
+
+## 6. Detached signature format (read-only confirmation)
+
+`release/sign.sh` uses `openssl pkeyutl -sign -rawin` over the **exact complete
+SHA256SUMS file bytes**, including its existing line endings and final newline.
+With the established Ed25519 release key the result is a raw binary detached
+**64-byte Ed25519 signature**, not ASCII armor, base64, a SHA256 prehash signature
+or a signature over the archives directly. The inspected cached public release
+key's DER-SPKI SHA256 is
+`d3b07085781f2d4d75de6caefa6e1dc9cd4eadeec10326b2b0c20eb03254eabb`, matching
+SIGNING.md; `openssl pkey -pubin -text -noout` identifies it as ED25519.
+The online download attempt timed out; this algorithm/fingerprint check used the
+already downloaded public v0.9.1 key, not any private signing material.
+
+After the release operator signs using the offline release key, verify with:
+
+```sh
+openssl pkeyutl -verify -pubin -inkey release-signing.pub -rawin \
+  -in SHA256SUMS -sigfile SHA256SUMS.sig
+sha256sum --ignore-missing -c SHA256SUMS
+```
+
+Authenticate the public key fingerprint independently. No release signature was produced
+in this task; no DGX key or private release key was opened or modified.
+
+## Final validation and delivery
+
+- Go full suite and race suite: PASS, all packages (`go test ./...`,
+  `go test -race ./...`). No chain rules, state serialization or VERSION change.
+- Python complete node/core-py/chain-genesis/release/deploy/security suite:
+  584 passed, 3 skipped, 68 subtests; protobuf suite: 2 passed. Total 586 passed.
+- Web complete Python suite: 23 passed; final site build and real Chrome check:
+  PASS. All six .md mirrors match and /start/use placeholders are visible.
+- Fresh CPU and CUDA family installations and actual model conformance: PASS.
+  Installed packaged publish dry run: PASS; account stayed balance 9800, nonce 2.
+- Both architecture release regression bundles, import closure, network metadata,
+  docs lint, secret scan (zero high-confidence candidates after fixture filtering),
+  sanitization and existing-version consistency: PASS.
+- gpu-v1 prerequisite grep across docs and web source Markdown/HTML/text: zero;
+  obsolete manual public gateway vetting language: zero.
+
+Every logical implementation step was committed and pushed with pull --rebase
+before push. The web implementation finishes at f98046c on main; the public
+implementation before this signature/validation record finishes at ea23877 on
+master. Public starting HEADs are recorded at the top. No deployment was made;
+production bootstrap values remain explicitly unpublished. Only the task-owned
+loopback chain was stopped after acceptance; existing serving processes and
+pre-existing untracked web build directories were left untouched.

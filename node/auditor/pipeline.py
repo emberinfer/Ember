@@ -11,7 +11,7 @@ from shard_rpc import verify_stage_response
 from sharding import profile_span, execution_span
 from .numeric import LEGACY, UNION, RANK_PROB, compare
 from .gpu import gpu_engine_id
-from .policy import engine_id, profile_engine_id, validate_policy
+from .policy import engine_id, profile_engine_id, validate_policy, verified_job_genesis
 
 
 def reconstruct(job):
@@ -121,9 +121,7 @@ def load_pipeline_policy(job, reference):
     if job.get("drawn_stage") is not None:
         from .range_pipeline import load_range_policy
         return load_range_policy(job, reference)
-    raw = bytes.fromhex(job.get('genesis', ''))
-    genesis = ChainGenesis.FromString(raw)
-    verify(genesis)
+    genesis, raw = verified_job_genesis(job)
     policy_ref = hashlib.sha256(raw).hexdigest()
     if (job.get('policy_ref') != policy_ref or
             not genesis.execution_profile_ver.startswith(

@@ -1033,6 +1033,7 @@ func main() {
 		var inputTokens, outputTokens uint32
 		var elapsedMS int64
 		nodeLabel := "pipeline-stages"
+		policyLayers := relay.Genesis.GetNumericAuditPolicy().GetLayers()
 		if job.Kind == "pipeline" {
 			receiptBytes, decodeErr := hex.DecodeString(job.PipelineReceipt)
 			receipt := &pb.PipelineExecutionReceipt{}
@@ -1040,7 +1041,7 @@ func main() {
 				log.Printf("AUDIT PIPELINE RECEIPT INVALID %s", id)
 				return
 			}
-			challenge, drawn, err = verifier.DrawPipeline(receipt, auditKey, 100, time.Now())
+			challenge, drawn, err = verifier.DrawPipeline(receipt, auditKey, 100, time.Now(), policyLayers...)
 			inputTokens, outputTokens, elapsedMS = receipt.InputTokens, receipt.OutputTokens, receipt.ElapsedMs
 		} else {
 			receiptBytes, decodeErr := hex.DecodeString(job.Receipt)
@@ -1049,7 +1050,7 @@ func main() {
 				log.Printf("AUDIT RECEIPT INVALID %s", id)
 				return
 			}
-			challenge, drawn, err = verifier.Draw(receipt, auditKey, 100, time.Now())
+			challenge, drawn, err = verifier.Draw(receipt, auditKey, 100, time.Now(), policyLayers...)
 			inputTokens, outputTokens, elapsedMS, nodeLabel = receipt.InputTokens, receipt.OutputTokens, receipt.ElapsedMs, receipt.NodeId
 		}
 		if err != nil || !drawn {

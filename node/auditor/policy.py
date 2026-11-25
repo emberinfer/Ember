@@ -71,13 +71,18 @@ def select_band(policy, producer_engine, producer_device, reference):
     return None
 
 
+def verified_job_genesis(job):
+    raw = bytes.fromhex(job.get('genesis', ''))
+    genesis = ChainGenesis.FromString(raw)
+    verify(genesis)
+    return genesis, raw
+
+
 def load_job_policy(job, receipt):
     """No unsigned tolerance/device overrides for new profiles."""
     if not job.get('genesis'):
         return None, None, None
-    raw = bytes.fromhex(job['genesis'])
-    genesis = ChainGenesis.FromString(raw)
-    verify(genesis)
+    genesis, raw = verified_job_genesis(job)
     if not genesis.HasField('numeric_audit_policy'):
         if genesis.execution_profile_ver in NUMERIC_EXECUTION_PROFILES:
             raise ValueError('numeric execution profile requires signed policy')

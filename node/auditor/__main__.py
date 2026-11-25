@@ -12,9 +12,15 @@ sys.path[:0] = [str(Path(__file__).resolve().parents[2] / 'proto'),
                 str(Path(__file__).resolve().parents[1])]
 from ember_pb2 import ExecutionCommitment, ExecutionReceipt, ChainGenesis, ModelManifest
 from auditor import audit
-from auditor.policy import load_job_policy, select_band, profile_engine_id, grade
+from auditor.policy import load_job_policy, select_band, profile_engine_id, grade, verified_job_genesis
 from auditor.pipeline import audit_pipeline, load_pipeline_policy, pipeline_offense
 from engine import load_engine
+
+
+def reference_layer_config(job, policy):
+    if policy is not None and job['engine'] == 'transformers':
+        return {'layers': tuple(map(int, policy.layers))}
+    return {}
 
 
 def main():
@@ -31,11 +37,14 @@ def main():
         print(json.dumps(dict(verdict='inconclusive',distance=1e30,reason='evidence unavailable',
             grade='evidence-unavailable',policy_ref=hashlib.sha256(bytes.fromhex(job['genesis'])).hexdigest() if job.get('genesis') else None)))
         return
+    policy, producer, policy_ref = load_job_policy(job, receipt)
+    layer_config = reference_layer_config(job, policy)
+
     def load():
         return load_engine(job['engine'], model_path=job.get('model_path'),
                            device=job.get('device', 'auto'),
-                           endpoint=job.get('engine_endpoint'), model=job.get('engine_model'))
-    policy, producer, policy_ref = load_job_policy(job, receipt)
+                           endpoint=job.get('engine_endpoint'), model=job.get('engine_model'),
+                           **layer_config)
     first = load()
     band = (select_band(policy, profile_engine_id(producer), producer.actual_device, first)
             if policy is not None else None)
@@ -103,12 +112,19 @@ def main():
 
 
 def pipeline_main(job):
+    policy = None
+    if job.get('drawn_stage') is None and job['engine'] == 'transformers' and job.get('genesis'):
+        genesis, _ = verified_job_genesis(job)
+        if genesis.HasField('numeric_audit_policy'):
+            policy = genesis.numeric_audit_policy
+    layer_config = reference_layer_config(job, policy)
+
     def load():
         if job.get("drawn_stage") is not None:
             from .range_pipeline import load_range_reference
             return load_range_reference(job)
         return load_engine(job['engine'], model_path=job.get('model_path'),
-                           device=job.get('device', 'auto'))
+                           device=job.get('device', 'auto'), **layer_config)
     first = load()
     metric, tolerance, policy_ref = load_pipeline_policy(job, first)
     verdict, distance, reason, faults = audit_pipeline(job, first, tolerance, metric)

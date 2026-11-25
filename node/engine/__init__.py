@@ -19,7 +19,7 @@ def load_engine(name, **config):
         return MockEngine()
     if name == 'transformers':
         return TransformersEngine(config['model_path'], config.get('device', 'auto'),
-                                  tamper=config.get('tamper', False))
+                                  layers=config.get('layers'), tamper=config.get('tamper', False))
     if name == 'pipeline':
         from shard_rpc import PipelineEngine
         return PipelineEngine(config['model_path'], config['stages'], config['scheduler_key_file'],

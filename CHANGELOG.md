@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Accept canonical, increasing sample layers in signed numeric policies and check them against the verified model manifest.
+- Use signed numeric policy layers for Transformers execution and audit replay and for gateway-local audit challenges.
 - Show the latest worker startup or exit failure in the supervisor catalog.
 - Generate unquoted state-sync chunk fetcher counts and accept existing quoted counts.
 - Skip public-view gateway entries without membership metadata during node configuration.

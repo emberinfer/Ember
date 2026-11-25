@@ -267,8 +267,11 @@ def _join_single(args, shared):
                         verify_local(artifact, root)
                     except FileNotFoundError:
                         fetch_sources(artifact, root, manifest.sources) if manifest.sources else fetch(artifact, root)
+                config = {}
+                if genesis.HasField('numeric_audit_policy'):
+                    config['layers'] = tuple(map(int, genesis.numeric_audit_policy.layers))
                 agent.engine = load_engine('transformers', model_path=str(root), device=args.device,
-                                           tamper=getattr(args, 'tamper', False))
+                                           tamper=getattr(args, 'tamper', False), **config)
             elif args.engine == 'pipeline':
                 if not manifest.shards or not args.stage or not args.scheduler_key_file:
                     raise ValueError('pipeline manifest, stages and scheduler key are required')

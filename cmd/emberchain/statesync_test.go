@@ -19,6 +19,62 @@ import (
 	rpchttp "github.com/cometbft/cometbft/rpc/client/http"
 )
 
+func TestNormalizeChunkFetchers(t *testing.T) {
+	for _, body := range []string{
+		"[other]\nchunk_fetchers = \"3\"\n[statesync] # keep\r\n\tchunk_fetchers = \"4\" # keep\r\n[next]\nchunk_fetchers = \"5\"",
+		"[statesync]\nenable = false\n",
+		"[statesync]\nchunk_fetchers = 4\n",
+		"[statesync]\nchunk_fetchers = \"x\"\n",
+	} {
+		path := filepath.Join(t.TempDir(), "config.toml")
+		if err := normalizeChunkFetchers(path); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(body), 0600); err != nil {
+			t.Fatal(err)
+		}
+		if err := normalizeChunkFetchers(path); err != nil {
+			t.Fatal(err)
+		}
+		raw, err := os.ReadFile(path)
+		if want := strings.Replace(body, `chunk_fetchers = "4"`, `chunk_fetchers = 4`, 1); err != nil || string(raw) != want {
+			t.Fatalf("got %q, want %q: %v", raw, want, err)
+		}
+	}
+}
+
+func TestLoadChunkFetchers(t *testing.T) {
+	for _, value := range []string{`"4"`, `'4'`, `4`, `"x"`} {
+		home := t.TempDir()
+		writeConfigFile(t, home, "[statesync]\nchunk_fetchers = "+value+"\n")
+		cfg := cmtcfg.DefaultConfig()
+		_, _, _, err := loadSyncConfig(cfg, filepath.Join(home, "config", "config.toml"))
+		if value == `"x"` {
+			if err == nil {
+				t.Fatal("accepted nonnumeric chunk_fetchers")
+			}
+		} else if err != nil || cfg.StateSync.ChunkFetchers != 4 {
+			t.Fatalf("value %s: got %d, %v", value, cfg.StateSync.ChunkFetchers, err)
+		}
+	}
+}
+
+func TestInitValidatorConfigLoads(t *testing.T) {
+	home := t.TempDir()
+	if err := initValidator([]string{"--home", home}); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(home, "config", "config.toml")
+	raw, err := os.ReadFile(path)
+	if err != nil || !bytes.Contains(raw, []byte("\nchunk_fetchers = 4\n")) {
+		t.Fatalf("generated config lacks an unquoted chunk_fetchers: %v", err)
+	}
+	cfg := cmtcfg.DefaultConfig()
+	if _, _, _, err := loadSyncConfig(cfg, path); err != nil || cfg.StateSync.ChunkFetchers != 4 {
+		t.Fatalf("loading generated config: got %d, %v", cfg.StateSync.ChunkFetchers, err)
+	}
+}
+
 func TestSyncConfigurationFailClosed(t *testing.T) {
 	for _, body := range []string{
 		"[statesync]\nenable = nonsense",

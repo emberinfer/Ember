@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -107,6 +108,10 @@ func initValidator(args []string) error {
 		return errors.New("--home required")
 	}
 	cmtcfg.EnsureRoot(*home)
+	configPath := filepath.Join(*home, "config", "config.toml")
+	if err := normalizeChunkFetchers(configPath); err != nil {
+		return err
+	}
 	cfg := cmtcfg.DefaultConfig().SetRoot(*home)
 	pv, err := privval.GenFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile(), nil)
 	if err != nil {
@@ -117,7 +122,7 @@ func initValidator(args []string) error {
 	if err != nil {
 		return err
 	}
-	for _, path := range []string{cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile(), cfg.NodeKeyFile(), filepath.Join(*home, "config", "config.toml")} {
+	for _, path := range []string{cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile(), cfg.NodeKeyFile(), configPath} {
 		if err = os.Chmod(path, 0600); err != nil {
 			return err
 		}
@@ -128,6 +133,36 @@ func initValidator(args []string) error {
 	}
 	fmt.Printf("validator_address=%X validator_pubkey=%X node_id=%s\n", pub.Address(), pub.Bytes(), p2p.PubKeyToID(nk.PubKey()))
 	return nil
+}
+
+var quotedChunkFetchers = regexp.MustCompile(`^([\t ]*chunk_fetchers[\t ]*=[\t ]*)(?:"([+-]?[0-9]+)"|'([+-]?[0-9]+)')([\t ]*(?:#[^\r]*)?\r?)$`)
+
+func normalizeChunkFetchers(path string) error {
+	raw, err := os.ReadFile(path)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	lines := strings.Split(string(raw), "\n")
+	inStateSync, changed := false, false
+	for index, line := range lines {
+		content, _, _ := strings.Cut(line, "#")
+		if section := strings.TrimSpace(content); strings.HasPrefix(section, "[") {
+			inStateSync = strings.HasSuffix(section, "]") && strings.TrimSpace(section[1:len(section)-1]) == "statesync"
+			continue
+		}
+		if inStateSync {
+			updated := quotedChunkFetchers.ReplaceAllString(line, "${1}${2}${3}${4}")
+			changed = changed || updated != line
+			lines[index] = updated
+		}
+	}
+	if !changed {
+		return nil
+	}
+	return os.WriteFile(path, []byte(strings.Join(lines, "\n")), 0600)
 }
 
 func validatorPublic(args []string) error {
@@ -954,6 +989,12 @@ func loadSyncConfig(cfg *cmtcfg.Config, path string) (uint64, int, bool, error) 
 			case "trust_height":
 				next.TrustHeight, e = strconv.ParseInt(value, 10, 64)
 			case "chunk_fetchers":
+				if strings.HasPrefix(value, `"`) || strings.HasPrefix(value, "'") {
+					value, e = text()
+					if e != nil {
+						break
+					}
+				}
 				var n int64
 				n, e = strconv.ParseInt(value, 10, 32)
 				next.ChunkFetchers = int32(n)

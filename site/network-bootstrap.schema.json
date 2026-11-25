@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://emberinfer.org/network-bootstrap.schema.json",
+  "title": "Ember network.json bootstrap object",
+  "description": "Pending values are unavailable; release operators must publish authenticated real anchors before status ready. Runtime/build validators enforce complete ready anchors and empty/null pending anchors.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "genesis_url",
+    "genesis_sha256",
+    "statesync",
+    "snapshot_peers"
+  ],
+  "properties": {
+    "status": {
+      "enum": [
+        "pending-publication",
+        "ready"
+      ]
+    },
+    "genesis_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "genesis_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-fA-F]{64}$"
+    },
+    "statesync": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trust_height",
+        "trust_hash",
+        "trust_period",
+        "trusted_header_time",
+        "expires_at",
+        "rpc_servers"
+      ],
+      "properties": {
+        "trust_height": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "trust_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9a-fA-F]{64}$"
+        },
+        "trust_period": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trusted_header_time": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "rpc_servers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "snapshot_peers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "pending-publication"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "genesis_url": {
+            "type": "null"
+          },
+          "genesis_sha256": {
+            "type": "null"
+          },
+          "snapshot_peers": {
+            "maxItems": 0
+          },
+          "statesync": {
+            "properties": {
+              "trust_height": {
+                "type": "null"
+              },
+              "trust_hash": {
+                "type": "null"
+              },
+              "trust_period": {
+                "type": "null"
+              },
+              "trusted_header_time": {
+                "type": "null"
+              },
+              "expires_at": {
+                "type": "null"
+              },
+              "rpc_servers": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "genesis_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "genesis_sha256": {
+            "type": "string"
+          },
+          "snapshot_peers": {
+            "minItems": 1
+          },
+          "statesync": {
+            "properties": {
+              "trust_height": {
+                "type": "integer"
+              },
+              "trust_hash": {
+                "type": "string"
+              },
+              "trust_period": {
+                "type": "string"
+              },
+              "trusted_header_time": {
+                "type": "string"
+              },
+              "expires_at": {
+                "type": "string"
+              },
+              "rpc_servers": {
+                "minItems": 2
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

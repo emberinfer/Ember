@@ -1,0 +1,2 @@
+Starting from v4.46, the `logits` model output will have the same type as the model (except at train time, where it will always be FP32)
+{"artifacts": 7, "conformance": [{"distance": 0.0, "seed": 7, "tokens": 2}, {"distance": 0.0, "seed": 19, "tokens": 2}], "manifest_root": "6266bb693bfcb432d2577ac2e524ab258a21d3d710f90d8ac932a5a490123328", "profile_hash": "3f8ee7eba791b286bde706a5438e1893046a900625cfb052bd67c1fbaff972a7", "result": "PASS"}

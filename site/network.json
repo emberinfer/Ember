@@ -199,5 +199,19 @@
   "github": "https://github.com/emberinfer/Ember",
   "quickstart": "https://github.com/emberinfer/Ember/blob/master/docs/QUICKSTART.md"
  },
-  "public_testnet": "active"
+  "public_testnet": "active",
+  "bootstrap": {
+    "status": "pending-publication",
+    "genesis_url": null,
+    "genesis_sha256": null,
+    "statesync": {
+      "trust_height": null,
+      "trust_hash": null,
+      "trust_period": null,
+      "trusted_header_time": null,
+      "expires_at": null,
+      "rpc_servers": []
+    },
+    "snapshot_peers": []
+  }
 }

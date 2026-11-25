@@ -112,3 +112,53 @@ CPU/CUDA installs above used the final probe-enabled installer.
 
 Full Python suite after all runtime/schema changes: 584 passed, 3 skipped,
 68 subtests. Four diffusers/NumPy deprecation warnings remain; no test failures.
+
+## 4. Plain text, command variables and browser acceptance
+
+Ember-web emits /start/* Content-Type text/plain; charset=utf-8, nosniff and
+revalidation in the actual Pages _headers artifact. Every role has an identical
+.md mirror. Shell commands use named MODEL/ADDRESS/publication variables;
+explanatory address placeholders and signing format fields remain verbatim.
+The web acceptance report lists changed lines for use/executor/ledger/publish.
+Real headless Chrome 157.0.8103.50 on the supplied GPU workspace opened the built
+/start/use through a loopback artifact server applying the emitted header rule.
+HTTP type matched, textContent contained both <model> and <your-address-hex>,
+and all six mirrors matched. This is artifact acceptance, not a production
+hosting deployment claim. The reproducible checker is scripts/check_start_sheets.py
+in ember-web. Full web Python suite passed: 23 tests.
+
+## 5. Ledger guide and bootstrap schema
+
+The guides now separate permissionless non-voting synchronization from validator
+admission. Observer instructions verify release and original chain genesis,
+read SHA256/trust-height/header-hash/suppliers from network.json, initialize a
+fresh independent home/key, enable actual state sync, connect public snapshot
+peers and compare rising status/catching_up and independent same-height app hash.
+Governance separately documents validator/operator keys, current registration
+and stake, consensus-key readiness, a current validator operator proposal,
+timelock, recheck and activation height; synchronization grants no voting rights.
+
+Both public metadata and the website's repository-owned fallback contain only a
+schema-valid pending-publication bootstrap object, null hash/height/URL/time
+fields and empty supplier lists. No production anchor or supplier was invented.
+Release/online operators must authenticate and fill real values before ready.
+Public release checking and website building reject malformed/partial ready
+anchors. The identical JSON Schema is published with the site; the builder uses
+a validated baseline bootstrap when present, otherwise the explicit pending
+fallback. Eighteen targeted schema/release tests passed; full suites passed too.
+
+The snapshot-supplier runbook was translated into English, retaining its trust,
+capacity, independent keys, full historical dependencies and rollback limits.
+Reference docs/site release strings were synchronized to existing VERSION 0.9.3
+without bumping VERSION. Initial public-doc/version checks exposed the prior
+Chinese runbook and stale version literals; the corrected checks pass. Detailed
+acceptance records moved out of operator-facing docs into this testdata record.
+
+Prerequisite grep: zero matches for gpu-v1 across docs and ember-web/site-src
+Markdown/HTML/text sources. Historical gateway directory entries and backend
+retired-profile filters remain historical compatibility data, not prerequisites.
+A stale public-routing-vetted sentence in llms.txt was removed as well.
+
+Additional actual installed-family conformance logs are retained here:
+conformance-cuda.log, conformance-cpu-cu-wheel.log and conformance-cpu-wheel.log.
+All returned PASS with replay distance 0 on both prompts.

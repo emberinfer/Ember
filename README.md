@@ -4,7 +4,7 @@ Ember is an open inference network: independent hardware operators run models,
 submit signed execution evidence and settle inference fees in Spark on a
 CometBFT ledger. Participation is permissionless, subject to protocol admission.
 
-The public testnet is live. The chain is `ember-testnet-1`.
+The public testnet is live with v0.9.3. The chain is `ember-testnet-1`.
 **Testnet Spark is valueless test credit.**
 
 ## How the network works

@@ -1,6 +1,8 @@
 # Public network and discovery
 
-The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
+The public network chain ID is published in network.json under `ledger.chain_id`.
+Query live status, app version and the current validator set instead of relying
+on historical counts or activation-height summaries.
 
 Participation is permissionless subject to protocol admission. Query the Ledger
 set and registrations on-chain; neither count proves independent ownership.
@@ -16,6 +18,27 @@ grant stake or choose audit outcomes. A single configured seed remains an
 availability dependency. Authenticate model/profile artifacts, scheduler identity,
 RPC chain ID and TLS pin before joining. No live endpoint coordinates are asserted
 by this repository copy; obtain them through an authenticated deployment channel.
+
+## Synchronize an observer, then consider governance
+
+Anyone can synchronize a non-voting ledger node without inference registration,
+a GPU or prior approval. Download and verify the release, authenticate the exact
+chain genesis through `bootstrap.genesis_sha256`, create a new home with an
+independent node key, and use application state sync with
+`bootstrap.statesync.trust_height`, `trust_hash`, `trust_period`, the independent
+`rpc_servers` and public `bootstrap.snapshot_peers`. Compare status height,
+catching_up and same-height app hashes against an independent authenticated RPC.
+See [Ledger guide](VALIDATOR_GUIDE.md) and [supplier runbook](BOOTSTRAP-RUNBOOK.md).
+
+The network bootstrap object currently declares `pending-publication` with null
+anchors and empty suppliers. Values must be authenticated and filled by the
+release/online operators; this schema is not a claim of production availability.
+Never substitute staging genesis or invented checkpoint values.
+
+Becoming a voting validator separately requires validator/operator keys, current
+admission registration and stake, readiness proof, a current validator operator's
+proposal, the governance timelock and successful activation at the announced
+height. Synchronization alone grants no vote. See [membership](VALIDATORS.md).
 
 ## Trust and authority
 

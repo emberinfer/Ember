@@ -26,6 +26,8 @@ Checks (all hard failures):
     serves the current profile, so listing any other profile for it
     contradicts the live network.
 """
+from bootstrap_schema import validate_bootstrap
+
 import argparse
 import hashlib
 import json
@@ -64,6 +66,10 @@ def main(argv=None):
         return 1
 
     problems = []
+    try:
+        validate_bootstrap(document.get("bootstrap"))
+    except ValueError as exc:
+        problems.append(str(exc))
     release = document.get('release') or {}
     if release.get('version') != version:
         problems.append(

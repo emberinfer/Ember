@@ -7,6 +7,10 @@ organization IDs, readiness heights, current change, and applied/rejected histor
 `/state` includes the same data in the application hash. Organization IDs are
 operator declarations, not independently verified organizational credentials.
 
+Observer synchronization is independent of this admission process: see
+[Ledger guide](VALIDATOR_GUIDE.md). A non-voting node requires no inference
+registration, GPU profile, collateral or validator proposal to synchronize.
+
 ## Admission and authority
 
 Before registering, fund and stake the operator using the existing account
@@ -75,7 +79,9 @@ Exited keys remain in history; use a fresh key for a later admission.
 
 ## Activation and live status
 
-The live chain is `ember-testnet-1`, with genesis dated 2026-11-14 and five Ledger nodes. Live AppVersion 12 activated at height 116582. The source base constant is 11; the coordinated upgrade ladder advances the running state to 12.
+Read the live chain's `/validators`, `/parameters` and RPC `/status` for its
+current membership and app version. Historical activation examples do not
+assert current membership or bootstrap anchors.
 
 Membership changes require initialized on-chain membership and the admission and
 continuity rules above. The optional v10→v11 initialization binds the existing

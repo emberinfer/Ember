@@ -393,13 +393,31 @@ def _chain_json_with_retry(cli, rpc, path):
 
 
 
-def _chain_height(rpc):
-    # Read current height from the RPC abci_info method
-    # (tiny response) instead of the full /state read.
+def _rpc_json(rpc, path):
     import urllib.request
-    with urllib.request.urlopen(rpc.rstrip('/') + '/abci_info', timeout=10) as resp:
-        doc = json.loads(resp.read().decode())
-    return int(doc['result']['response']['last_block_height'])
+    with urllib.request.urlopen(rpc.rstrip('/') + path, timeout=10) as resp:
+        return json.loads(resp.read().decode())
+
+
+def _chain_height(rpc):
+    # Prefer /status: some public RPC endpoints answer /abci_info with
+    # 404 while /status stays available. Fall back to /abci_info when
+    # /status fails, and fail loudly if neither works: a guessed height
+    # (for example 0) corrupts registration expiry windows and produces
+    # transactions that are already expired when broadcast.
+    errors = []
+    try:
+        doc = _rpc_json(rpc, '/status')
+        return int(doc['result']['sync_info']['latest_block_height'])
+    except Exception as exc:
+        errors.append(f'/status: {exc}')
+    try:
+        doc = _rpc_json(rpc, '/abci_info')
+        return int(doc['result']['response']['last_block_height'])
+    except Exception as exc:
+        errors.append(f'/abci_info: {exc}')
+    raise RuntimeError(f'could not determine chain height from RPC {rpc}: '
+                       + '; '.join(errors))
 
 
 def _chain_state_targeted(cli, rpc, chain_id, ident):
@@ -419,8 +437,13 @@ def _chain_state_targeted(cli, rpc, chain_id, ident):
             pass
     try:
         state['height'] = _chain_height(rpc)
-    except Exception:
-        pass
+    except Exception as exc:
+        # Height is not best-effort: callers derive registration expiry
+        # from it, so a missing height must fail loudly instead of
+        # silently continuing with height 0 and an already-expired
+        # registration action.
+        print(f'AUTH chain height query failed: {exc}', flush=True)
+        raise
     return state
 
 
@@ -431,7 +454,7 @@ def _chain_state_with_retry(cli, rpc, chain_id, ident):
         try:
             return _chain_state_targeted(cli, rpc, chain_id, ident)
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired,
-                OSError, json.JSONDecodeError) as exc:
+                OSError, json.JSONDecodeError, RuntimeError) as exc:
             if attempt == CHAIN_QUERY_ATTEMPTS - 1:
                 print(f'AUTH chain query failed after {CHAIN_QUERY_ATTEMPTS} attempts: '
                       f'targeted state: {exc}', flush=True)

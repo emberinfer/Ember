@@ -24,9 +24,41 @@ for arch in $arches; do
     -ldflags="-s -w -X ember/version.Version=$version" -o "$root/bin/emberchain" ./cmd/emberchain
   install -m 0755 release/ember-node "$root/bin/ember-node"
   cp -a core-py proto "$root/lib/ember/"
-  cp -a node/agent node/auditor node/engine node/evidence node/fetcher node/privacy \
-    node/conformance.py node/pinned_tls.py node/pipeline_client.py node/shard_rpc.py node/tokenization.py node/tokenize_prompt.py \
-    "$root/lib/ember/node/"
+  # Ship the whole node/ tree instead of a hand-maintained file list.
+  # The previous explicit whitelist repeatedly dropped runtime modules
+  # (tokenization.py in v0.8.0, content_policy.py in v0.9.0, plus
+  # moe_gateway/moe_rpc/pipeline_spool and others that were never
+  # listed).  Copy everything, then remove only the exclusions below,
+  # and let check_import_closure.py fail the build if any shipped
+  # module imports a local module that is not shipped.
+  cp -a node/. "$root/lib/ember/node/"
+  # Exclusions (test / benchmark / drill only; none is imported by, or
+  # invoked from, any shipped runtime entry point):
+  #   test_*.py, test_support.py  - pytest/unittest suites and helpers
+  #   */testdata/                 - test fixtures
+  #   bench_segengine.py          - standalone stage benchmark tool
+  #   drill_teacher_forcing.py    - offline audit drill tool
+  #   spot_absence_peer.py,
+  #   spot_integration_peer.py    - test doubles driven by Go tests
+  #                                 against the source tree, not the bundle
+  #   __init__.py (top level)     - repository unittest-discovery marker;
+  #                                 the bundle node/ dir is a sys.path root,
+  #                                 not a package
+  #   requirements-*.txt          - re-emitted below in canonical form
+  find "$root/lib/ember/node" -type f -name 'test_*.py' -delete
+  find "$root/lib/ember/node" -type f -name 'test_support.py' -delete
+  find "$root/lib/ember/node" -type d -name testdata -prune -exec rm -rf {} +
+  rm -f "$root/lib/ember/node/__init__.py" \
+    "$root/lib/ember/node/bench_segengine.py" \
+    "$root/lib/ember/node/drill_teacher_forcing.py" \
+    "$root/lib/ember/node/spot_absence_peer.py" \
+    "$root/lib/ember/node/spot_integration_peer.py" \
+    "$root/lib/ember/node"/requirements-*.txt
+  python3 release/check_import_closure.py \
+    --source-root node --source-root core-py --source-root proto \
+    --bundle-root "$root/lib/ember/node" \
+    --bundle-root "$root/lib/ember/core-py" \
+    --bundle-root "$root/lib/ember/proto"
   cp node/requirements-spi.txt VERSION "$root/lib/ember/"
   cp "node/requirements-cpu-$arch.txt" "$root/lib/ember/requirements-cpu.txt"
   cp -a chain-genesis/ember-* "$root/profiles/"

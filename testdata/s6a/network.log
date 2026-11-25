@@ -1,0 +1,146 @@
+=== RUN   TestSyncConfigurationFailClosed
+--- PASS: TestSyncConfigurationFailClosed (0.00s)
+=== RUN   TestLocalNetworkStateSync
+=== RUN   TestLocalNetworkStateSync/include_archive=true
+validator_address=82B8A95C7C87079BC8CA615860ABA4A1FEB55F33 validator_pubkey=16A07C9BD7A008E6859574CF65332A0DC1CD14ADC8C4BE54E87EF0D59BB053A0 node_id=0b040c4be068d14e3182ea451939461e6e643c2a
+validator_address=DDBADA66A46BD60CDC49828579309F4EC86E0B61 validator_pubkey=325C870BA53257D48801EF33DB77108F41812C26E724CDD0271DF4F91F942F1E node_id=2984c4b97221b26ca11b71bef8e6c917f8740025
+validator_address=0284521225F3B4DF07D25C0B90F2E67CF529D714 validator_pubkey=65D5CF2D447DEDFEC45C923FFA365C12835DDD744FBD902BE320E9E0DADAA1D6 node_id=f76ac28aed97f58be83ab678b8d282248224e275
+    statesync_test.go:179: donor has 43 real archive files before state sync
+    statesync_test.go:205: wrong trust hash and expired anchor rejected before node startup
+    statesync_test.go:258: height=1 donor=baseline app_hash=8a354bf771abe74111ff02496d1c8d15e1cee130879d42c583d470afd0041746
+    statesync_test.go:258: height=2 donor=baseline app_hash=c80c1f7cf6c3a76f9ffd9ee157e052046d99e4f719598877946a46a9f1217e1d
+    statesync_test.go:258: height=3 donor=baseline app_hash=8c6d408c6c78288a3eef6ff2dc1496c7ed61168c263e71790f22f528566e8f95
+    statesync_test.go:258: height=4 donor=baseline app_hash=78cbf9b5e5feea27c5d10fec7a00dc72fe6800a4381ebf4bdea9ec18947d9330
+    statesync_test.go:258: height=5 donor=baseline app_hash=7698ed6502751c41b5b84dc4fd11a96f730f8cf04eafd14e63768de3a00e42e0
+    statesync_test.go:258: height=6 donor=baseline app_hash=1bae7e39382c5a2f7156cc9917ff1ce9f40e469223bda6d6ef24c5876a97f827
+    statesync_test.go:258: height=7 donor=baseline app_hash=d9a140f8405171337ec8592329159bb3eddbb11436ac6b8c88109e6c8c9234ab
+    statesync_test.go:258: height=8 donor=baseline app_hash=b1ef729a5eb6b2ebb2dd8e30747dabcb7b41a2a52ddfdcac3a75e1bb2e11e90c
+    statesync_test.go:258: height=9 donor=baseline app_hash=2e3665ea49630c8a8c76cd151b53971be8e55c516840aedf32016205d816dabf
+    statesync_test.go:258: height=10 donor=baseline app_hash=b788394f9d6c91a635c50690a9080c604366e1be6052fd188de0eb712d3f7b18
+    statesync_test.go:258: height=11 donor=baseline app_hash=a93788533d5e4f36e966003408df49c6122538f68337981f1db34c341245e6c2
+    statesync_test.go:258: height=12 donor=baseline app_hash=338d50860db935d76d41bf9767002c80e45044fe274a55039c27decc5d1b6027
+    statesync_test.go:258: height=13 donor=baseline app_hash=957a55ab917daae42a843371939be4f00828bb6da8edf56ddd115cfab9ef7922
+    statesync_test.go:258: height=14 donor=baseline app_hash=20c50d823b6357edccece121d8c0c60af1828bfdd9ccaa43a9f265e3e24b0016
+    statesync_test.go:258: height=15 donor=baseline app_hash=109866f5f41b64f13a1679ea88d1d643688431f889af0b629ba4ebc865bac37d
+    statesync_test.go:258: height=16 donor=baseline app_hash=aed2b9c10fdf1b139ad011d38f110436e75756a078d81620fde594e2fa97ab2f
+    statesync_test.go:258: height=17 donor=baseline app_hash=148bef6fb9e05a52de52dc1dba74ae15bad15a8a4e43ac523bc171b9f159fcd0
+    statesync_test.go:258: height=18 donor=baseline app_hash=9812eb6a1b0542f5ed4688234950d4959b915f8dd94ab590e93094a9846f1d88
+    statesync_test.go:258: height=19 donor=baseline app_hash=04cd3a0d64931edecfd1e048a9372f15c3f5d43a8382bd4857c5db369122ae21
+    statesync_test.go:258: height=20 donor=baseline app_hash=64a72ab020d45fb3fa5c808b1bccb0fed080f485a0fe8cbd34e16e349c520d36
+    statesync_test.go:258: height=21 donor=baseline app_hash=9ad3c7bef05d9938f5041cb96615a4e3eedbb29ee3490f97d7ec3260564558dc
+    statesync_test.go:258: height=22 donor=baseline app_hash=baca427fb41024d9e63e57b902242a2230d2c020bcefbf3d435d42738e2a1ef1
+    statesync_test.go:258: height=23 donor=baseline app_hash=5aa8ad8ed71fde343712f67824a3ead9f69e5ede74fbb4a81db7127ffa11b3fe
+    statesync_test.go:258: height=24 donor=baseline app_hash=02e91d3add50900408754538e24d02535e22b01ca3b1b5abb44fb8a262e46e06
+    statesync_test.go:258: height=25 donor=baseline app_hash=16218f49a213b8af0507d98ea7185be422930165d0293fa104ed1bfcc360faca
+    statesync_test.go:258: height=26 donor=baseline app_hash=3ce57e58c2f3d0a491097ccb5600e8de1e85363b5c7a25f78b5cca8dfe25866d
+    statesync_test.go:258: height=27 donor=baseline app_hash=6d0c1ffc2a5f0b663df9902b7ecee33d95608182589831753c37489134e5f0ed
+    statesync_test.go:258: height=28 donor=baseline app_hash=df7aa0c12eda88b9bc493c9e9e9ad953730d89bc83bbae64b019ee9812b2b2ec
+    statesync_test.go:258: height=29 donor=baseline app_hash=aa9d50bd3e01e6a314e909f17bfa2c5ce63cdf953ce728c5cc708dde3d7685f0
+    statesync_test.go:258: height=30 donor=baseline app_hash=018e279dd575f7416beadfc235abc2e3ac446a95d77ba5993f2448deac16785f
+    statesync_test.go:258: height=31 donor=baseline app_hash=60c80bb8c26cc8716ae4aeba33689ca0811e26bde1cdd583ea10a86fbdc12f22
+    statesync_test.go:258: height=32 donor=baseline app_hash=2b534b2b19731ba7809ae73bf7ff54ddafdc5ff64bc514c2edc3b6880e916ae7
+    statesync_test.go:258: height=33 donor=baseline app_hash=b91a39c6d978af4e18d05bd47ca1f15a690fc250eecc3e8a27939f8959e5907f
+    statesync_test.go:258: height=34 donor=baseline app_hash=5d1d8464b1dd1bad29b54d927b97ffcdb000924fef26da9f54ae318364e1eb91
+    statesync_test.go:258: height=35 donor=baseline app_hash=dea11f6f6b16f179305b0812f7a3ccef1e3ab3073c1b5bc2237eef7af568664e
+    statesync_test.go:258: height=36 donor=baseline app_hash=cd7a2a990463735fa8a30b52590f0da6282cc2abeeef862df119eef2d4510b3d
+    statesync_test.go:258: height=37 donor=baseline app_hash=3c40d95f363aa5278972f3c2a282c2bc5529e54cf85c9ea9a35de394b499ec4d
+    statesync_test.go:258: height=38 donor=baseline app_hash=5b217f63228a3bac894c9ab18df5ae6e62d41d11c3d5bd5bc6e3181f2ba292ba
+    statesync_test.go:258: height=39 donor=baseline app_hash=4338feb798cce5fea4cabe382e79ba95aeb379e5351746d6e1a8a9a4b54cd8fa
+    statesync_test.go:258: height=40 donor=baseline app_hash=b84d396be1dbe0d76bf78fc731f71e0e82c07fd2af9eec3512baf36095bc2a56
+    statesync_test.go:258: height=41 donor=baseline app_hash=d330b1af71cbf50c1f595592148cc5577559fed6bee4c9bc2161d43897b21f86
+    statesync_test.go:258: height=42 donor=baseline app_hash=ee1756041e16cb48debe47da7604b5fcf44d10af74143a9c377cb29f7172bbcf
+    statesync_test.go:258: height=43 donor=baseline app_hash=62dae693be8eaac5330286dfc25d47010148f8dd09e381b56d9a521c405aa800
+    statesync_test.go:258: height=44 donor=baseline app_hash=2daff27471201218e79112cbe29295bc25e9a73da32a8e85ad4e9ed2e2400240
+    statesync_test.go:258: height=45 donor=baseline app_hash=a21285a2d36ca9131e16cb667d304efab562c1218faaf62c11566fdf6064b645
+    statesync_test.go:258: height=46 donor=baseline app_hash=305637bac0c46d06e2afdb541d33d62ff59f9f83826c6ef7d0fc7b9a3ce386ad
+    statesync_test.go:258: height=47 donor=baseline app_hash=a6a1d5bfb16c15ddbcbfbc48b6ff934d083bc68d7eb536cf3f6ce7669fbcfe6c
+    statesync_test.go:258: height=48 donor=baseline app_hash=f80c9a87a126e5c6bcbc878377a413a1708b4b387588189cbd909a9a56855fc6
+    statesync_test.go:258: height=49 donor=baseline app_hash=52f579171351f12fa74d1ae63eb017a846208809bac7eb5249a6ced7dda9e87f
+    statesync_test.go:258: height=50 donor=baseline app_hash=b1c1cc41b05ddb5907f18f72696011dce27bb2f839638e3fdc3706e6dd2ea973
+    statesync_test.go:258: height=51 donor=baseline app_hash=63e725bc18ec782b47abb1ac05be225069d93db7b802cd922eba48d748c5b3cb
+    statesync_test.go:258: height=52 donor=baseline app_hash=a9e2fb61d81b3bc4c2c9103c032df96ed7e71f7b5167e888e53852ad97e2eae5
+    statesync_test.go:258: height=53 donor=baseline app_hash=23b0f271e62c1d4eb2fec6aaca3b587474e2590b5ece0e44f8b64d405d18e481
+    statesync_test.go:258: height=54 donor=baseline app_hash=078cd5d7801b1051e8bdef51effb80796f22acff489d9a56aa8828dd9f37926c
+    statesync_test.go:258: height=55 donor=baseline app_hash=c37b80e1f13eefb3bb21019a8fef97252c593366e6408a751ba252129e222dc6
+    statesync_test.go:258: height=56 donor=baseline app_hash=eb514812fad5cbbdf7eb8cc123dfadaaaab884bd1654ac07b3832c3252e1594d
+    statesync_test.go:258: height=57 donor=baseline app_hash=0e72a283a3d169df7c721703b669dc2de73aa4cc828ec2b052eaed7ee0c34840
+    statesync_test.go:258: height=58 donor=baseline app_hash=b358da7cecefe3b975add0ff6f41733d027db091b9cc16387d7710454a486d45
+    statesync_test.go:258: height=59 donor=baseline app_hash=fdb05c55bba85a6bc04450c0e181d56ce402baf683c7687dc0860b43c7ef6ad2
+    statesync_test.go:258: height=60 donor=baseline app_hash=8f5c32c6055d67f36b781552a7718f7b1b06883189cc078b75c4935f78de3dea
+    statesync_test.go:258: height=61 donor=baseline app_hash=382c6bf315665bcb347c8c0dc7a7cbd4c944679c989ee8c4b8cb11cf3f453cee
+    statesync_test.go:258: height=62 donor=baseline app_hash=cfd0b9a4be4db4a52d5400a7743ec1615e1598943fce887eb9997f4a2e8c0928
+    statesync_test.go:260: real P2P state sync restored H=40, followed through 62 (22 new blocks); donor, receiver, snapshot-disabled baseline hashes match
+=== RUN   TestLocalNetworkStateSync/include_archive=false
+validator_address=CD2A6DBCC54FE20D9C15DD522783A2130E1BD55D validator_pubkey=D5A4745A76BDD719678372B9E7CB37110319BA0BA78B7BC7616501E9F3F7B606 node_id=2ff31e63085f50ffaaa5e3ecbdf6ec190299984f
+validator_address=E0A69DB5A9EBC32D18ADBB9A2A6C9991E27CCEA2 validator_pubkey=75EBEB0953055B369BEDEF5E91FA585E8B7D1C043CDDE18640596B65CCC62548 node_id=1d3fb1c2eeafb465638796035e1221c2b78db63a
+validator_address=BF1DF35BA0EA0E099FDBD868B417E464C7183446 validator_pubkey=21B99538187AFFE5EBC37593B56EB4313E5A65C802329312513C0B95E5864832 node_id=c1e6095ebfe1be4f5277d3af86e23509867ff2b3
+    statesync_test.go:179: donor has 42 real archive files before state sync
+    statesync_test.go:205: wrong trust hash and expired anchor rejected before node startup
+    statesync_test.go:258: height=1 donor=baseline app_hash=8193c93c98cb151f5fb83f9a3ae315cdec5e66b5b74b577bb1f5cb9747b0e420
+    statesync_test.go:258: height=2 donor=baseline app_hash=cb4e06f5545398fa1cb5924869bfa9bdcb01813ea16ef8e2c4abba699a21b206
+    statesync_test.go:258: height=3 donor=baseline app_hash=7219b9ae7aaeb7d6a47dbd3a30f4d470fa302dba1ccf29e86b6c10d2ce3a7f8c
+    statesync_test.go:258: height=4 donor=baseline app_hash=bf2f3c38dbc159bcdc8ebb9e2890c2dd26113397bd471988d20ee577cb07d162
+    statesync_test.go:258: height=5 donor=baseline app_hash=5d4be387e65d4fbefb84dbf2afdc1871df543f6372e17f3c12ac9981a4223850
+    statesync_test.go:258: height=6 donor=baseline app_hash=47fcecb31d44477e23abaf964a686f8f09ff586b480bd73350567e28672eb223
+    statesync_test.go:258: height=7 donor=baseline app_hash=8416211119c9a1d16c2341f355b1c5ea47589635388ca44a56d4a0e9092f03e0
+    statesync_test.go:258: height=8 donor=baseline app_hash=feb7ab2b03beae7560c3ce03f5cb13854b4a5882d56bc457f19f1b0317e596a9
+    statesync_test.go:258: height=9 donor=baseline app_hash=07733196bd204e39fcc34a2f8511d5526f0061b1d8480041ae438ca5f8b4d6a0
+    statesync_test.go:258: height=10 donor=baseline app_hash=62f1b1b0fadc67154615ff4b6c60c0c23d4e5f7770e228496fc7b9c977d9cf0a
+    statesync_test.go:258: height=11 donor=baseline app_hash=b47eaf37888e498b9981f9711b0c7cc0d9df5f75e80c231abcca2760570adcab
+    statesync_test.go:258: height=12 donor=baseline app_hash=f859902dc977410b45573c2cfd0dcb667144466427431d0ac2795bac9c89e73e
+    statesync_test.go:258: height=13 donor=baseline app_hash=8b83068f0e66986fbd5230f4585247a9f8bec278ddd58d396b36eb5e71a22316
+    statesync_test.go:258: height=14 donor=baseline app_hash=19226a6d33b0adbddd299862a89898f9fed59ac67ad2cd84cad200bc648e6652
+    statesync_test.go:258: height=15 donor=baseline app_hash=f5716c27d68afe145ccb4c66ad43298fd49a7b263f78a1efcb346eca24d6776a
+    statesync_test.go:258: height=16 donor=baseline app_hash=f2fdc8450e0e84f65d30ac2587be9f7f1b330f7616696c96bbc406291ae4b975
+    statesync_test.go:258: height=17 donor=baseline app_hash=277769661c2515179b11886b29cfce58ebb7ef5423adcebb3552d91403b9fd0c
+    statesync_test.go:258: height=18 donor=baseline app_hash=f3e2acbe22c35004bea0f8db735802ae982190226467d8e9d493520a2a91b5be
+    statesync_test.go:258: height=19 donor=baseline app_hash=18b3eba0995d3bb7461cf67a6fa5ee974bc5b27e63240a270da66016fac6122c
+    statesync_test.go:258: height=20 donor=baseline app_hash=106307e5e06e224bc2ba31b80f884698872df4eb1a3e363eb1e19686cc2f9f5e
+    statesync_test.go:258: height=21 donor=baseline app_hash=063b5ccb3931bed5de4bc73c682872f402ecca7523ade9e900a87acafe8c15e2
+    statesync_test.go:258: height=22 donor=baseline app_hash=7d60498995b9e8dc6c937dc1477a873631b2a11532e842b271e47107b4e6a0cf
+    statesync_test.go:258: height=23 donor=baseline app_hash=f1ab1546373889f87dd4fb27eb2d8126d4f93a3cc1dfcbc1090803c586404778
+    statesync_test.go:258: height=24 donor=baseline app_hash=c1c6da5f3b33b75ac911934bae3b920d58cddf287bc3da45418e7dd8b6063c6d
+    statesync_test.go:258: height=25 donor=baseline app_hash=c495ffcafa4b8c7e6e8f508d2f3940feadc6fe6a8195e9d153edf9c48e72ca28
+    statesync_test.go:258: height=26 donor=baseline app_hash=5c878cc6914785138932193a3cfe020ce6e803d3e2c5ceba075ee2a78a878c10
+    statesync_test.go:258: height=27 donor=baseline app_hash=3e01900b9f62c6fdf8650c8b2a91a1a0b6f40594110931a6fce5b2ace3d3b7cf
+    statesync_test.go:258: height=28 donor=baseline app_hash=6b0826d5f1bb34d69cdc03c01ab1228d64a5dee735de72119ea24e0ec650dccd
+    statesync_test.go:258: height=29 donor=baseline app_hash=a67a39c5894774b860e4c12875758ff75fc3fafb5530afa6b32b45b9728713c2
+    statesync_test.go:258: height=30 donor=baseline app_hash=42b3e4b84fb9e0f715b5c0da24f879575f1ec0b94ecefb608cd3de4ad2b659f6
+    statesync_test.go:258: height=31 donor=baseline app_hash=8069f512e1ef6dfec75ad55604099863ef547b66e6446f06a10abfe5fd38f50a
+    statesync_test.go:258: height=32 donor=baseline app_hash=7807dfb3e6a58695d5f7179bf2c2b202cc776ac3be56baf3fc4712eeafb8cfa8
+    statesync_test.go:258: height=33 donor=baseline app_hash=5ced6cb931032c156b10399d62fc005ce34bae8c10641e853367c3871c102653
+    statesync_test.go:258: height=34 donor=baseline app_hash=828b30b4f492cabe598238fc618ff5a2de870d5ce852e35f7b61ce150546246c
+    statesync_test.go:258: height=35 donor=baseline app_hash=98fb0d95cc94357bdfbafa4933b9b19859013eb5f5cec338030ccde0e6115445
+    statesync_test.go:258: height=36 donor=baseline app_hash=90539c9505f1b28fd2fd0fb60d0e8a749a4bff643ab476ae028c036622d07046
+    statesync_test.go:258: height=37 donor=baseline app_hash=c0ace63ed6debec3acbd3a172a5697a3830df220606a5c02a760ddcf2ae7becf
+    statesync_test.go:258: height=38 donor=baseline app_hash=138d1b97f5be1fe618b99a762645b31a1152cdcc50f92360f918c9d13671e60b
+    statesync_test.go:258: height=39 donor=baseline app_hash=bf04b45c595d03f02384a7bd23c861be9fc981ff6db70a960d51d86e0ad0c939
+    statesync_test.go:258: height=40 donor=baseline app_hash=d5735b7190b0dc516bfe907d30ae05fa5e3bdf1bec1fd6c4e523b518dd105a99
+    statesync_test.go:258: height=41 donor=baseline app_hash=b8d29cfffbc14feb33ea0a94efd6d5f55a70018e55fe60a9a7673fbe51979bae
+    statesync_test.go:258: height=42 donor=baseline app_hash=6bf4e71e98c93505800b8ac6c5045a7f03e70868469a77ecd7565ea15a7497ec
+    statesync_test.go:258: height=43 donor=baseline app_hash=7dbe9abce84f71ef70b856923e6d0808f94f9c56ba4b24597f12f60ceb89d84a
+    statesync_test.go:258: height=44 donor=baseline app_hash=b103a3868e1407b8a4415f29f45a92ebb984e4e0a6c93a6b6d0cc6696e8715ba
+    statesync_test.go:258: height=45 donor=baseline app_hash=b18c5801b75cc799ad6212120dc763c4d8d5c869a1c1bc1d7fa5011dc175b7bd
+    statesync_test.go:258: height=46 donor=baseline app_hash=f3aa56df65cab41939ef5a5e18b87ba6f094ea780235e9a9835e1946c4547471
+    statesync_test.go:258: height=47 donor=baseline app_hash=edb8c2f4b62126d8dad63feab2d345a5cb8b24c5ff725c92dfe110a8cc8832d2
+    statesync_test.go:258: height=48 donor=baseline app_hash=ec53616321b5e700c0fee8f9347be34eb39e676826db390dde414e2cbca41f67
+    statesync_test.go:258: height=49 donor=baseline app_hash=33cc1937abc5c2cccd36606dbc17791fda6f302710222b51c0b51d2ca732c8b9
+    statesync_test.go:258: height=50 donor=baseline app_hash=1ad6cee342b985e4a1f5aeebea965ee563afc599c85d010f45a888ed2b41e268
+    statesync_test.go:258: height=51 donor=baseline app_hash=59250d0726a7abbe615d6725765261d9cdc6dbbcb00cfe2d05bdf3c409975d0f
+    statesync_test.go:258: height=52 donor=baseline app_hash=f6188296e224db2b691c4c94ad675de88c14d4645a9d2a3a843eafbb93813a90
+    statesync_test.go:258: height=53 donor=baseline app_hash=b90aa6e2f354cfc0b55d8b76d72b4c990147f12d4b5251599c17aed25203daa5
+    statesync_test.go:258: height=54 donor=baseline app_hash=97c314774fe6ce90fddbeacdce398a4ef28d9a81fda1cc9641670da59f749d6f
+    statesync_test.go:258: height=55 donor=baseline app_hash=23932aa7a1952c45b0c77881c271e7eb44e55033c0917256e813f8c8a748d9cb
+    statesync_test.go:258: height=56 donor=baseline app_hash=b131b24820deae6752524431c441ff5f77aee6f544de4452a9e7e6c81e844f28
+    statesync_test.go:258: height=57 donor=baseline app_hash=787458ca417f860a014b57059fee160c2a0b0b7e62cdf61bd56dd22a5cdaf83f
+    statesync_test.go:258: height=58 donor=baseline app_hash=7a64775a30c2d2823c1444d7defe6fbd914fdca351fba43ca5af536e7ce41bfe
+    statesync_test.go:258: height=59 donor=baseline app_hash=19a7c8ca7591d102a1644cd23d6841af3701c46e418c98444b7191d001ecd565
+    statesync_test.go:258: height=60 donor=baseline app_hash=656dc7adb9ec3cc6edbf7244a79d5a6da4330529b72d5e59cc4f0759c5734f18
+    statesync_test.go:258: height=61 donor=baseline app_hash=aa47ca1e78eb046d9d090dd077b49d63e24ae7751e8a9e3dd6e30c7a54f7cead
+    statesync_test.go:258: height=62 donor=baseline app_hash=d0048f9781f70f3ef5ee99ba8117878e341db22e45c85816deade55b0b407f56
+    statesync_test.go:260: real P2P state sync restored H=40, followed through 62 (22 new blocks); donor, receiver, snapshot-disabled baseline hashes match
+--- PASS: TestLocalNetworkStateSync (37.52s)
+    --- PASS: TestLocalNetworkStateSync/include_archive=true (18.91s)
+    --- PASS: TestLocalNetworkStateSync/include_archive=false (18.61s)
+PASS
+ok  	ember/cmd/emberchain	37.545s

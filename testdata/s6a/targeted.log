@@ -1,0 +1,95 @@
+=== RUN   TestSnapshotIsolationRestoreAndRejections
+2026/11/25 17:56:19 snapshot offered height=5001 archive_included=true
+2026/11/25 17:56:19 snapshot rejected: snapshot height, chain or expected app hash mismatch
+2026/11/25 17:56:19 snapshot offered height=5001 archive_included=true
+2026/11/25 17:56:19 snapshot installed height=5001 app_hash=b2c738b13c8190be7fe7002d2b07ad1d4d8c04fe48b04356d0b5e74b59a89991 archive_included=true
+    snapshots_test.go:155: height=5002 snapshot=baseline=restored app_hash=31699ceb80248b8bd7d02e6503b6892e31b3e0a619e1660d3a77e72e1f6018c1
+    snapshots_test.go:155: height=5003 snapshot=baseline=restored app_hash=866e28145b99ac0592821189a5f11938fe92237aeb4f76a845fdd44128960f19
+    snapshots_test.go:155: height=5004 snapshot=baseline=restored app_hash=86d1ab4e36b167a017a1d7976d9064882b03f9207de3f45df523d2f6a9824be7
+    snapshots_test.go:155: height=5005 snapshot=baseline=restored app_hash=20f85b7f713d8ab269bf5b67084d97f2beeddee215ce56cd26e023cdd6d68d07
+    snapshots_test.go:155: height=5006 snapshot=baseline=restored app_hash=c0b0195681f2d6b5020102434c183518e1a6f5d60cd62b4d898d065d4b1cfbc9
+    snapshots_test.go:155: height=5007 snapshot=baseline=restored app_hash=567b29b778a43a9e681daa3ffd4d9c2960ad17ae7ca5a6fb109d913859c9fe1c
+    snapshots_test.go:155: height=5008 snapshot=baseline=restored app_hash=54c620ce804f6997689f6c5db93c66b8c77b7d74f9304a55abc9c1f929847772
+    snapshots_test.go:155: height=5009 snapshot=baseline=restored app_hash=860c22935aa98c65aca956717d4e7da7a28bce51c27ebafda35992f32f3907bc
+    snapshots_test.go:155: height=5010 snapshot=baseline=restored app_hash=41f6d9e71171313b60ba831a5f7d74a87645c0c2791f86a2db9f11ffd028f438
+    snapshots_test.go:155: height=5011 snapshot=baseline=restored app_hash=6f4311106890f3de37135ede4c5117a2104fdd55d386a92f6312210614dad71e
+    snapshots_test.go:155: height=5012 snapshot=baseline=restored app_hash=57fb63c4ee86de5b833d61786eda5d755bc6a14db37c22d1901283afd2284007
+    snapshots_test.go:155: height=5013 snapshot=baseline=restored app_hash=08f4306845d0802bfbdc00c804ae94122b2c4a94f016c0446ad246a768c39b17
+    snapshots_test.go:155: height=5014 snapshot=baseline=restored app_hash=bb9b1bc18fcca626bd92395935a3fc97f3db6c94dbed34204c1b231e41656750
+    snapshots_test.go:155: height=5015 snapshot=baseline=restored app_hash=8ebe565567951795fec90446c8ed310ade867460b737304a206e0e56c9b69c51
+    snapshots_test.go:155: height=5016 snapshot=baseline=restored app_hash=5844b09aefb2fe006247c8e9ed9d7f1a68212292b993a0d48cba407590cfa2fb
+    snapshots_test.go:155: height=5017 snapshot=baseline=restored app_hash=1290e6eec0513863bd35c277e8a8b74d0100cce8974f166928e258c950fd6f63
+    snapshots_test.go:155: height=5018 snapshot=baseline=restored app_hash=88103903933a0bfd590e664fb956467d970931fde0656095585745fa24a3a64d
+    snapshots_test.go:155: height=5019 snapshot=baseline=restored app_hash=0c144033dd992f051644b886cd6e403e9ed0f9eff823e652761863ebe22cc7f7
+    snapshots_test.go:155: height=5020 snapshot=baseline=restored app_hash=74118558e32aa8c5f2927b4d8af31a4f23dc6a72dab27205038db8d457481344
+    snapshots_test.go:155: height=5021 snapshot=baseline=restored app_hash=62f4b9d5fcb3cf2d5002959acf61ab52db0236fb5b93f8397b0fcd2b7af336b0
+    snapshots_test.go:155: height=5022 snapshot=baseline=restored app_hash=6f2279fdfeb72eeab56f2025577528e3a6aa85976f067d90ccdb44383ce4fbdb
+=== RUN   TestSnapshotIsolationRestoreAndRejections/corrupt
+2026/11/25 17:56:19 snapshot offered height=5001 archive_included=true
+=== RUN   TestSnapshotIsolationRestoreAndRejections/out-of-order
+2026/11/25 17:56:20 snapshot offered height=5001 archive_included=true
+=== NAME  TestSnapshotIsolationRestoreAndRejections
+    snapshots_test.go:178: archive and chunk reads succeeded; app hashes identical across snapshot and 21 following blocks
+--- PASS: TestSnapshotIsolationRestoreAndRejections (0.15s)
+    --- PASS: TestSnapshotIsolationRestoreAndRejections/corrupt (0.00s)
+    --- PASS: TestSnapshotIsolationRestoreAndRejections/out-of-order (0.00s)
+=== RUN   TestSnapshotRestoresActiveProtocolSpool
+2026/11/25 17:56:20 snapshot offered height=3 archive_included=true
+2026/11/25 17:56:20 snapshot installed height=3 app_hash=3300335b938046678119a4d92370b32ef925b6ca4e91752e57447e8125fe9984 archive_included=true
+    snapshots_test.go:218: restored active hold moe-req: receipt bytes=6690, root verified
+--- PASS: TestSnapshotRestoresActiveProtocolSpool (0.03s)
+=== RUN   TestSnapshotArchivePolicy
+2026/11/25 17:56:20 snapshot offered height=5001 archive_included=true
+2026/11/25 17:56:20 snapshot installed height=5001 app_hash=e63d35cc88f1f4997e93b33e9a5fa61758952e55c53aea289408c908ac76868f archive_included=true
+    snapshots_test.go:365: include_archive=true height=5002 app_hash=c7c96e5165fd434285d579170e054e86e644241ea5182aca7c6536648ea3a9c6 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5003 app_hash=e89a17295866268055398f4aaa63f7d9ade439791c2a92e0959bb2d22bd755c7 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5004 app_hash=107fb1f9f87e01485b7fc0c7726f8c79fcd684a71cbc76a7a0808e1154940c81 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5005 app_hash=34552a2f64031c0515d50b64bcc603671011a1ced7443f946439f0ee110bdc95 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5006 app_hash=212f6e976f6691b97d36d4333ecc0543b4ec252920cb62f4823511a2e24bbdc7 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5007 app_hash=13168416113e596d3f567507ffb3570d66716fd3a37f39795ee27ab894c19c7c baseline=restored
+    snapshots_test.go:365: include_archive=true height=5008 app_hash=0ed573c0d875bd31297e41171d0ec2d264bc70f237779be051a83af1a3e7103e baseline=restored
+    snapshots_test.go:365: include_archive=true height=5009 app_hash=0896c908bd94663cd87de2ed053f389e2137b1e5f4cb524e0f756d5fa3af6a71 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5010 app_hash=cadd9686814dfc64a51a575f1be2efafa437cea7dfbe5a406ff1656dabe0e3ea baseline=restored
+    snapshots_test.go:365: include_archive=true height=5011 app_hash=511c7a2b70ee594099c004036cd698e496ae457e6366162eba78c69abe54a162 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5012 app_hash=8a2100bb0c0fc1a2389716dd10052236a6f55428d0e2e4f960987f677af76723 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5013 app_hash=d364c77740766a122ce210f9eb048e01d2a2dfb1245fc74235c42c1bb7198c7c baseline=restored
+    snapshots_test.go:365: include_archive=true height=5014 app_hash=0773ed69194ae4aac84d140f7cbf62366fff426b116d307aba833630cdbadfe3 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5015 app_hash=dafac3db4391fd033c0b3976f0d2d33c02ec487f472514bee8a0c63a00fff0d8 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5016 app_hash=c4694081926c91749f93f886a0fa2de6fbb9a4886780384ef83b19fc8ba846ae baseline=restored
+    snapshots_test.go:365: include_archive=true height=5017 app_hash=b142dea7565e1517600eae454d43eee2205497204a946ab3c8a798b3db1353d4 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5018 app_hash=70428ff9fd38cbb349d4843463a528825886ae7b240db3c61d6c44ebe98a21fd baseline=restored
+    snapshots_test.go:365: include_archive=true height=5019 app_hash=0281a766dc2fdc2dc229c44d7513961218ec6165530e14615465024abd901d8b baseline=restored
+    snapshots_test.go:365: include_archive=true height=5020 app_hash=af4840cf500f02a1c8c22db55a2062634d8d27fc9c4c81a86ed6e28429f849f4 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5021 app_hash=fd692b6ae03bc5b9c20a3897a5b883f13e02e717670384a6c81f0043e1927ca2 baseline=restored
+    snapshots_test.go:365: include_archive=true height=5022 app_hash=76700bf5005b270f10bdae8ae7078806eabf296385c6d014cce028a2752ee807 baseline=restored
+    snapshots_test.go:374: include_archive=true bytes=1556480 archive_entries=302; restart and 21 blocks match; old missing hash returns nil
+2026/11/25 17:56:20 snapshot offered height=5001 archive_included=false
+2026/11/25 17:56:20 snapshot installed height=5001 app_hash=e63d35cc88f1f4997e93b33e9a5fa61758952e55c53aea289408c908ac76868f archive_included=false
+    snapshots_test.go:347: omitted /hold/old-audit: code=0 value=null
+    snapshots_test.go:365: include_archive=false height=5002 app_hash=c7c96e5165fd434285d579170e054e86e644241ea5182aca7c6536648ea3a9c6 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5003 app_hash=e89a17295866268055398f4aaa63f7d9ade439791c2a92e0959bb2d22bd755c7 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5004 app_hash=107fb1f9f87e01485b7fc0c7726f8c79fcd684a71cbc76a7a0808e1154940c81 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5005 app_hash=34552a2f64031c0515d50b64bcc603671011a1ced7443f946439f0ee110bdc95 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5006 app_hash=212f6e976f6691b97d36d4333ecc0543b4ec252920cb62f4823511a2e24bbdc7 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5007 app_hash=13168416113e596d3f567507ffb3570d66716fd3a37f39795ee27ab894c19c7c baseline=restored
+    snapshots_test.go:365: include_archive=false height=5008 app_hash=0ed573c0d875bd31297e41171d0ec2d264bc70f237779be051a83af1a3e7103e baseline=restored
+    snapshots_test.go:365: include_archive=false height=5009 app_hash=0896c908bd94663cd87de2ed053f389e2137b1e5f4cb524e0f756d5fa3af6a71 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5010 app_hash=cadd9686814dfc64a51a575f1be2efafa437cea7dfbe5a406ff1656dabe0e3ea baseline=restored
+    snapshots_test.go:365: include_archive=false height=5011 app_hash=511c7a2b70ee594099c004036cd698e496ae457e6366162eba78c69abe54a162 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5012 app_hash=8a2100bb0c0fc1a2389716dd10052236a6f55428d0e2e4f960987f677af76723 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5013 app_hash=d364c77740766a122ce210f9eb048e01d2a2dfb1245fc74235c42c1bb7198c7c baseline=restored
+    snapshots_test.go:365: include_archive=false height=5014 app_hash=0773ed69194ae4aac84d140f7cbf62366fff426b116d307aba833630cdbadfe3 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5015 app_hash=dafac3db4391fd033c0b3976f0d2d33c02ec487f472514bee8a0c63a00fff0d8 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5016 app_hash=c4694081926c91749f93f886a0fa2de6fbb9a4886780384ef83b19fc8ba846ae baseline=restored
+    snapshots_test.go:365: include_archive=false height=5017 app_hash=b142dea7565e1517600eae454d43eee2205497204a946ab3c8a798b3db1353d4 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5018 app_hash=70428ff9fd38cbb349d4843463a528825886ae7b240db3c61d6c44ebe98a21fd baseline=restored
+    snapshots_test.go:365: include_archive=false height=5019 app_hash=0281a766dc2fdc2dc229c44d7513961218ec6165530e14615465024abd901d8b baseline=restored
+    snapshots_test.go:365: include_archive=false height=5020 app_hash=af4840cf500f02a1c8c22db55a2062634d8d27fc9c4c81a86ed6e28429f849f4 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5021 app_hash=fd692b6ae03bc5b9c20a3897a5b883f13e02e717670384a6c81f0043e1927ca2 baseline=restored
+    snapshots_test.go:365: include_archive=false height=5022 app_hash=76700bf5005b270f10bdae8ae7078806eabf296385c6d014cce028a2752ee807 baseline=restored
+    snapshots_test.go:374: include_archive=false bytes=7680 archive_entries=0; restart and 21 blocks match; old missing hash returns nil
+--- PASS: TestSnapshotArchivePolicy (0.41s)
+=== RUN   TestOmittedArchiveMarkerIsBoundToExactState
+--- PASS: TestOmittedArchiveMarkerIsBoundToExactState (0.01s)
+PASS
+ok  	ember/services/chain	0.612s

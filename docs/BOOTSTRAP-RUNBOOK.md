@@ -62,7 +62,7 @@ Publish these fields using network-bootstrap.schema.json:
 - `bootstrap.status=ready` only after all real fields are verified.
 - `bootstrap.statesync.trust_height` and `trust_hash` (the trusted **header hash**).
 - `trust_period`, `trusted_header_time`, `expires_at` and `rpc_servers` under
- `bootstrap.statesync`.
+  `bootstrap.statesync`.
 - `bootstrap.snapshot_peers`: publicly reachable node-id@host:port suppliers.
 
 Pending publication uses null anchors and empty lists and must remain explicitly
@@ -108,7 +108,7 @@ Start with explicit public peers, for example:
 
 ```sh
 emberchain start --home "$NEW_HOME" --p2p tcp://0.0.0.0:26656 \
- --rpc tcp://127.0.0.1:26657 --peers "$VERIFIED_SNAPSHOT_PEERS"
+  --rpc tcp://127.0.0.1:26657 --peers "$VERIFIED_SNAPSHOT_PEERS"
 ```
 
 Observe successful snapshot installation, rising status height and eventually

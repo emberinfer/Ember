@@ -77,6 +77,7 @@ class Agent:
                 self.session_status(False)
             outgoing = queue.Queue()
             disconnected = threading.Event()
+            connection = None
             outgoing.put(TunnelFrame(node_id=self.node_id, kind='join' if authenticate else 'hello'))
             def messages(outgoing=outgoing, disconnected=disconnected):
                 # Bind this connection's queue: a cancelled gRPC iterator can
@@ -123,17 +124,14 @@ class Agent:
                                     setattr(connection, name, getattr(self, name))
                             connection._run(frame, outgoing)
             except Exception as exc:
-                reason = exc.code().name if isinstance(exc, grpc.RpcError) else str(exc)
+                reason = f'{exc.code().name}: {exc.details()}' if isinstance(exc, grpc.RpcError) else str(exc)
                 print(f'TUNNEL disconnected peer={address} reconnecting: {reason}', flush=True)
-                if stop is not None and stop.is_set():
-                    break
-                time.sleep(0.5)
             finally:
                 self.ready = False
                 if getattr(self, 'session_status', None):
                     self.session_status(False)
                 disconnected.set()
-                if 'connection' in locals():
+                if connection is not None:
                     connection.audit_transfer.close()
                 self.audit_transfer.close()
                 if self._forward_traces is not None:
@@ -141,6 +139,10 @@ class Agent:
                         trace = self._forward_traces.pop(request_id, None)
                         if trace is not None:
                             trace.finish('disconnected')
+            if stop is None:
+                time.sleep(0.5)
+            elif stop.wait(0.5):
+                break
 
     @staticmethod
     def _log_audit_result(request_id, payload):

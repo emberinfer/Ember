@@ -3,6 +3,7 @@
 ## Unreleased
 
 - The gateway supervisor passes pre-bound HTTP and tunnel listeners to workers, eliminating the port allocation race during startup.
+- Node readiness stays healthy while any configured gateway tunnel has completed JOIN and remains connected.
 
 ## 0.10.2 — 2026-11-25
 

@@ -12,6 +12,7 @@ class ReconnectQueueTest(unittest.TestCase):
         stop=threading.Event();old=[];calls=[]
         class Disconnected(grpc.RpcError):
             def code(self):return grpc.StatusCode.UNAVAILABLE
+            def details(self):return 'test disconnect'
         class Stub:
             def Connect(self,messages):
                 calls.append(True)

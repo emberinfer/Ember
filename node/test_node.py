@@ -32,9 +32,31 @@ import urllib.error
 import urllib.request
 
 from agent.health import start_health_server
+from agent.multihome import Sessions
 
 
 class NodeTest(unittest.TestCase):
+    def test_node_health_follows_any_joined_gateway(self):
+        primary = Agent('node1', MockEngine())
+        sessions = Sessions(['primary', 'secondary'])
+        server = start_health_server(primary, '127.0.0.1:0', sessions)
+        base = f'http://127.0.0.1:{server.server_port}'
+        try:
+            sessions.update('primary', True)
+            sessions.update('secondary', True)
+            sessions.update('primary', False)
+            with urllib.request.urlopen(base + '/readyz') as response:
+                self.assertEqual(response.read(), b'ready\n')
+            with urllib.request.urlopen(base + '/metrics') as response:
+                self.assertIn(b'ember_node_ready 1', response.read())
+            sessions.update('secondary', False)
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(base + '/readyz')
+            self.assertEqual(error.exception.code, 503)
+        finally:
+            server.shutdown()
+            server.server_close()
+
     def test_node_health_readiness_and_metrics(self):
         agent = Agent('node1', MockEngine())
         server = start_health_server(agent, '127.0.0.1:0')

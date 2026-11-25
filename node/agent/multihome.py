@@ -104,6 +104,10 @@ class Sessions:
         self.connected = set()
         self.lock = threading.Lock()
 
+    def is_ready(self):
+        with self.lock:
+            return bool(self.connected)
+
     def update(self, peer, ready):
         with self.lock:
             if ready:

@@ -202,7 +202,10 @@ def _join_single(args, shared):
     agent.execution_lock = shared['execution_lock']
     agent.spot_tx_lock = shared.setdefault('spot_tx_lock', threading.Lock())
     agent.session_status = lambda ready: shared['sessions'].update(address, ready)
-    start_health_server(agent, getattr(args, 'health_listen', ''))
+    health_listen = getattr(args, 'health_listen', '')
+    if health_listen:
+        shared.setdefault('health', Registration()).ensure(
+            lambda: start_health_server(agent, health_listen, shared['sessions']))
     loaded_anchor = None
     def authenticate(frame):
         nonlocal loaded_anchor

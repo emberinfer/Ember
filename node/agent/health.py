@@ -5,12 +5,13 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 
-def start_health_server(agent, address):
+def start_health_server(agent, address, sessions=None):
     if not address:
         return None
     host, port = address.rsplit(':', 1)
     if host not in ('127.0.0.1', 'localhost', '::1'):
         raise ValueError('node health endpoint must listen on loopback')
+    is_ready = sessions.is_ready if sessions is not None else lambda: agent.ready
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_args):
@@ -20,11 +21,11 @@ def start_health_server(agent, address):
             if self.path == '/healthz':
                 return self._send(200, b'ok\n', 'text/plain')
             if self.path == '/readyz':
-                code, body = (200, b'ready\n') if agent.ready else (503, b'not ready\n')
+                code, body = (200, b'ready\n') if is_ready() else (503, b'not ready\n')
                 return self._send(code, body, 'text/plain')
             if self.path == '/metrics':
                 body = ('# TYPE ember_node_ready gauge\n'
-                        f'ember_node_ready {1 if agent.ready else 0}\n'
+                        f'ember_node_ready {1 if is_ready() else 0}\n'
                         '# TYPE ember_node_requests_total counter\n'
                         f'ember_node_requests_total{{result="success"}} {agent.completed_requests}\n'
                         f'ember_node_requests_total{{result="failure"}} {agent.failed_requests}\n'

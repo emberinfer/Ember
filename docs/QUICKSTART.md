@@ -140,7 +140,7 @@ pass `--trust-policy <file>`. The `ember-role node` launcher forwards
 automatically, just as it forwards `EMBER_SCHEME_HASH` as
 `--scheme-hash`.
 
-Fund that account using the deployment's verified funding procedure. An enabled faucet supplies rate-limited valueless credit; this document does not assert a current public faucet address. Wait for finalized funding before enrollment.
+Fund that account using the deployment's verified funding procedure. The current public testnet faucet is at http://relay.emberinfer.org:39095/testnet/faucet (also listed as `access.faucet` in `network.json`); it supplies rate-limited valueless credit. Wait for finalized funding before enrollment.
 
 Then start and check the loopback health listener:
 

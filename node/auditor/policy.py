@@ -33,7 +33,7 @@ def profile_engine_id(profile):
 
 def validate_policy(policy, allow_pipeline=False):
     gpu = policy.metric == RANK_PROB
-    if policy.metric not in (UNION, RANK_PROB) or policy.top_k != 16 or list(policy.layers) != ['0', '14', '27'] or len(policy.calibration_ref) != 32 or not policy.bands:
+    if policy.metric not in (UNION, RANK_PROB) or policy.top_k != 16 or (not policy.layers or any(not x.isascii() or not x.isdecimal() or str(int(x)) != x for x in policy.layers) or list(map(int, policy.layers)) != sorted(set(map(int, policy.layers)))) or len(policy.calibration_ref) != 32 or not policy.bands:
         raise ValueError('unknown/incomplete numeric policy')
     seen = set()
     for band in policy.bands:

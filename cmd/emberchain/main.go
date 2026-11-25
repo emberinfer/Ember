@@ -40,6 +40,8 @@ func main() {
 	}
 	var err error
 	switch os.Args[1] {
+	case "derive-compute":
+		err = deriveCompute(os.Args[2:])
 	case "canonical-config":
 		if len(os.Args) != 3 {
 			err = errors.New("canonical-config requires a config.json path")

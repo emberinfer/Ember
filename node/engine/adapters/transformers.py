@@ -24,11 +24,11 @@ def model_eos_token_ids(path, tokenizer_eos_id):
 
 class TransformersEngine(EngineAdapter):
     """Single-request inference; replay uses the committed prefix, never free generation."""
-    def __init__(self, path, device='auto', layers=(0, 14, 27), tamper=False):
+    def __init__(self, path, device='auto', layers=None, tamper=False):
         import torch
         import transformers
         from transformers import AutoTokenizer, AutoModelForCausalLM
-        self.torch, self.layers, self.tamper = torch, tuple(layers), tamper
+        self.torch, self.tamper = torch, tamper
         self.requested_device = device
         self.device, self.device_reason = select_device(torch, device)
         self.memory_budget = memory_budget(torch, self.device)
@@ -52,6 +52,9 @@ class TransformersEngine(EngineAdapter):
             torch_dtype=torch.bfloat16,
             low_cpu_mem_usage=False).to(self.device).eval()
         check_memory(self.memory_budget)
+        total = len(self.model.model.layers)
+        self.layers = tuple(layers) if layers is not None else tuple(dict.fromkeys(
+            (0, min(14, total // 2), min(27, total - 1))))
         self.hooks = []
         self.hidden = {}
         for index in self.layers:

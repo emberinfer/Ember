@@ -26,6 +26,8 @@ for arch in $arches; do
     -ldflags="-s -w -X ember/version.Version=$version" -o "$root/bin/emberchain" ./cmd/emberchain
   install -m 0755 release/ember-node "$root/bin/ember-node"
   cp -a core-py proto "$root/lib/ember/"
+  mkdir -p "$root/lib/ember/chain-genesis"
+  cp chain-genesis/build.py chain-genesis/build_audit_profile.py "$root/lib/ember/chain-genesis/"
   # Ship the whole node/ tree instead of a hand-maintained file list.
   # The previous explicit whitelist repeatedly dropped runtime modules
   # (tokenization.py in v0.8.0, content_policy.py in v0.9.0, plus

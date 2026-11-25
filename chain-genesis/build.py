@@ -32,7 +32,7 @@ def build(model, output, chain_id='ember-qwen2.5-1.5b',
     if not weights:
         raise ValueError('safetensors weights missing')
     config = json.loads((model / 'config.json').read_text())
-    if config.get('num_hidden_layers', 0) < 28:
+    if type(config.get('num_hidden_layers')) is not int or config['num_hidden_layers'] < 1:
         raise ValueError('unexpected model configuration')
     files = sorted({*weights, *(p for p in model.iterdir() if p.is_file() and p.name in
                              {'config.json', 'generation_config.json', 'tokenizer.json',
@@ -85,7 +85,7 @@ def build(model, output, chain_id='ember-qwen2.5-1.5b',
     output.mkdir(parents=True, exist_ok=True)
     document = {'genesis': MessageToDict(genesis, preserving_proto_field_name=True),
                 'manifest': MessageToDict(manifest, preserving_proto_field_name=True),
-                'sampled_layers': [0, 14, 27], 'cpu_profile': {'device': 'cpu', 'dtype': 'bfloat16'},
+                'sampled_layers': [0, min(14, config['num_hidden_layers'] // 2), min(27, config['num_hidden_layers'] - 1)], 'cpu_profile': {'device': 'cpu', 'dtype': 'bfloat16'},
                 'gpu_profile': {'device': 'cuda', 'dtype': 'bfloat16', 'min_available_gib': 16,
                                 'max_process_gib': 8},
                 'governance_unresolved': {'ledger_route': None, 'credit_scope': None,

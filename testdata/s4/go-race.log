@@ -1,0 +1,20 @@
+?   	ember/chain-genesis/ember-sd15-fp32-v2-republish	[no test files]
+ok  	ember/cmd/emberchain	23.010s
+ok  	ember/cmd/emberd	(cached)
+?   	ember/cmd/moe-reassemble	[no test files]
+ok  	ember/core-go	18.782s
+?   	ember/internal/computefixtures	[no test files]
+?   	ember/proto	[no test files]
+ok  	ember/services/auditqueue	(cached)
+ok  	ember/services/chain	226.443s
+ok  	ember/services/evidence	(cached)
+ok  	ember/services/faucet	(cached)
+ok  	ember/services/gateway	17.481s
+ok  	ember/services/jsonspool	(cached)
+ok  	ember/services/ledger	(cached)
+ok  	ember/services/scheduler	(cached)
+ok  	ember/services/supervisor	(cached)
+ok  	ember/services/tracker	(cached)
+ok  	ember/services/tunnel	90.277s
+ok  	ember/services/verifier	(cached)
+?   	ember/version	[no test files]

@@ -1,115 +1,76 @@
-# Publish and endorse an Ember profile
+# Publish a model profile
 
-Publishing is permissionless on chains running the publishing state machine.
-The current live chain has published profiles, including Kimi, which has no serving nodes. Publication does not imply deployment or serving availability. Endorsements express local trust;
-they do not activate execution or change consensus membership.
+Publication is permissionless and locks the bond reported by `/publishing`.
+A model identity has one publication slot: confirm the pinned source, artifact
+bytes and measured audit policy before submitting. Testnet credit has no value.
 
-Start with signed template genesis/manifest artifacts and complete local origin
-weights downloaded from an immutable Git revision. Keep your publisher identity
-in a private state directory. The profile command creates it with mode 0600.
-Use your own funded account; a governor key is unnecessary.
+Use a matching release's `ember-node` and `emberchain`. Download the complete
+model at a full Git commit revision. Supply a measured NumericAuditPolicy JSON
+with valid actual layer indices, calibration_ref, top_k, metric and runtime/device
+bands. There is no default calibration: conformance is not calibration. A CPU
+policy cannot authorize a CUDA runtime. Unsupported architectures or compute
+layouts fail before submission; this command builds original whole-model
+safetensors profiles, not derived shards or MoE serving layouts.
 
-```bash
-ember-node profile prepare --state-dir /secure/publisher \
-  --genesis template/genesis.pb --manifest template/manifest.pb \
-  --model-path /opt/model --model-id ember-example-cpu-v2 \
-  --profile-version transformers-example-cpu-v2 \
-  --origin https://huggingface.co/OWNER/MODEL --revision GIT_COMMIT_ID \
-  --output ./release
-emberchain query --rpc "$RPC" --path /publishing
-ember-node profile submit --state-dir /secure/publisher \
-  --chain-rpc "$RPC" --ledger-chain-id "$CHAIN_ID" \
-  --action-file ./release/registration.json
+Set these values to your local paths and chosen publication identity:
+
+```sh
+MODEL="$HOME/models/Qwen2.5-0.5B-Instruct"
+POLICY="$HOME/calibration/policy.json"
+PUBLISHER_STATE="$HOME/.ember-publisher"
+OUTPUT="$HOME/ember-publication"
+MODEL_ID=ember-my-model-v1
+EXECUTION_PROFILE=transformers-my-model-v1
+ORIGIN=https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct
+REVISION=7ae557604adf67be50417f59c2c2f167def9a775
+RPC=http://relay.emberinfer.org:39657
+LEDGER_CHAIN_ID=ember-testnet-1
+ember-node id --state-dir "$PUBLISHER_STATE"
+ember-node profile publish --model-path "$MODEL" --policy "$POLICY" \
+  --state-dir "$PUBLISHER_STATE" --output "$OUTPUT" --model-id "$MODEL_ID" \
+  --profile-version "$EXECUTION_PROFILE" --origin "$ORIGIN" --revision "$REVISION" \
+  --chain-rpc "$RPC" --ledger-chain-id "$LEDGER_CHAIN_ID" --device cpu --dry-run
 ```
 
-`prepare` verifies every local artifact, pins each origin path, changes the model
-and execution profile identifiers, and signs both protobuf artifacts using your
-publisher key. `submit` checks the ledger ID and submits a signed account
-transaction. Consensus recomputes the manifest digest and profile digest and
-verifies both signatures, artifact paths, config/tokenizer bindings and hashes.
-A model ID is immutable. To release a successor, choose a new ID and supply
-`--previous-profile-hash` with the prior chain profile hash to `prepare`.
+Review the output, query `/publishing`, and fund your publisher account through
+the published testnet faucet. Run the same command without `--dry-run` to submit.
+The command builds with the existing genesis/audit builders, hashes and verifies
+every artifact, derives compute from real tensor shapes through the chain tool,
+signs with the publisher identity, checks runtime policy and runs generation plus
+forced-prefix replay conformance. Construction failures discard temporary output.
+A successful dry run preserves the prepared output and does not submit a tx.
 
-The genesis anchor is SHA-256 over the complete signed `genesis.pb` bytes.
-For new publications the profile hash is `ember_core.digest(ChainGenesis)`;
-the manifest root is `ember_core.digest(ModelManifest)`. These domain-separated
-digests clear only the protobuf signature field and retain the signer. Historical
-registrations retain their original hash conventions.
+The submit path checks the ledger ID and balance, waits for CheckTx and committed
+TxResult success, then reads `/model/ID`. It requires a positive registered_height,
+the expected publisher, both exact original protobuf byte strings, genesis raw
+SHA256, profile digest and manifest root. Protocol digests retain the signer and
+clear the signature. Keep the prepared output and publisher identity private and
+back them up. Repeating against an identical committed ID only reads back; it
+never pays another bond. Different bytes or publisher fail closed. A lost local
+output is not permission to republish: recover the original artifacts first.
 
-The `/publishing` query exposes the bond, challenge window, required settled
-requests and minimum blocks between submissions by one account. A rejected
-transaction changes neither balance nor nonce. A successful registration locks
-the bond separately from serving stake. Only the publisher can claim it after
-the first N accepted settlements or after the challenge window, whichever comes
-first. Use `ember-node profile claim-bond` with the same state directory and
-`--model-id`, `--chain-rpc` and `--ledger-chain-id`.
+If submission times out, the output's `submission-pending` marker blocks automatic
+rebroadcast. Resolve the tx and committed model/account state using the trusted
+RPC before removing that marker. Do not choose a new ID to evade uniqueness.
+The lower-level `profile prepare`, `verify` and `submit` commands remain available
+for controlled workflows; `prepare` now includes the required tensor compute
+facts. `--previous-profile-hash` provides lineage only; it does not bypass model
+identity uniqueness.
 
-An origin challenge includes the raw pinned Git commit, the binary Git trees
-along one artifact path and the original Git blob (an LFS pointer for large
-weights). Consensus recomputes Git object IDs from the pinned revision down to
-that blob, then compares its SHA-256 and byte size to the manifest declaration.
-A proven mismatch invalidates the publication and forfeits its remaining bond
-into a chain-visible forfeiture counter. There is no challenger reward or
-external network access in consensus. Arbitrary downloaded bytes cannot prove
-fraud: their Git object ID must authenticate to the pinned commit. The proof is
-bounded by the transaction size limit. `ember-node profile challenge` accepts
-an action file with `type: challenge_publication`, `model_id` and `origin_proof`
-(`artifact`, base64 `commit`, list of base64 `trees`, base64 `blob`).
+After publication, the public gateway supervisor automatically discovers valid
+publications and eligible supply; no manual gateway admission is required.
+Availability still requires a supported runtime/layout and reachable, qualified
+whole-model supply or complete pipeline coverage. Inspect `/v1/catalog` for
+ready/reason and the website's live model catalog. Zero executors, invalid
+publications or unsupported contexts remain unavailable. Nodes retain their own
+publisher trust decisions.
 
-Limits: Git SHA-1 object security is inherited from the chosen origin. No claim
-is made that the origin author or model is trustworthy. Challenges currently
-cover artifact provenance/hash/size contradictions, not model quality, licenses,
-numerical calibration or arbitrary execution bugs. Early release after N
-settlements closes financial recourse once the bond is returned. Forfeiture is
-accounted separately from circulating balances; serving stakes are unaffected.
-Derived shard artifacts require their own reproducible build binding and are
-not produced by this original-artifact profile command.
+Report the fixed revision, model ID, tx hash, registered height, publisher,
+genesis SHA256, manifest root/profile digest, chain-derived model identity and
+compute, bond, conformance result and gateway readiness reason. Numerical audit
+bands require measured cross-runtime calibration before production use.
 
-## Endorsements and serving policy
-
-Any funded account can endorse a published manifest root and revoke its own
-endorsement. The chain account transaction signs the endorsement; the transaction
-history retains its signature, chain ID and nonce. `/endorsements` and `/state`
-return the current distinct account list, heights and revocation flags.
-
-```bash
-ember-node profile endorse --state-dir /secure/endorser \
-  --chain-rpc "$RPC" --ledger-chain-id "$CHAIN_ID" --manifest-root "$ROOT"
-ember-node profile revoke --state-dir /secure/endorser \
-  --chain-rpc "$RPC" --ledger-chain-id "$CHAIN_ID" --manifest-root "$ROOT"
-```
-
-Gateway `--trust-policy` and node join `--trust-policy` accept the same JSON file;
-role templates expose `EMBER_PROFILE_TRUST_POLICY`. For example:
-
-```json
-{"profiles":{"ember-example-cpu-v2":{"min_endorsers":2,"publishers":[],"trusted_endorsers":[]}}}
-```
-
-For each profile the policy accepts a publisher in `publishers`, OR at least
-`min_endorsers` distinct active endorsements (only positive thresholds enable
-this rule), OR any active endorsement from `trusted_endorsers`. The default
-accepts historical registered anchors and requires a governor endorsement for
-new publications. Governors use the same endorsement transactions as everyone
-else. A proven-invalid publication is always denied. The gateway refreshes
-finalized trust before admitting each request; nodes refresh before execution
-and audit. Revocation does not cancel requests already admitted. Account counts
-are not Sybil resistance; pick trusted endorsers when that matters.
-
-Verify a release from the downloaded origin files, including a short executable
-adapter conformance probe when requested:
-
-```bash
-ember-node profile verify --genesis ./release/genesis.pb \
-  --manifest ./release/manifest.pb --model-path /opt/model \
-  --conformance --device cpu
-```
-
-This checks artifact bytes and signed roots, then generation and forced-prefix
-replay. It is a conformance probe, not cross-hardware numerical calibration.
-
-Supervisor mode note: `emberd supervisor` automatically admits valid published
-profiles into isolated workers using their verified publisher anchors; it does
-not require gateway vetting or endorsements. Single-profile gateway and node
-trust policies retain their existing defaults. Unsupported runtime/layout
-contexts remain unavailable with a reason in `/v1/catalog`.
+For endorsement, challenges, bond release and the provenance threat model, see
+`services/chain/publishing.go` and the `ember-node profile` subcommands. Claiming
+the bond uses the same identity and the chain's release-height/settled-request
+conditions. Never assume checksums alone authenticate a software release.

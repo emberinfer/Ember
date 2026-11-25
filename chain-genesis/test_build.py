@@ -90,3 +90,15 @@ class GenesisTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class SmallArchitectureTests(unittest.TestCase):
+    def test_layer_count_is_not_a_28_layer_model_assumption(self):
+        import json
+        for layers in (1, 12, 24, 28, 32):
+            with self.subTest(layers=layers), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                (root / 'config.json').write_text(json.dumps(dict(num_hidden_layers=layers)))
+                (root / 'tokenizer.json').write_text('{}')
+                (root / 'model.safetensors').write_bytes(b'builder-only artifact fixture')
+                document = module.build(root, root / 'output')
+                self.assertTrue(all(0 <= n < layers for n in document['sampled_layers']))

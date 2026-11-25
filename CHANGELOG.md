@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.1 — 2026-11-25
+
+- Allow snapshot production to exclude historical archive data with `[snapshots] include_archive`, enabling state-sync bootstrap on the live chain when its archive exceeds the snapshot package limit.
+- Restored nodes accumulate archive data starting from their sync height.
+
 ## 0.10.0 — 2026-11-25
 
 - Distribute signed profile artifacts from the chain and bind JOIN assertions to the selected profile.

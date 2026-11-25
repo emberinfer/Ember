@@ -29,27 +29,33 @@ def verify_release(opts):
     result = dict(result='PASS', manifest_root=digest(manifest).hex(),
                   profile_hash=digest(genesis).hex(), artifacts=len(manifest.artifacts))
     if opts.conformance:
-        from engine import load_engine, require_full_evidence
+        from engine import require_full_evidence
         from conformance import CASES, validate_step
         from engine.adapters.transformers import TransformersEngine
-        from auditor.policy import validate_policy, select_band, engine_id
+        from auditor.policy import NUMERIC_EXECUTION_PROFILES, validate_policy, select_band, engine_id
         from auditor.gpu import gpu_engine_id
-        from auditor.numeric import RANK_PROB
+        from auditor.numeric import LEGACY, RELATIVE_L2, RANK_PROB, compare
         policy = genesis.numeric_audit_policy
-        validate_policy(policy)
+        legacy = (genesis.execution_profile_ver not in NUMERIC_EXECUTION_PROFILES
+                  and not policy.bands and policy.metric in ('', LEGACY, RELATIVE_L2))
+        if not legacy:
+            validate_policy(policy)
         adapter = TransformersEngine(opts.model_path, device=opts.device,
-                                     layers=tuple(map(int, policy.layers)))
-        runtime_id = (gpu_engine_id if policy.metric == RANK_PROB else engine_id)(
-            adapter.capabilities(), adapter.resource_metadata())
-        if select_band(policy, runtime_id,
-                       adapter.device, adapter) is None:
-            adapter.close()
-            raise ValueError('policy has no calibrated band for the actual engine/torch/device runtime')
+                                     layers=tuple(map(int, policy.layers)) if policy.layers else None)
         try:
+            metric = policy.metric or LEGACY
+            if legacy:
+                tolerance = genesis.audit_params.numeric_tolerance if genesis.HasField('audit_params') else .001
+                result['conformance_policy'] = 'legacy exact-ID (' + metric + ')'
+            else:
+                runtime_id = (gpu_engine_id if metric == RANK_PROB else engine_id)(
+                    adapter.capabilities(), adapter.resource_metadata())
+                band = select_band(policy, runtime_id, adapter.device, adapter)
+                if band is None:
+                    raise ValueError('policy has no calibrated band for the actual engine/torch/device runtime')
+                tolerance = band.tolerance
             require_full_evidence(adapter)
-            from auditor.numeric import compare
-            band = select_band(policy, runtime_id,
-                               adapter.device, adapter)
+            layers = set(policy.layers) if policy.layers else set(map(str, adapter.layers))
             rows = []
             for prompt, seed in CASES:
                 steps = list(adapter.generate(prompt, seed, 2))
@@ -57,14 +63,15 @@ def verify_release(opts):
                     raise ValueError('invalid conformance token count')
                 for step in steps:
                     validate_step(step)
-                    if set(step.activations) != set(policy.layers):
+                    if set(step.activations) != layers:
                         raise ValueError('conformance evidence does not match signed policy layers')
                 replay = list(adapter.replay(prompt, seed, [s.token for s in steps]))
                 if [s.token for s in replay] != [s.token for s in steps]:
                     raise ValueError('forced-prefix replay mismatch')
-                distance, _ = compare(steps, replay, policy.metric)
-                if not distance <= band.tolerance:
-                    raise ValueError('conformance replay exceeds supplied calibration band')
+                distance, _ = compare(steps, replay, metric)
+                if not distance <= tolerance:
+                    raise ValueError('conformance replay exceeds signed numeric tolerance' if legacy else
+                                     'conformance replay exceeds supplied calibration band')
                 rows.append(dict(seed=seed, tokens=len(steps), distance=distance))
         finally:
             adapter.close()

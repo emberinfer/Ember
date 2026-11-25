@@ -2,6 +2,8 @@
 import base64
 import hashlib
 import json
+from pathlib import Path
+import struct
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -11,6 +13,58 @@ from ember_core import sign, digest, node_id
 from ember_pb2 import ChainGenesis, ModelManifest, NumericAuditPolicy
 from agent.publish import main, readback, _published_record
 from auditor.policy import validate_policy
+from engine.spi import EngineCapabilities, Step
+
+
+def test_verify_bundled_unified_uses_legacy_exact_ids(tmp_path, capsys):
+    profile = Path(__file__).resolve().parents[1]/'chain-genesis'/'ember-qwen2.5-1.5b-unified-v1'
+    args = ['verify', '--conformance', '--genesis', str(profile/'genesis.pb'),
+            '--manifest', str(profile/'manifest.pb'), '--model-path', str(tmp_path), '--device', 'cpu']
+    caps = EngineCapabilities('transformers', 'test', 'cpu', 'bfloat16', ('full',), 'raw-logits', 16, True)
+    activations = {layer: struct.pack('<f', 1) for layer in ('0', '14', '27')}
+    step = Step(1, 'hello', [(1, 2.), (2, 1.)], activations)
+    with patch('agent.publish.verify_local') as artifacts, \
+            patch('engine.adapters.transformers.TransformersEngine') as engine:
+        adapter = engine.return_value
+        adapter.capabilities.return_value = caps
+        adapter.generate.return_value = [step]
+        adapter.replay.return_value = [step]
+        main(args)
+        assert artifacts.call_count == 7
+        engine.assert_called_once_with(str(tmp_path), device='cpu', layers=(0, 14, 27))
+        result = json.loads(capsys.readouterr().out)
+        assert result['result'] == 'PASS'
+        assert result['conformance_policy'] == 'legacy exact-ID (relative-l2-v1)'
+        assert [row['distance'] for row in result['conformance']] == [0, 0]
+        adapter.replay.return_value = [Step(1, 'hello', [(1, 2.), (3, 1.)], activations)]
+        with pytest.raises(ValueError, match='exceeds signed numeric tolerance'):
+            main(args)
+
+
+@pytest.mark.parametrize('defect', ['missing bands', 'wrong top_k', 'unordered layers'])
+def test_verify_rejects_malformed_new_policy(tmp_path, defect):
+    key = Ed25519PrivateKey.generate()
+    manifest = ModelManifest(chain_id='ember-test')
+    sign(manifest, key)
+    genesis = ChainGenesis(chain_id=manifest.chain_id, model_manifest_root=digest(manifest),
+                           execution_profile_ver='transformers-test-v1')
+    policy = genesis.numeric_audit_policy
+    policy.metric, policy.top_k, policy.calibration_ref = 'union-interval-v1', 16, b'x'*32
+    policy.layers.extend(['0', '11', '23'] if defect != 'unordered layers' else ['0', '23', '11'])
+    if defect != 'missing bands':
+        policy.bands.add(producer_engine='engine', reference_engine='engine', producer_device='cpu',
+                         reference_device='cpu', mode='enforce', tolerance=.01)
+    if defect == 'wrong top_k':
+        policy.top_k = 15
+    sign(genesis, key)
+    genesis_path, manifest_path = tmp_path/'genesis.pb', tmp_path/'manifest.pb'
+    genesis_path.write_bytes(genesis.SerializeToString())
+    manifest_path.write_bytes(manifest.SerializeToString())
+    with patch('engine.adapters.transformers.TransformersEngine') as engine:
+        with pytest.raises(ValueError, match='unknown/incomplete numeric policy'):
+            main(['verify', '--conformance', '--genesis', str(genesis_path),
+                  '--manifest', str(manifest_path), '--model-path', str(tmp_path)])
+        engine.assert_not_called()
 
 
 def test_policy_accepts_real_small_model_layers_and_rejects_ambiguous_indices():

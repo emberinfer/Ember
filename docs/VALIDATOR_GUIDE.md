@@ -22,13 +22,13 @@ The `bootstrap` schema is published as `network-bootstrap.schema.json`:
   valid trust window and at least two independent RPC operators.
 - `snapshot_peers`: reachable public snapshot suppliers in node-id@host:port form.
 
-This source release deliberately carries null anchors and empty peer lists with
-`pending-publication`. The release/online operators must fill independently
-verified real values before marking it ready. Bootstrap is unavailable until
-then. Do not substitute a staging genesis, fabricate a checkpoint or replay from
-block 1 with the current binary to work around missing anchors. The implemented
-state-sync path is documented in BOOTSTRAP-RUNBOOK.md; it does not establish that
-production suppliers or trust anchors have been published.
+The live `network.json` published at https://emberinfer.org/network.json is the
+bootstrap authority and currently carries `status=ready` with independently
+verified anchors and a public snapshot supplier. Source-tree copies may carry
+null anchors and empty peer lists with `pending-publication` placeholders and
+must not be relied on for bootstrap. Do not substitute a staging genesis,
+fabricate a checkpoint or replay from block 1 with the current binary to work
+around missing anchors. The implemented state-sync path is documented in BOOTSTRAP-RUNBOOK.md.
 
 1. Download the Linux release and its checksum/signature assets from the
    `release.base_url` in network.json. Authenticate the signing key independently

@@ -1,0 +1,1 @@
+bash -n deploy/ember-role.sh: exit 0

@@ -1,0 +1,34 @@
+test_read_methods_and_admin_rejection (test_public_relay.RelayStateSyncTest.test_read_methods_and_admin_rejection) ... 127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /status HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /commit HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /block HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /header HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /validators HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /consensus_params HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /genesis HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /genesis_chunked HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 200 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] code 404, message Not Found
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /unsafe_flush_mempool HTTP/1.1" 404 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] code 403, message Forbidden
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 403 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] code 404, message Not Found
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /dial_peers HTTP/1.1" 404 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] code 403, message Forbidden
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 403 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] code 404, message Not Found
+127.0.0.1 - - [25/Nov/2026 15:41:11] "GET /consensus_state HTTP/1.1" 404 -
+127.0.0.1 - - [25/Nov/2026 15:41:11] code 403, message Forbidden
+127.0.0.1 - - [25/Nov/2026 15:41:11] "POST / HTTP/1.1" 403 -
+ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.524s
+
+OK

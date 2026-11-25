@@ -29,6 +29,8 @@ case "$role" in
       --health-listen "${EMBER_NODE_HEALTH:-127.0.0.1:19192}" "${node_args[@]}"
     ;;
   validator)
+    # emberchain reads [statesync] and [snapshots] from HOME/config/config.toml.
+    # See validator.env.example: supply and consumption are independent switches.
     : "${EMBER_VALIDATOR_HOME:?}" "${EMBER_VALIDATOR_P2P:?}" "${EMBER_VALIDATOR_RPC:?}"
     exec "$root/bin/emberchain" start --home "$EMBER_VALIDATOR_HOME" \
       --p2p "$EMBER_VALIDATOR_P2P" --rpc "$EMBER_VALIDATOR_RPC" \

@@ -9,9 +9,12 @@ import ssl
 import threading
 from urllib.parse import urlsplit
 
+# State sync: commit/block/header verify headers, validators verifies voting sets,
+# consensus_params restores consensus parameters; status discovers heights.
+# genesis/genesis_chunked supply public genesis. No new write/admin method.
 RPC_METHODS = frozenset(('status', 'abci_query', 'broadcast_tx_commit',
                         'broadcast_tx_sync', 'tx', 'commit', 'block', 'header',
-                        'validators', 'genesis', 'genesis_chunked'))
+                        'validators', 'consensus_params', 'genesis', 'genesis_chunked'))
 HOP_HEADERS = frozenset(('connection', 'keep-alive', 'proxy-authenticate',
                         'proxy-authorization', 'te', 'trailer',
                         'transfer-encoding', 'upgrade', 'host'))

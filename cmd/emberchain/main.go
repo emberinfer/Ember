@@ -12,6 +12,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -555,6 +556,20 @@ func start(args []string) error {
 	}
 	cfg := cmtcfg.DefaultConfig().SetRoot(*home)
 	applyWhitelistedConfigFile(cfg, *home)
+	interval, keep, err := loadSyncConfig(cfg, filepath.Join(*home, "config", "config.toml"))
+	if err != nil {
+		return err
+	}
+	doc, err := cmttypes.GenesisDocFromFile(cfg.GenesisFile())
+	if err != nil {
+		return err
+	}
+	anchorCtx, cancelAnchor := context.WithTimeout(context.Background(), 15*time.Second)
+	err = validateSyncAnchor(anchorCtx, cfg.StateSync, doc.ChainID)
+	cancelAnchor()
+	if err != nil {
+		return err
+	}
 	cfg.P2P.ListenAddress = *p2pAddr
 	cfg.RPC.ListenAddress = *rpcAddr
 	cfg.P2P.PersistentPeers = *peers
@@ -583,6 +598,9 @@ func start(args []string) error {
 	if err != nil {
 		return err
 	}
+	if err = app.ConfigureSnapshots(doc.ChainID, interval, keep); err != nil {
+		return err
+	}
 	pv := privval.LoadFilePV(cfg.PrivValidatorKeyFile(), cfg.PrivValidatorStateFile())
 	nodeKey, err := p2p.LoadNodeKey(cfg.NodeKeyFile())
 	if err != nil {
@@ -603,7 +621,9 @@ func start(args []string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	<-ctx.Done()
-	return n.Stop()
+	err = n.Stop()
+	app.WaitSnapshotBuild()
+	return err
 }
 
 func account(args []string) error {
@@ -858,5 +878,168 @@ func retrospective(args []string) error {
 		return err
 	}
 	fmt.Println(string(out))
+	return nil
+}
+
+// loadSyncConfig is deliberately strict: unlike legacy timeout settings, a bad
+// trust configuration must never silently fall back to replay from genesis.
+func loadSyncConfig(cfg *cmtcfg.Config, path string) (uint64, int, error) {
+	raw, err := os.ReadFile(path)
+	if os.IsNotExist(err) {
+		return 0, 2, nil
+	}
+	if err != nil {
+		return 0, 0, err
+	}
+	next := *cfg.StateSync
+	interval, keep := uint64(0), 2
+	section := ""
+	seenKeys := map[string]bool{}
+	for _, line := range strings.Split(string(raw), "\n") {
+		line = strings.TrimSpace(strings.SplitN(line, "#", 2)[0])
+		if line == "" {
+			continue
+		}
+		if strings.HasPrefix(line, "[") {
+			if !strings.HasSuffix(line, "]") {
+				return 0, 0, errors.New("malformed configuration section")
+			}
+			section = strings.TrimSpace(strings.TrimSuffix(strings.TrimPrefix(line, "["), "]"))
+			continue
+		}
+		if section != "statesync" && section != "snapshots" {
+			if strings.HasPrefix(line, "statesync.") || strings.HasPrefix(line, "snapshots.") {
+				return 0, 0, errors.New("use [statesync] / [snapshots] sections instead of dotted keys")
+			}
+			continue
+		}
+		pair := strings.SplitN(line, "=", 2)
+		if len(pair) != 2 {
+			return 0, 0, fmt.Errorf("invalid %s config line", section)
+		}
+		key, value := strings.TrimSpace(pair[0]), strings.TrimSpace(pair[1])
+		if seenKeys[section+"."+key] {
+			return 0, 0, fmt.Errorf("duplicate config key %s.%s", section, key)
+		}
+		seenKeys[section+"."+key] = true
+		text := func() (string, error) {
+			if len(value) > 1 && value[0] == '\'' && value[len(value)-1] == '\'' {
+				return value[1 : len(value)-1], nil
+			}
+			return strconv.Unquote(value)
+		}
+		var e error
+		if section == "snapshots" {
+			switch key {
+			case "interval":
+				interval, e = strconv.ParseUint(value, 10, 64)
+			case "keep_recent":
+				keep, e = strconv.Atoi(value)
+			default:
+				e = fmt.Errorf("unknown snapshot key %s", key)
+			}
+		} else {
+			switch key {
+			case "enable":
+				next.Enable, e = strconv.ParseBool(value)
+			case "trust_height":
+				next.TrustHeight, e = strconv.ParseInt(value, 10, 64)
+			case "chunk_fetchers":
+				var n int64
+				n, e = strconv.ParseInt(value, 10, 32)
+				next.ChunkFetchers = int32(n)
+			case "rpc_servers", "trust_hash", "temp_dir":
+				var v string
+				v, e = text()
+				if key == "rpc_servers" {
+					next.RPCServers = nil
+					if v != "" {
+						for _, server := range strings.Split(v, ",") {
+							next.RPCServers = append(next.RPCServers, strings.TrimSpace(server))
+						}
+					}
+				} else if key == "trust_hash" {
+					next.TrustHash = v
+				} else {
+					next.TempDir = v
+				}
+			case "trust_period", "discovery_time", "chunk_request_timeout":
+				var v string
+				v, e = text()
+				if e == nil {
+					var d time.Duration
+					d, e = time.ParseDuration(v)
+					switch key {
+					case "trust_period":
+						next.TrustPeriod = d
+					case "discovery_time":
+						next.DiscoveryTime = d
+					case "chunk_request_timeout":
+						next.ChunkRequestTimeout = d
+					}
+				}
+			default:
+				e = fmt.Errorf("unknown statesync key %s", key)
+			}
+		}
+		if e != nil {
+			return 0, 0, fmt.Errorf("invalid %s.%s: %w", section, key, e)
+		}
+	}
+	if keep < 1 || keep > 20 {
+		return 0, 0, errors.New("snapshots.keep_recent must be in 1..20")
+	}
+	if e := next.ValidateBasic(); e != nil {
+		return 0, 0, fmt.Errorf("invalid statesync configuration: %w", e)
+	}
+	if next.Enable {
+		if len(next.TrustHash) != 64 {
+			return 0, 0, errors.New("statesync.trust_hash must be a 32-byte header hash")
+		}
+		seen := map[string]bool{}
+		for _, server := range next.RPCServers {
+			u, e := url.Parse(server)
+			if e != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") || u.User != nil {
+				return 0, 0, errors.New("statesync RPC servers must be HTTP(S) URLs")
+			}
+			if seen[server] {
+				return 0, 0, errors.New("statesync requires distinct RPC servers")
+			}
+			seen[server] = true
+		}
+	}
+	*cfg.StateSync = next
+	return interval, keep, nil
+}
+
+// This preflight detects mistyped, wrong-chain and expired anchors before node
+// startup. CometBFT subsequently verifies commits and validator evolution using
+// its light client; these RPC responses are not a substitute for that proof.
+func validateSyncAnchor(ctx context.Context, cfg *cmtcfg.StateSyncConfig, chainID string) error {
+	if !cfg.Enable {
+		return nil
+	}
+	expected, e := hex.DecodeString(cfg.TrustHash)
+	if e != nil {
+		return e
+	}
+	for _, server := range cfg.RPCServers {
+		client, e := rpchttp.New(server)
+		if e != nil {
+			return e
+		}
+		result, e := client.Commit(ctx, &cfg.TrustHeight)
+		if e != nil {
+			return fmt.Errorf("state sync anchor unavailable at %s: %w", server, e)
+		}
+		h := result.SignedHeader.Header
+		if h.ChainID != chainID || !bytes.Equal(h.Hash(), expected) {
+			return errors.New("state sync trust hash or chain ID mismatch; obtain an independently verified checkpoint")
+		}
+		now := time.Now()
+		if !h.Time.Add(cfg.TrustPeriod).After(now) || h.Time.After(now.Add(10*time.Second)) {
+			return errors.New("state sync trust anchor expired or in the future; refresh the checkpoint")
+		}
+	}
 	return nil
 }

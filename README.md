@@ -86,11 +86,9 @@ weights, fund the account, then configure and start the node. Linux amd64 and
 arm64 release archives are available from the [latest release](https://github.com/emberinfer/Ember/releases/latest).
 Installation does not provide model weights.
 
-**Recent releases have no published `SHA256SUMS.sig`.** If the release you
-downloaded has no detached signature, checksum comparison detects mismatched
-bytes but does not authenticate unsigned checksums. Authenticate the release-key
-fingerprint through a trusted channel; read [release signing](docs/SIGNING.md)
-for the measured keys and trust-statement verification gap.
+Releases starting with v0.10.0 publish `SHA256SUMS.sig`. Authenticate the
+release-key fingerprint through a trusted channel and verify the detached
+signature before checking the archive. See [release signing](docs/SIGNING.md).
 
 Registrations bind identity, exact signed profile, layer range and capacity.
 `--no-exec` and `--no-audit` select registration-time opt-outs. There is no
@@ -166,7 +164,7 @@ Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
 ## ACT-2e MoE launcher reference
 
-[`ops/act2e/moe_service.py`](ops/act2e/moe_service.py) mirrors the
+[`ops/act2e/moe_service.py`](https://github.com/emberinfer/Ember/blob/master/ops/act2e/moe_service.py) mirrors the
 ACT-2e launcher used by the MoE fleet. The installed fleet launcher at
 `/root/work/act2e-nodes/moe_service.py` differs at one line: its gRPC send
 and receive limits are 320 MiB, while this reference retains the original 64 MiB.

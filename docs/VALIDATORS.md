@@ -101,7 +101,7 @@ have the old operator exit, respecting the same delay, floor and change window.
 The same operator cannot hold two active keys. If the old key is compromised or
 quorum is lost, this interface supplies no emergency override.
 
-The local process drill in [ops/validator_dynamics_drill.py](../ops/validator_dynamics_drill.py)
+The local process drill in [ops/validator_dynamics_drill.py](https://github.com/emberinfer/Ember/blob/master/ops/validator_dynamics_drill.py)
 creates only new homes and loopback listeners. It tests joins, exits, pending
 change interruption, the size floor, the three-member boundary and four-member
 single-stop availability. Its `--legacy-binary` mode also tests coordinated

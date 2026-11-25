@@ -34,7 +34,7 @@ can leak information. These protections do not provide anonymity.
 
 ## Envelope, keys and migration
 
-The consumer SDK in [the privacy package](../node/privacy/envelope.py) creates a
+The consumer SDK in [the privacy package](https://github.com/emberinfer/Ember/blob/master/node/privacy/envelope.py) creates a
 fresh random 256-bit request key. AES-256-GCM with HKDF domain separation protects
 the prompt, output and evidence. X25519 ephemeral key agreement wraps the request
 key to the registered executor and wraps Shamir shares to registered custodians.
@@ -147,7 +147,7 @@ lets consumers compare these statements mechanically. These are operator claims,
 not independently verified retention guarantees. Governors register epochs;
 consumers register request/envelope hashes with `amount` and `pricing_commitment`
 returned by the executor's encrypted `POST /v2/tokenize`; executors post commitments;
-coordinators trigger entropy-based assignment. See [consensus actions](../services/chain/privacy.go).
+coordinators trigger entropy-based assignment. See [consensus actions](https://github.com/emberinfer/Ember/blob/master/services/chain/privacy.go).
 
 Run `python -m privacy.server executor --help` or `custodian --help` with
 `node`, `core-py` and `proto` on `PYTHONPATH`. Each service uses genesis-verified
@@ -176,14 +176,14 @@ retain the signed envelope locally for replay and disputes.
 
 ## Redaction beta
 
-[Local detectors](../node/privacy/redaction.py) cover credential patterns, PEM
+[Local detectors](https://github.com/emberinfer/Ember/blob/master/node/privacy/redaction.py) cover credential patterns, PEM
 private keys, email addresses, selected phone formats and labelled account/ID
 numbers. Redact before envelope creation. The replacement map remains on the
 consumer and must never enter requests, logs or telemetry. Rehydration performs
 a single local substitution pass. Model rewriting of placeholders can prevent
 output rehydration; arbitrary model output cannot be promised lossless.
 
-The [golden set](../testdata/privacy/redaction-golden.json) includes positive,
+The [golden set](https://github.com/emberinfer/Ember/blob/master/testdata/privacy/redaction-golden.json) includes positive,
 negative and unsupported formats. Measurement uses exact span and class matches.
 It is a small synthetic benchmark, not a real-world coverage guarantee.
 Residual classes are detector misses, structure leakage, output-side leakage and
@@ -213,7 +213,7 @@ policy digest proves an operator followed its policy. Describe only the enabled
 endpoint and actual tier, cryptographic boundaries and limitations above.
 
 For a dedicated single-host GPU integration exercise, build `cmd/emberchain` and
-`cmd/emberd`, then run [the staging runner](../ops/privacy_staging.py) with
+`cmd/emberd`, then run [the staging runner](https://github.com/emberinfer/Ember/blob/master/ops/privacy_staging.py) with
 `--work-dir`, `--emberchain`, `--emberd` and `--model-path`. The runner requires
 CUDA and at least 16 GiB available system memory and refuses CPU substitution.
 It creates its own Ledger node, role identities and ciphertext captures, checks

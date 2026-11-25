@@ -72,6 +72,7 @@ for arch in $arches; do
   cp config/*.example "$root/config/"
   cp config/trust-policy.json "$root/config/"
   cp docs/QUICKSTART.md docs/VALIDATOR_GUIDE.md docs/UPGRADE.md docs/OPERATIONS.md \
+    docs/BOOTSTRAP-RUNBOOK.md docs/VALIDATORS.md docs/PUBLISHING.md \
     docs/THREAT_MODEL_SUMMARY.md docs/THREAT_MODEL.md docs/ENGINE_SPI.md docs/PRIVACY.md \
     docs/GENESIS_CEREMONY.md docs/SIGNING.md docs/HARDWARE.md docs/EVIDENCE_TRANSPORT.md "$root/docs/"
   cp LICENSE NOTICE README.md CHANGELOG.md SECURITY.md "$root/"

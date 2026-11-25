@@ -28,7 +28,7 @@ verified anchors and a public snapshot supplier. Source-tree copies may carry
 null anchors and empty peer lists with `pending-publication` placeholders and
 must not be relied on for bootstrap. Do not substitute a staging genesis,
 fabricate a checkpoint or replay from block 1 with the current binary to work
-around missing anchors. The implemented state-sync path is documented in BOOTSTRAP-RUNBOOK.md.
+around missing anchors. See the [bootstrap runbook](BOOTSTRAP-RUNBOOK.md) for the state-sync procedure.
 
 1. Download the Linux release and its checksum/signature assets from the
    `release.base_url` in network.json. Authenticate the signing key independently
@@ -142,7 +142,7 @@ registration or permission from a current validator.
 
 ## Governance admission to the validator set
 
-Synchronization does not grant a vote. Read VALIDATORS.md and the live
+Synchronization does not grant a vote. Read the [validator membership guide](VALIDATORS.md) and the live
 `/validators` and `/parameters` application queries. Query current values instead
 of relying on an old validator count, app version or activation height.
 
@@ -150,7 +150,7 @@ of relying on an old validator count, app version or activation height.
    the public descriptor (`emberchain validator-public`). Never copy a running
    validator's private key or roll its signing state backward.
 2. Meet the current admission collateral and signed ResourceProfile registration
-   requirements for the **operator**, described in VALIDATORS.md. This is a
+   requirements for the **operator** in the [validator membership guide](VALIDATORS.md). This is a
    governance prerequisite, not an observer-sync prerequisite. No particular
    historical model profile is the required entry path.
 3. Submit `validator_register` and a fresh consensus-key readiness proof bound

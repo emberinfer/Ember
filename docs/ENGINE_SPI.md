@@ -19,7 +19,7 @@ is an operator trust assumption until a backend attestation protocol exists; do
 not claim a remote model alias verifies weight hashes. Selective shard loading is
 a separate stage role; full-model HTTP adapters cannot claim it.
 
-Python contract (types in [node/engine/spi.py](../node/engine/spi.py)):
+Python contract (types in [node/engine/spi.py](https://github.com/emberinfer/Ember/blob/master/node/engine/spi.py)):
 
 ```python
 adapter.capabilities() -> EngineCapabilities

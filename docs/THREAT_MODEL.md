@@ -48,17 +48,17 @@ runtime declarations are not hardware or ownership attestation.
 
 1. Evidence requirements come from the signed Profile, never a weaker advertisement.
    Unknown versions, missing fields and invalid shapes fail closed. See
-   [adapter tests](../node/test_engine_spi.py).
+   [adapter tests](https://github.com/emberinfer/Ember/blob/master/node/test_engine_spi.py).
 2. Verify signatures, chunk sequence and opened-byte commitments before numerical
    comparison. New tolerances require a new signed Profile. Unknown/observation
    pairs cannot authorize numerical slashing. See
-   [numeric tests](../node/test_audit_numeric.py) and [GPU tests](../node/test_gpu_audit.py).
+   [numeric tests](https://github.com/emberinfer/Ember/blob/master/node/test_audit_numeric.py) and [GPU tests](https://github.com/emberinfer/Ember/blob/master/node/test_gpu_audit.py).
 3. Timeouts and reference disagreement alone do not prove fraud. An inconclusive
    hold needs a valid resolving result or expiry; no inference correctness claim
    follows from consensus finality.
 4. Balance, stake and hold transitions conserve value except explicit issuance/burn.
    Verify duplicate/nonces, refunds, finality and ordered replay with
-   [chain tests](../services/chain/state_test.go).
+   [chain tests](https://github.com/emberinfer/Ember/blob/master/services/chain/state_test.go).
 5. Security testing should include Sybil/common-operator assignments, collusion,
    stale work, cross-attempt frames, evidence downgrade, resource saturation,
    partitions and poisoned discovery endpoints. Keep configurations and results

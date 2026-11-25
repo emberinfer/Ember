@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Accept canonical, increasing sample layers in signed numeric policies and check them against the verified model manifest.
+- Show the latest worker startup or exit failure in the supervisor catalog.
+- Generate unquoted state-sync chunk fetcher counts and accept existing quoted counts.
+- Skip public-view gateway entries without membership metadata during node configuration.
+- Verify bundled legacy profiles with their exact-ID replay comparator and signed tolerance.
+- Document CPU publication policy, weight uniqueness and release signatures, and bundle the bootstrap and validator membership guides.
+
 ## 0.10.1 — 2026-11-25
 
 - Allow snapshot production to exclude historical archive data with `[snapshots] include_archive`, enabling state-sync bootstrap on the live chain when its archive exceeds the snapshot package limit.

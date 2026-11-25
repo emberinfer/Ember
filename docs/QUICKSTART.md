@@ -4,9 +4,7 @@ Read the [disclaimer](https://github.com/emberinfer/Ember/blob/master/docs/DISCL
 
 ## Verify a release
 
-The latest software release is on the [releases page](https://github.com/emberinfer/Ember/releases/latest). Assets are the Linux amd64 and arm64 archives, the engine SPI kit archive, `SHA256SUMS` and `release-signing.pub`. Set `EMBER_VERSION` below to the version shown there, without the leading `v`.
-
-**Recent releases have no published `SHA256SUMS.sig`.** Check the asset list of the release you downloaded: if it has no detached signature, checksum comparison detects mismatched downloaded bytes but does not authenticate unsigned checksums.
+The latest software release is on the [releases page](https://github.com/emberinfer/Ember/releases/latest). Releases starting with v0.10.0 publish `SHA256SUMS.sig` alongside `SHA256SUMS` and `release-signing.pub`. Set `EMBER_VERSION` below to the version shown there, without the leading `v`.
 
 Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
 
@@ -15,15 +13,17 @@ Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
 Authenticate the fingerprint through a trusted channel. The downloaded key alone is not a trust anchor. The repository trust statement names an older key; its detached signature fails verification against the checked-in root key and current statement bytes. See [signing](SIGNING.md).
 
 ```sh
-# Matching release version; verify its assets and signing status.
-EMBER_VERSION=0.9.3
+EMBER_VERSION='<current version>'
 EMBER_RELEASE="https://github.com/emberinfer/Ember/releases/download/v$EMBER_VERSION"
 # Use arm64 instead of amd64 for ARM64.
-for file in "ember-$EMBER_VERSION-linux-amd64.tar.gz" SHA256SUMS release-signing.pub; do
-  curl -fLO "$EMBER_RELEASE/$file"
+for file in "ember-$EMBER_VERSION-linux-amd64.tar.gz" SHA256SUMS SHA256SUMS.sig release-signing.pub; do
+  curl -fLO "$EMBER_RELEASE/$file" || exit 1
 done
 openssl pkey -pubin -in release-signing.pub -outform DER | sha256sum
-sha256sum --ignore-missing -c SHA256SUMS
+# Compare the fingerprint with your trusted value before continuing.
+openssl pkeyutl -verify -pubin -inkey release-signing.pub -rawin \
+  -in SHA256SUMS -sigfile SHA256SUMS.sig || exit 1
+sha256sum --ignore-missing -c SHA256SUMS || exit 1
 tar -xzf "ember-$EMBER_VERSION-linux-amd64.tar.gz"
 cd "ember-$EMBER_VERSION-linux-amd64"
 ./install-release.sh --role node --prefix "$HOME/ember" --python python3.12
@@ -35,11 +35,12 @@ Use Linux amd64 or arm64, Python 3.12 with venv/ensurepip, OpenSSL with Ed25519,
 
 The command above installs the node role under the selected prefix. The installer also accepts `--role gateway` and `--role validator`; the latter is the CLI name for a Ledger node. See the [Ledger node guide](VALIDATOR_GUIDE.md).
 
-Obtain current signed profile artifacts, their chain anchors, model origin and immutable revision through an authenticated deployment channel. Verify local weights against the manifest before serving. The repository's [network parameter file](https://github.com/emberinfer/Ember/blob/master/site/network.json) contains synchronized public seed, RPC, scheduler and profile anchors for configure. Verify these values against the current public network before use, and supply the matching signed profile artifacts to the installation.
+Obtain current signed profile artifacts, their chain anchors, model origin and immutable revision through an authenticated deployment channel. Verify local weights against the manifest before serving. Prefer the release package's `network.json` operator directory for `configure`. The [website's public view](https://emberinfer.org/network.json) supplies ledger bootstrap anchors. Verify the network parameters and supply the matching signed profile artifacts to the installation.
 
 The configuration helper consumes a complete parameter file and refuses existing config overwrite:
 
 ```sh
+NETWORK_PARAMETERS="$HOME/ember/network.json"
 "$HOME/ember/bin/ember-node" configure \
   --network-parameters "$NETWORK_PARAMETERS" \
   --model-path "$MODEL_PATH" \

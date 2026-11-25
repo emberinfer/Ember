@@ -3,14 +3,53 @@
 Publication is permissionless and locks the bond reported by `/publishing`.
 A model identity has one publication slot: confirm the pinned source, artifact
 bytes and measured audit policy before submitting. Testnet credit has no value.
+The chain deduplicates by weight content. Publishing identical weights under a
+different model ID returns `model already published as <id>` without deducting a bond.
 
-Use a matching release's `ember-node` and `emberchain`. Download the complete
+Use a matching release's `ember-node` and `emberchain`. The publish command invokes
+`emberchain` from `PATH` by default. Use `--chain-cli /path/to/emberchain` to select
+the binary explicitly. Download the complete
 model at a full Git commit revision. Supply a measured NumericAuditPolicy JSON
 with valid actual layer indices, calibration_ref, top_k, metric and runtime/device
 bands. There is no default calibration: conformance is not calibration. A CPU
 policy cannot authorize a CUDA runtime. Unsupported architectures or compute
 layouts fail before submission; this command builds original whole-model
 safetensors profiles, not derived shards or MoE serving layouts.
+
+## CPU policy example
+
+Save this example as `policy.json` to start a CPU policy. The sample indices
+are for a 24-layer model. Choose strictly increasing, zero-based layer indices
+within your target model's actual layer count. `calibration_ref` encodes exactly
+32 bytes in base64. Replace the example value with the digest of your calibration
+artifact and set the engine versions and tolerance from your measurements.
+
+```json
+{
+  "metric": "union-interval-v1",
+  "top_k": 16,
+  "layers": ["0", "11", "23"],
+  "calibration_ref": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  "bands": [
+    {
+      "producer_engine": "transformers/4.45.2|torch=2.5.1+cpu",
+      "producer_device": "cpu",
+      "reference_engine": "transformers/4.45.2|torch=2.5.1+cpu",
+      "reference_device": "cpu",
+      "tolerance": 0.001,
+      "mode": "enforce"
+    }
+  ]
+}
+```
+
+GPU policies use `rank-probability-v1` and `cuda` for both device fields.
+Each band pins both engine fingerprints as
+`transformers/<version>|torch=<version>|cuda=<major>.<minor>|gpu=<class>`.
+The supported classes are `gb10`, `thor`, `orin` and `rtx2080ti`. GPU band
+tolerances must be finite, positive and less than 1.
+
+## Publish and verify
 
 Set these values to your local paths and chosen publication identity:
 

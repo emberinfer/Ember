@@ -1,6 +1,9 @@
 # Release signing and trust anchors
 
-The current software release is [v0.7.0](https://github.com/emberinfer/Ember/releases/tag/v0.7.0); the exact source snapshot is recorded in its build metadata. Assets are the Linux amd64 and arm64 archives, `ember-engine-spi-kit-0.7.0.tar.gz`, `SHA256SUMS` and `release-signing.pub`.
+The exact source snapshot for each software release is recorded in its build metadata.
+Releases starting with v0.10.0 publish `SHA256SUMS.sig`, `SHA256SUMS` and
+`release-signing.pub` alongside the archives. Follow the verification procedure in
+the [quickstart](QUICKSTART.md).
 
 **v0.7.0 and v0.6.0 have no published `SHA256SUMS.sig`.** The signing key is offline. Checksum comparison detects mismatched downloaded bytes but does not authenticate unsigned checksums.
 

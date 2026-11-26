@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from ember_core import digest, sign, node_id
 from ember_pb2 import ChainGenesis, ModelManifest
 from agent.join import identity, _chain_tx, _chain_json
+from agent.publish import prepare
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = Path(os.environ.get('S2_OUTPUT', str(ROOT / 'services/supervisor/testdata/s2-output/acceptance')))
@@ -118,7 +119,7 @@ def main():
             nodeids = [identity(tmp/('node'+str(i)))[1] for i in range(4)]
             fixture,_,_ = material(default,100,publisher)
             fixture['audit_comp']=comp
-            new_model,gr,mr = material(new,200,publisher)
+            _,gr,mr = material(new,200,publisher)
             token = 's2-local-only-'+'x'*40
             auth = tmp/'auth.json'; auth.write_text(json.dumps([dict(token=token,key=str(tmp/'payer/identity.key'))])); auth.chmod(0o600)
             home = tmp/'validator'; print(run(chain,'init-validator','--home',str(home)),flush=True)
@@ -145,12 +146,23 @@ def main():
                 '--http',f'127.0.0.1:{web}','--grpc',f'127.0.0.1:{tunnel}','--insecure-localhost','--poll','1s')
             wait_for(lambda:default in catalog())
             # Publish only AFTER the supervisor has started. No new route/trust config.
-            action=dict(type='register_model',model_id=new,audit_comp=comp,genesis_hash=new_model['genesis_hash'],profile_hash=new_model['profile_hash'],
-                genesis=new_model['publication']['genesis'],manifest=new_model['publication']['manifest'],
-                origin=dict(repository='https://example.org/s2-tiny',revision='1'*40))
+            (tmp/'template-genesis.pb').write_bytes(gr)
+            (tmp/'template-manifest.pb').write_bytes(mr)
+            prepared = tmp/'prepared'
+            prepare(SimpleNamespace(state_dir=tmp/'publisher', genesis=tmp/'template-genesis.pb',
+                manifest=tmp/'template-manifest.pb', model_path=weights, chain_cli=chain,
+                origin='https://example.org/s2-tiny', revision='1'*40, model_id=new,
+                profile_version='transformers-s2-200', previous_profile_hash=None, output=prepared))
+            action = json.loads((prepared/'registration.json').read_text())
+            assert action['pricing'] == dict(target_executors=1, target_auditors=1, executor_weight=80,
+                auditor_weight=15, consumer_weight=5)
+            assert action['audit_comp'] == comp
             opts=SimpleNamespace(chain_cli=chain,chain_rpc=rpc,ledger_chain_id=ledger)
             _chain_tx(opts,tmp/'publisher/identity.key',query('/account/'+publisher_id)['nonce']+1,action)
-            assert query('/model/'+new)['publication']['genesis']==base64.b64encode(gr).decode()
+            record = query('/model/'+new)
+            assert record['publication']['genesis'] == action['genesis']
+            assert record['pricing'] == action['pricing']
+            assert record['audit_comp'] == dict(comp, r_in_per_ktok=0, r_out_per_ktok=0)
             wait_for(lambda:catalog().get(new,{}).get('worker_state')=='running')
             print('PASS 1: chain publication after supervisor startup automatically discovered and worker launched',flush=True)
             trust=tmp/'node-trust.json';trust.write_text(json.dumps(dict(profiles={pid:dict(publishers=[publisher_id]) for pid in (default,new)})))

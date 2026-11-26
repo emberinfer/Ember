@@ -117,7 +117,11 @@ def prepare(opts):
                   profile_hash=digest(genesis).hex(),
                   genesis=base64.b64encode(g).decode(),
                   manifest=base64.b64encode(m).decode(),
-                  origin=dict(repository=opts.origin, revision=opts.revision))
+                  origin=dict(repository=opts.origin, revision=opts.revision),
+                  pricing=dict(target_executors=1, target_auditors=1, executor_weight=80,
+                               auditor_weight=15, consumer_weight=5),
+                  audit_comp=dict(formula_ver=2, o_fixed=1, margin_bps=10000,
+                                  audit_share_bps=1500, benchmark_ref='ab' * 32))
     action.update(tensor_shapes=shapes, declared_total_params=compute['TotalParams'],
                   declared_active_params=compute['ActiveParams'],
                   declared_flops_per_token=compute['FlopsPerToken'])

@@ -31,8 +31,8 @@ def check_model_trust(state, model_id, policy_path=None):
         raise ValueError('historical profile has no publisher or endorsements for custom policy')
     if publication['publisher'] in rule.get('publishers', []):
         return
-    endorsers = {k for k, v in state.get('endorsements', {}).get(
-        publication['manifest_root'], {}).items() if not v.get('revoked')}
+    endorsements = (state.get('endorsements') or {}).get(publication['manifest_root']) or {}
+    endorsers = {k for k, v in endorsements.items() if not v.get('revoked')}
     if endorsers.intersection(rule.get('trusted_endorsers', [])):
         return
     if threshold > 0 and len(endorsers) >= threshold:

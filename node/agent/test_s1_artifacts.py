@@ -50,16 +50,20 @@ class ArtifactsTest(unittest.TestCase):
 
     def test_configure_fetch_trust_and_exact_bytes(self):
         model = fixture()
-        state = dict(parameters=dict(chain_id='local-ledger'), models={model['id']: model}, governors={})
+        state = dict(parameters=dict(chain_id='local-ledger'), models={model['id']: model}, governors={},
+                     endorsements={model['publication']['manifest_root']: None})
         document = dict(ledger=dict(chain_id='local-ledger'), access={})
         with tempfile.TemporaryDirectory() as tmp:
             policy = Path(tmp) / 'trust.json'
             policy.write_text(json.dumps(dict(profiles={model['id']: dict(publishers=[model['publication']['publisher']])})))
+            default_policy = Path(__file__).resolve().parents[2] / 'config/trust-policy.json'
             with patch('agent.join._chain_json', side_effect=lambda cli, rpc, path: state if path.startswith('/model-trust/') else state['parameters'] if path == '/parameters' else model):
                 with self.assertRaises(ValueError):
                     fetch_profile(document, model['id'], tmp, None, 'unused', policy)
                 with self.assertRaises(ValueError):
                     fetch_profile(document, model['id'], tmp, 'http://operator-pin', 'unused')
+                with self.assertRaisesRegex(ValueError, 'profile does not satisfy local publisher/endorsement policy'):
+                    fetch_profile(document, model['id'], tmp, 'http://operator-pin', 'unused', default_policy)
                 pins = fetch_profile(document, model['id'], tmp, 'http://operator-pin', 'unused', policy)
                 raw = (Path(tmp) / model['id'] / 'genesis.pb').read_bytes()
                 self.assertEqual(raw, base64.b64decode(model['publication']['genesis']))

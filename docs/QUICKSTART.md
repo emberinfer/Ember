@@ -23,7 +23,7 @@ Measured SHA-256 of the release key's DER SubjectPublicKeyInfo:
 Authenticate the fingerprint through a trusted channel. The downloaded key alone is not a trust anchor. The repository trust statement names an older key; its detached signature fails verification against the checked-in root key and current statement bytes. See [signing](SIGNING.md).
 
 ```sh
-EMBER_VERSION='0.10.2'
+EMBER_VERSION='@EMBER_VERSION@'
 EMBER_RELEASE="https://github.com/emberinfer/Ember/releases/download/v$EMBER_VERSION"
 # Use arm64 instead of amd64 for ARM64.
 for file in "ember-$EMBER_VERSION-linux-amd64.tar.gz" SHA256SUMS SHA256SUMS.sig release-signing.pub; do

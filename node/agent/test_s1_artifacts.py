@@ -13,9 +13,11 @@ from agent.network import validate_artifacts, fetch_profile, gateway_coordinator
 from agent.join import ProfileAssertion
 
 
-def fixture():
+def fixture(weight_bytes=None):
     key = Ed25519PrivateKey.generate()
     m = ModelManifest(chain_id='ember-unbundled')
+    if weight_bytes is not None:
+        m.artifacts.add(name='model.safetensors', sha256=hashlib.sha256(weight_bytes).digest(), size=len(weight_bytes))
     sign(m, key)
     g = ChainGenesis(chain_id=m.chain_id, model_manifest_root=digest(m), execution_profile_ver='test')
     sign(g, key)
@@ -70,7 +72,7 @@ class ArtifactsTest(unittest.TestCase):
                 self.assertEqual(hashlib.sha256(raw).hexdigest(), pins['genesis_sha256'])
 
     def test_configure_cli_and_explicit_gateway(self):
-        model = fixture()
+        model = fixture(b'correct weights')
         state = dict(models={model['id']: model}, governors={})
         parameters = dict(chain_id='local-ledger')
         root = Path(__file__).resolve().parents[2]
@@ -88,14 +90,28 @@ class ArtifactsTest(unittest.TestCase):
             policy.write_text(json.dumps(dict(profiles={model['id']: dict(publishers=[model['publication']['publisher']])})))
             def query(cli, rpc, path):
                 return parameters if path == '/parameters' else state if path.startswith('/model-trust/') else model
+            args = ['--network-parameters', str(network), '--chain-rpc', 'http://operator-pin',
+                    '--trust-policy', str(policy), '--profiles', str(tmp / 'profiles'),
+                    '--config', str(config), '--model-path', str(tmp), '--gateway', 'explicit']
+            weights = tmp / 'model.safetensors'
+            weights.write_bytes(b'wrong weights!!')
             with patch('agent.join._chain_json', side_effect=query):
-                main(['--network-parameters', str(network), '--profile-id', model['id'],
-                      '--chain-rpc', 'http://operator-pin', '--trust-policy', str(policy),
-                      '--profiles', str(tmp / 'profiles'), '--config', str(config),
-                      '--model-path', str(tmp), '--gateway', 'explicit'])
+                with self.assertRaises(SystemExit) as error:
+                    main(args + ['--profile-id', model['id']])
+                self.assertEqual(error.exception.code, 2)
+                self.assertFalse(config.exists())
+                document['current_profile'] = dict(id=model['id'], genesis_sha256=model['genesis_hash'],
+                    manifest_sha256=hashlib.sha256(base64.b64decode(model['publication']['manifest'])).hexdigest())
+                network.write_text(json.dumps(document))
+                with self.assertRaises(SystemExit) as error:
+                    main(args)
+                self.assertEqual(error.exception.code, 2)
+                self.assertFalse(config.exists())
+                weights.write_bytes(b'correct weights')
+                main(args)
             content = config.read_text()
             self.assertIn('localhost:4321', content)
-            self.assertIn('EMBER_CHAIN_RPC=http://operator-pin', content)
+            self.assertIn('EMBER_CHAIN_RPC=http://old', content)
             self.assertIn('EMBER_MODEL_CHAIN=' + model['id'], content)
             self.assertIn('EMBER_GENESIS_SHA256=' + model['genesis_hash'], content)
 

@@ -234,6 +234,35 @@ Where to get and check this value:
   the manifest file's SHA-256 equals the published manifest hash, so
   the scheme you hash is the anchored one.
 
+## Join a profile someone else published
+
+Ask the publisher for the profile ID, the pinned origin and revision, and
+the publisher's account ID. Download the weights at that revision and
+verify the publisher account independently. Put the account in a local
+trust-policy file for the specific profile.
+
+```json
+{"profiles": {"<profile-id>": {"publishers": ["<publisher-account-id>"]}}}
+```
+
+Set `PROFILE`, `RPC`, `MODEL`, and `TRUST_POLICY` to the profile ID, an RPC
+endpoint you trust for this ledger, the local weights directory, and the
+path to the JSON file. Use the `emberchain` binary from the verified release.
+
+```sh
+PREFIX="$HOME/ember"
+"$PREFIX/bin/ember-node" configure \
+  --network-parameters "$PREFIX/network.json" --profile-id "$PROFILE" \
+  --chain-rpc "$RPC" --chain-cli "$PREFIX/bin/emberchain" \
+  --model-path "$MODEL" --trust-policy "$TRUST_POLICY" \
+  --config "$PREFIX/config/join-published.env"
+"$PREFIX/bin/ember-role" node "$PREFIX/config/join-published.env"
+```
+
+The release directory must list a gateway that serves that profile or
+supports dynamic profiles. Configure checks local weight hashes against the
+profile's manifest and exits with an error if they differ.
+
 ## Local trust policy
 
 A node does not blindly trust the profile material a gateway serves

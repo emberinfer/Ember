@@ -10,6 +10,7 @@ an installer-produced prefix and an installed runtime tree -- rather
 than the single unpacked bundle tree in which the defect was
 invisible.
 """
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -85,6 +86,19 @@ def _make_installed_tree(tmp_path):
 
 
 def _run_configure(prefix):
+    from ember_pb2 import ModelManifest
+
+    model = prefix / 'model'
+    model.mkdir(exist_ok=True)
+    weight = b'installed layout test weights'
+    (model / 'model.safetensors').write_bytes(weight)
+    manifest = ModelManifest()
+    manifest.artifacts.add(name='model.safetensors', sha256=hashlib.sha256(weight).digest(), size=len(weight))
+    raw = manifest.SerializeToString()
+    (prefix / 'profiles' / _profile_id() / 'manifest.pb').write_bytes(raw)
+    document = _network()
+    document['current_profile']['manifest_sha256'] = hashlib.sha256(raw).hexdigest()
+    (prefix / 'network.json').write_text(json.dumps(document))
     env = dict(os.environ)
     lib = prefix / 'lib' / 'ember'
     env['PYTHONPATH'] = os.pathsep.join(
@@ -93,7 +107,7 @@ def _run_configure(prefix):
         [sys.executable, '-c',
          'from agent.network import main; main()',
          '--network-parameters', str(prefix / 'network.json'),
-         '--model-path', '/models/qwen',
+         '--model-path', str(model),
          '--config', str(prefix / 'config' / 'join.env')],
         capture_output=True, text=True, env=env)
     assert result.returncode == 0, result.stderr

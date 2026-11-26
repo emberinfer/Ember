@@ -76,6 +76,7 @@ class NetworkParametersTest(unittest.TestCase):
                 if dynamic:
                     args += ['--profile-id', profile, '--chain-rpc', 'https://rpc.example']
                 with patch('agent.network.fetch_profile', side_effect=lambda doc, ident, *_: bind_profile(doc, ident)) as fetch, \
+                        patch('agent.network.verify_model_weights'), \
                         patch('sys.stderr') as stderr:
                     main(args)
                 self.assertEqual(fetch.call_count, int(dynamic))

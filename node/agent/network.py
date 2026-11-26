@@ -200,6 +200,25 @@ def resolve_trust_policy(document, config_target, profiles=None):
     return str(generated)
 
 
+def verify_model_weights(manifest_path, model_path):
+    from ember_pb2 import ModelManifest
+    from fetcher import verify_local
+
+    manifest = ModelManifest.FromString(manifest_path.read_bytes())
+    suffixes = ('.safetensors', '.bin', '.gguf')
+    expected = {artifact.name: artifact for artifact in manifest.artifacts
+                if artifact.name.endswith(suffixes)}
+    if not expected:
+        raise ValueError('signed manifest contains no weight files')
+    root = Path(model_path).expanduser()
+    unexpected = sorted(path.name for path in root.iterdir()
+                        if path.name.endswith(suffixes) and path.name not in expected)
+    if unexpected:
+        raise ValueError('unexpected weight files: ' + ', '.join(unexpected))
+    for artifact in expected.values():
+        verify_local(artifact, root)
+
+
 def main(args=None):
     parser = argparse.ArgumentParser(prog='ember-node configure')
     parser.add_argument('--network-parameters', required=True)
@@ -235,6 +254,12 @@ def main(args=None):
     # resolving the trust policy, so a refused configure leaves no
     # generated policy file behind.
     content = node_config(document, opts.model_path, opts.profiles, same_host_684=opts.same_host_684)
+    profile_id = document['current_profile']['id']
+    try:
+        verify_model_weights(Path(opts.profiles) / profile_id / 'manifest.pb', opts.model_path)
+    except (OSError, ValueError) as exc:
+        parser.error(f'weights at --model-path do not match profile {profile_id}: {exc}. '
+                     'Use the matching weights or select their profile with --profile-id.')
     # Point the generated config at the installation's trust policy
     # (config/trust-policy.json) so a published profile passes the
     # node's local publisher check out of the box; operators may

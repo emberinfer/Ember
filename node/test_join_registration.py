@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 from ember_pb2 import ResourceProfile
-from agent.join import _registration_tx, register_on_chain
+from agent.join import _ensure_stake, _registration_tx, register_on_chain
 
 
 def args():
@@ -17,6 +17,19 @@ def args():
 
 def action():
     return dict(type='register_node', profile='signed-profile', expires_height=100)
+
+
+def test_stake_target_tops_up_only_the_difference(tmp_path):
+    account = dict(stake=500, balance=4500, nonce=4)
+    with patch('agent.join._chain_tx') as tx, patch('agent.join._chain_json', return_value=dict(nonce=5)):
+        assert _ensure_stake(args(), tmp_path/'identity.key', 'node', account, 5000) == 5
+    assert tx.call_args.args[2:] == (5, dict(type='stake', amount=4500))
+
+
+def test_stake_target_reports_shortfall_before_broadcast(tmp_path):
+    with patch('agent.join._chain_tx') as tx, pytest.raises(ValueError, match='4000 more subunits'):
+        _ensure_stake(args(), tmp_path/'identity.key', 'node', dict(stake=500, balance=500, nonce=4), 5000)
+    tx.assert_not_called()
 
 
 @pytest.mark.parametrize('error', [subprocess.TimeoutExpired('cli', 60),

@@ -1,4 +1,5 @@
 import argparse
+import os
 from pathlib import Path
 from . import Agent
 from engine import load_engine
@@ -84,6 +85,8 @@ def main():
             cli.add_argument('--liveness-poll', type=float, default=10)
             cli.add_argument('--chain-cli', default='emberchain')
             cli.add_argument('--ledger-chain-id')
+            cli.add_argument('--stake-target', type=int, default=os.environ.get('EMBER_STAKE_TARGET') or None,
+                             help='target total stake in subunits (default: EMBER_STAKE_TARGET or chain minimum)')
             cli.add_argument('--registration-ttl', type=int, default=200000)
             cli.add_argument('--genesis-sha256')
             cli.add_argument('--manifest-sha256')
@@ -92,7 +95,10 @@ def main():
         if command == 'id':
             print(identity(args.state_dir)[1])
         else:
-            join(args)
+            try:
+                join(args)
+            except ValueError as exc:
+                cli.error(str(exc))
         return
     parser = argparse.ArgumentParser()
     parser.add_argument('--address', default='127.0.0.1:19091')

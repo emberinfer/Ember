@@ -111,7 +111,19 @@ def join(args):
     resolve_scheme_hash(args)
     peers = coordinators(args.coordinator, args.tls_fingerprint)
     # Create the identity before threads start (exclusive key creation).
-    identity(args.state_dir)
+    _, ident = identity(args.state_dir)
+    target = getattr(args, 'stake_target', None)
+    if target is not None:
+        if target < 1:
+            raise ValueError('stake target must be positive')
+        if not args.chain_rpc or not args.chain_cli or not args.ledger_chain_id:
+            raise ValueError('stake target requires --chain-rpc, --chain-cli and --ledger-chain-id')
+        if _chain_json_with_retry(args.chain_cli, args.chain_rpc, '/parameters')['chain_id'] != args.ledger_chain_id:
+            raise ValueError('ledger chain ID mismatch')
+        account = _chain_json_with_retry(args.chain_cli, args.chain_rpc, '/account/' + ident)
+        if account is None:
+            raise ValueError('account not found on chain. Claim from the faucet first.')
+        _ensure_stake(args, Path(args.state_dir) / 'identity.key', ident, account, target)
     shared = dict(claims=Claims(), registration=Registration(),
                   initialization=Registration(), runtime={},
                   sessions=Sessions([address for address, _ in peers]))
@@ -527,6 +539,18 @@ class _RegistrationExpired(Exception):
     pass
 
 
+def _ensure_stake(args, key_path, ident, account, target):
+    amount = target - int(account['stake'])
+    if amount <= 0:
+        return int(account['nonce'])
+    if amount > int(account['balance']):
+        raise ValueError(f'insufficient balance to reach stake {target}. Fund the account with '
+                         f'{amount - int(account["balance"])} more subunits.')
+    _registration_tx(args, key_path, ident, int(account['nonce']),
+                     {'type': 'stake', 'amount': amount, '_target_stake': target})
+    return int(_chain_json_with_retry(args.chain_cli, args.chain_rpc, '/account/' + ident)['nonce'])
+
+
 def _registration_tx(args, key_path, ident, nonce, action):
     """Resolve uncertain broadcasts before replaying an unchanged action.
 
@@ -543,13 +567,14 @@ def _registration_tx(args, key_path, ident, nonce, action):
                     account = _chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)
                     if int(account['stake']) >= action['_target_stake']:
                         return
+                    action = dict(action, amount=action['_target_stake'] - int(account['stake']))
                 else:
                     registration = _chain_json(args.chain_cli, args.chain_rpc, '/node/' + ident) or {}
                     if (registration.get('profile') == action['profile'] and
                             int(registration.get('expires_height', 0)) == action['expires_height']):
                         print('REGISTER confirmed on chain after uncertain broadcast', flush=True)
                         return
-                account = _chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)
+                    account = _chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)
                 nonce = int(account['nonce'])
                 if action['type'] == 'register_node' and _chain_height(args.chain_rpc) >= action['expires_height']:
                     raise _RegistrationExpired('registration action expired before confirmation')
@@ -592,13 +617,7 @@ def _register_on_chain(args, state, ident, profile):
         raise ValueError('ledger model manifest hash differs from pinned release')
     parameters = _chain_json(args.chain_cli, args.chain_rpc, '/parameters')
     minimum = int(parameters.get('min_node_stake', 1))
-    nonce = int(account['nonce'])
-    stake = int(account['stake'])
-    if stake < minimum:
-        _registration_tx(args, key_path, ident, nonce,
-                         {'type': 'stake', 'amount': minimum - stake,
-                          '_target_stake': minimum})
-        nonce = int(_chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)['nonce'])
+    nonce = _ensure_stake(args, key_path, ident, account, minimum)
     chain_state = _chain_state_targeted(args.chain_cli, args.chain_rpc, profile.chain_id, ident)
     prior = chain_state.get('nodes', {}).get(ident)
     for _ in range(30):

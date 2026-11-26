@@ -81,7 +81,7 @@ def main():
             weights = tmp / 'tiny'; weights.mkdir()
             model = Qwen2ForCausalLM(Qwen2Config(vocab_size=32, hidden_size=8, intermediate_size=16,
                 num_hidden_layers=28, num_attention_heads=2, num_key_value_heads=1,
-                max_position_embeddings=256, tie_word_embeddings=True, eos_token_id=None))
+                max_position_embeddings=256, tie_word_embeddings=False, eos_token_id=None))
             model.save_pretrained(weights)
             tokenizer = Tokenizer(models.WordLevel({'[UNK]':0, 'hello':1, **{f't{i}':i for i in range(2,32)}}, unk_token='[UNK]'))
             tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
@@ -127,8 +127,10 @@ def main():
             sampling=dict(enabled=True)
             if os.environ.get('S2_FORCE_AUDIT'): sampling['tier_rates_ppm']=[1000000]*3
             app = tmp/'app.json'; app.write_text(json.dumps(dict(parameters=dict(chain_id=ledger,unbonding_blocks=3,
-                slash_multiplier=20,dispute_blocks=10,registered_auditors=True,audit_sampling=sampling),models=[fixture],
-                accounts=[dict(id=pid,balance=10000000,stake=100000) for pid in [publisher_id,authority_id,payer_id]+nodeids],
+                slash_multiplier=20,dispute_blocks=10,registered_auditors=True,audit_sampling=sampling,
+                min_node_stake=500),models=[fixture],
+                accounts=[dict(id=pid,balance=10000000,stake=0 if pid==nodeids[1] else 100000)
+                    for pid in [publisher_id,authority_id,payer_id]+nodeids],
                 coordinators=[authority_id],auditors=nodeids[2:],governors=[authority_id])))
             print(run(chain,'genesis','--out',str(home/'config/genesis.json'),'--chain-id',ledger,
                 '--app-state',str(app),'--validators',str(home)),flush=True)
@@ -172,14 +174,22 @@ def main():
                     '--chain',pid,'--coordinator',f'127.0.0.1:{tunnel}','--insecure-localhost','--engine','transformers',
                     '--model-path',str(weights),'--device','cpu','--chain-rpc',rpc,'--chain-cli',chain,'--ledger-chain-id',ledger,
                     '--trust-policy',str(trust),'--health-listen','','--registration-ttl','10000','--no-liveness-enabled',
+                    *(['--stake-target','5000'] if i==1 else []),
                     *(['--audit-role','--no-exec'] if i>=2 else ['--no-audit']))
             nodes=[join(i) for i in range(4)]
             wait_for(lambda:all('JOIN READY' in (OUT/f'integration-node{i}.log').read_text() for i in range(4)))
             wait_for(lambda:all(catalog()[pid]['ready'] for pid in (default,new)))
+            stake = query('/account/'+nodeids[1])['stake']
+            cap = stake // query('/parameters')['audit_sampling']['exposure_divisors'][0]
+            assert stake == 5000 and cap >= 1000
+            print('STAKE', nodeids[1], stake, 'cap', cap, 'registration', query('/node/'+nodeids[1])['registered_at'], flush=True)
             print('PASS 2: two real CPU nodes asserted profile JOIN READY through shared tunnel',flush=True)
             def order(pid):
                 node_index=(default,new).index(pid)
                 before=query('/account/'+nodeids[node_index])['balance']
+                auditor_id = nodeids[node_index+2]
+                auditor_before = query('/account/'+auditor_id)['balance']
+                payer_before = query('/account/'+payer_id)['balance']
                 request=dict(model=pid,messages=[dict(role='user',content='hello')],max_tokens=2,seed=7,stream=False)
                 code,_,raw=http('/v1/quote',request);assert code==200,(code,raw)
                 quote=json.loads(raw);assert quote['model']==pid
@@ -200,6 +210,13 @@ def main():
                 assert sum(shares[k] for k in ('executor','auditor','consumer'))==fee
                 assert query('/account/'+nodeids[node_index])['balance']-before==shares['executor']
                 if hold.get('sampling',{}).get('sampled'): assert hold.get('audit_verdict')=='accept',hold
+                if pid == new and os.environ.get('S2_FORCE_AUDIT'):
+                    assert 100 < hold['amount'] <= cap and hold['audit_escrow_subunits'] > 0
+                    auditor_delta = query('/account/'+auditor_id)['balance'] - auditor_before
+                    assert auditor_delta + hold['audit_escrow_subunits'] == shares['auditor']
+                    print('CHAIN EVIDENCE', json.dumps({key:hold.get(key) for key in (
+                        'id','amount','freeze_height','audit_assigned_height','audit_completed_height','settle_height')}
+                        | dict(auditor_delta=auditor_delta, payer_net_delta=query('/account/'+payer_id)['balance']-payer_before)), flush=True)
                 print('READBACK executor balance delta=',shares['executor'],'fee split=',shares,'audit sampled=',hold.get('sampling',{}).get('sampled'),flush=True)
                 print('SETTLEMENT',pid,json.dumps({key:hold.get(key) for key in ('id','model_id','node','actual','shares','sampling','unaudited','audit_verdict','audit_escrow_subunits','audit_receipts')},sort_keys=True),flush=True)
                 return hold,quote

@@ -25,6 +25,7 @@ from pinned_tls import pinned_channel
 
 from . import Agent
 from .health import start_health_server
+from .reconnect import DisconnectLog, ReconnectBackoff
 
 
 CHAIN_QUERY_ATTEMPTS = 4
@@ -153,13 +154,15 @@ def join(args):
         return _join_single(opts, shared)
     threads = []
     def run(opts):
+        backoff = ReconnectBackoff()
+        failure_log = DisconnectLog()
         while True:
             try:
                 _join_single(opts, shared)
             except Exception as exc:
-                print(f'MULTIHOME session failed peer={opts.coordinator}: {exc}', flush=True)
+                failure_log.emit(f'MULTIHOME session failed peer={opts.coordinator}: {exc}', time.monotonic())
                 shared['sessions'].update(opts.coordinator, False)
-                time.sleep(1)
+                time.sleep(backoff.next_delay())
     for index, (address, pin) in enumerate(peers):
         opts = copy.copy(args)
         opts.coordinator, opts.tls_fingerprint = address, pin

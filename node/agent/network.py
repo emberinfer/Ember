@@ -8,6 +8,8 @@ import re
 import shlex
 import sys
 
+from .reconnect import lifecycle_print
+
 
 def validate_artifacts(model, ident):
     """Authenticate exact protobuf bytes against an operator-trusted record."""
@@ -91,7 +93,7 @@ def gateway_coordinators(access, profile, *, same_host_684=False):
                 continue
             matched = True
             if private and not same_host_684:
-                print(f'MULTIHOME excluded={ident} reason=private gateway requires same-host-684 context', file=sys.stderr)
+                lifecycle_print(f'MULTIHOME excluded={ident} reason=private gateway requires same-host-684 context', file=sys.stderr)
                 continue
             tunnel = gateway.get('node_tunnel', {})
             entry = dict(endpoint=tunnel.get('local_endpoint' if private else 'endpoint'),
@@ -106,7 +108,7 @@ def gateway_coordinators(access, profile, *, same_host_684=False):
     if selected:
         coordinators(selected)
     else:
-        print(f'MULTIHOME profile={profile} connected=0/0 missing=[] reason=no public gateway; same-host-684 required', file=sys.stderr)
+        lifecycle_print(f'MULTIHOME profile={profile} connected=0/0 missing=[] reason=no public gateway; same-host-684 required', file=sys.stderr)
     return selected
 
 

@@ -17,6 +17,7 @@ from ember_core import node_id, sign, verify
 from ember_pb2 import ExecutionCommitment, ExecutionReceipt, TunnelFrame
 from ember_pb2_grpc import NodeTunnelStub
 from .audit_transfer import AuditTransfer
+from .reconnect import DisconnectLog, ReconnectBackoff, lifecycle_print
 from evidence import canonical, chunks, encode_step, opening, manifest_chunks, DEFAULT_MAX_FRAME_TOKENS, MAX_FRAME_BYTES
 
 
@@ -71,6 +72,9 @@ class Agent:
         self.scheduler_nonce_path.chmod(0o600)
 
     def serve(self, address, stop=None, channel_factory=None, authenticate=None):
+        backoff = ReconnectBackoff()
+        disconnect_log = DisconnectLog()
+        failed_attempts = 0
         while stop is None or not stop.is_set():
             self.ready = False
             if getattr(self, 'session_status', None):
@@ -78,6 +82,8 @@ class Agent:
             outgoing = queue.Queue()
             disconnected = threading.Event()
             connection = None
+            ready_at = None
+            reason = None
             outgoing.put(TunnelFrame(node_id=self.node_id, kind='join' if authenticate else 'hello'))
             def messages(outgoing=outgoing, disconnected=disconnected):
                 # Bind this connection's queue: a cancelled gRPC iterator can
@@ -86,7 +92,7 @@ class Agent:
                 while not disconnected.is_set() and (stop is None or not stop.is_set()):
                     if self.ready and time.monotonic() - last_heartbeat >= 30:
                         last_heartbeat = time.monotonic()
-                        print(f'HEARTBEAT node={self.node_id} peer={address}', flush=True)
+                        lifecycle_print(f'HEARTBEAT node={self.node_id} peer={address}')
                         yield TunnelFrame(node_id=self.node_id, kind='heartbeat',
                             payload=self.profile().SerializeToString(deterministic=True))
                     try:
@@ -113,8 +119,12 @@ class Agent:
                         if authenticate and frame.kind == 'challenge':
                             outgoing.put(authenticate(frame))
                         elif frame.kind == 'ready':
+                            if ready_at is None:
+                                ready_at = time.monotonic()
                             self.ready = True
-                            print(f'JOIN READY node={self.node_id} peer={address}', flush=True)
+                            suffix = f' failed_attempts={failed_attempts}' if failed_attempts else ''
+                            lifecycle_print(f'JOIN READY node={self.node_id} peer={address}{suffix}')
+                            failed_attempts = 0
                             if getattr(self, 'session_status', None):
                                 self.session_status(True)
                         elif frame.kind in ('run', 'audit', 'tokenize', 'audit_begin', 'audit_chunk', 'audit_commit'):
@@ -125,8 +135,8 @@ class Agent:
                             connection._run(frame, outgoing)
             except Exception as exc:
                 reason = f'{exc.code().name}: {exc.details()}' if isinstance(exc, grpc.RpcError) else str(exc)
-                print(f'TUNNEL disconnected peer={address} reconnecting: {reason}', flush=True)
             finally:
+                disconnected_at = time.monotonic()
                 self.ready = False
                 if getattr(self, 'session_status', None):
                     self.session_status(False)
@@ -139,9 +149,19 @@ class Agent:
                         trace = self._forward_traces.pop(request_id, None)
                         if trace is not None:
                             trace.finish('disconnected')
+            stopping = stop is not None and stop.is_set()
+            if reason is not None or not stopping:
+                if reason is None:
+                    reason = 'stream ended'
+                disconnect_log.emit(f'TUNNEL disconnected peer={address} reconnecting: {reason}', disconnected_at)
+            if stopping:
+                break
+            if ready_at is None:
+                failed_attempts += 1
+            delay = backoff.next_delay(disconnected_at - ready_at if ready_at is not None else 0)
             if stop is None:
-                time.sleep(0.5)
-            elif stop.wait(0.5):
+                time.sleep(delay)
+            elif stop.wait(delay):
                 break
 
     @staticmethod

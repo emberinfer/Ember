@@ -10,6 +10,8 @@ cache and is never re-executed.
 import json
 import threading
 
+from .reconnect import lifecycle_print
+
 
 class Claims:
     def __init__(self):
@@ -102,6 +104,7 @@ class Sessions:
     def __init__(self, peers):
         self.peers = peers
         self.connected = set()
+        self.reported = set()
         self.lock = threading.Lock()
 
     def is_ready(self):
@@ -110,10 +113,13 @@ class Sessions:
 
     def update(self, peer, ready):
         with self.lock:
+            if peer in self.reported and (peer in self.connected) == bool(ready):
+                return
             if ready:
                 self.connected.add(peer)
             else:
                 self.connected.discard(peer)
-            print(f'MULTIHOME connected={len(self.connected)}/{len(self.peers)} '
-                  f'peer={peer} ready={ready} '
-                  f'missing={sorted(set(self.peers) - self.connected)}', flush=True)
+            self.reported.add(peer)
+            lifecycle_print(f'MULTIHOME connected={len(self.connected)}/{len(self.peers)} '
+                            f'peer={peer} ready={ready} '
+                            f'missing={sorted(set(self.peers) - self.connected)}')

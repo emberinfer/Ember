@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.10.5 — 2026-11-26
+
+- Node tunnel reconnects back off exponentially with jitter (1 second initial ceiling, doubling, capped at 60 seconds) instead of retrying on a fixed half-second loop. A permanently unreachable gateway endpoint no longer floods the node log: repeat disconnects within a minute are suppressed and counted, the backoff resets only after 60 continuous seconds in READY, and JOIN READY reports the failed attempts since the previous READY.
+- Tunnel lifecycle log lines (TUNNEL, JOIN READY, HEARTBEAT, MULTIHOME) now start with a local ISO-8601 timestamp, so client and gateway logs can be aligned when diagnosing connection problems.
+
 ## 0.10.4 — 2026-11-26
 
 - Newly published profiles default to 80% executor, 15% auditor, and 5% consumer rebate pricing and include the v2 replay audit-compensation table. Sampled orders on these profiles split fees and escrow audit compensation.

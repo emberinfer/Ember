@@ -80,6 +80,16 @@ def test_setup_failures_do_not_kill_registration_thread(tmp_path):
     assert [c.args[0] for c in sleep.call_args_list] == [1, 2, 4, 8, 16, 30, 30, 30]
 
 
+def test_missing_account_retry_explains_faucet(tmp_path, capsys):
+    with patch('agent.join._chain_json', return_value=None), \
+         patch('agent.join.time.sleep', side_effect=[None, KeyboardInterrupt]), \
+         pytest.raises(KeyboardInterrupt):
+        register_on_chain(args(), tmp_path, 'node', ResourceProfile())
+    assert capsys.readouterr().out.splitlines() == [
+        f'REGISTER retry in {delay}s: Account not found on chain. Claim from the faucet first.'
+        for delay in (1, 2)]
+
+
 def test_action_and_cli_signing_payload_match_baseline(tmp_path):
     # Frozen successful-path builder from the parent implementation. Keep this
     # independent of git history so shallow source checkouts can run the test.
@@ -114,6 +124,6 @@ def test_action_and_cli_signing_payload_match_baseline(tmp_path):
         expected = ['cli', 'tx', '--rpc', 'rpc', '--key', str(tmp_path/'identity.key'),
                     '--chain-id', 'ledger', '--nonce', '5', '--action',
                     json.dumps(legacy_action(options, profile, state, 100), separators=(',', ':'))]
-        run.assert_called_once_with(expected, check=True, timeout=60)
+        run.assert_called_once_with(expected, check=True, timeout=60, text=True, capture_output=True)
         wire = json.loads(run.call_args.args[0][-1])
         assert base64.b64decode(wire['profile']) == profile.SerializeToString(deterministic=True)

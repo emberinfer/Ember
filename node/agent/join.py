@@ -2,6 +2,7 @@
 import base64
 import hashlib
 import json
+import logging
 import math
 import os
 from pathlib import Path
@@ -120,9 +121,14 @@ def join(args):
             raise ValueError('stake target requires --chain-rpc, --chain-cli and --ledger-chain-id')
         if _chain_json_with_retry(args.chain_cli, args.chain_rpc, '/parameters')['chain_id'] != args.ledger_chain_id:
             raise ValueError('ledger chain ID mismatch')
-        account = _chain_json_with_retry(args.chain_cli, args.chain_rpc, '/account/' + ident)
-        if account is None:
-            raise ValueError('account not found on chain. Claim from the faucet first.')
+        attempt = 0
+        while True:
+            try:
+                account = _registration_account(args, ident)
+                break
+            except (ValueError, OSError, subprocess.SubprocessError) as exc:
+                _registration_retry_delay(attempt, exc)
+                attempt += 1
         _ensure_stake(args, Path(args.state_dir) / 'identity.key', ident, account, target)
     shared = dict(claims=Claims(), registration=Registration(),
                   initialization=Registration(), runtime={},
@@ -425,7 +431,7 @@ def start_registration_renewal(args, state, ident, profile, registration):
 
 def _chain_json(cli, rpc, path):
     raw = subprocess.check_output([cli, 'query', '--rpc', rpc, '--path', path],
-                                  text=True, timeout=30)
+                                  text=True, timeout=30, stderr=subprocess.PIPE)
     return json.loads(raw)
 
 
@@ -522,21 +528,46 @@ def _chain_state_with_retry(cli, rpc, chain_id, ident):
 
 
 def _chain_tx(args, key_path, nonce, action):
-    subprocess.run([args.chain_cli, 'tx', '--rpc', args.chain_rpc,
+    result = subprocess.run([args.chain_cli, 'tx', '--rpc', args.chain_rpc,
                     '--key', str(key_path), '--chain-id', args.ledger_chain_id,
                     '--nonce', str(nonce), '--action', json.dumps(
                         action, separators=(',', ':'))],
-                   check=True, timeout=60)
+                   check=True, timeout=60, text=True, capture_output=True)
+    if result.stdout:
+        print(result.stdout, end='', flush=True)
 
 
 def _registration_retry_delay(attempt, exc):
     delay = min(30, 2 ** min(attempt, 5))
-    print(f'REGISTER retry in {delay}s: {exc}', flush=True)
+    detail = (getattr(exc, 'stderr', None) or '').lower()
+    if isinstance(exc, subprocess.TimeoutExpired):
+        reason = 'The chain request timed out.'
+    elif isinstance(exc, FileNotFoundError):
+        reason = 'Cannot find the chain CLI. Check --chain-cli.'
+    elif 'account not found' in detail or 'unknown account' in detail:
+        reason = 'Account not found on chain. Claim from the faucet first.'
+    elif 'insufficient balance' in detail:
+        reason = 'Insufficient balance for registration. Fund the account first.'
+    elif isinstance(exc, (OSError, subprocess.SubprocessError, json.JSONDecodeError)):
+        reason = 'The chain request failed. Check the RPC endpoint and node funding.'
+    elif isinstance(exc, ValueError):
+        reason = str(exc)
+    else:
+        reason = 'Registration failed. Enable debug logs for details.'
+    logging.getLogger(__name__).debug('Registration failure, CLI stderr=%r', detail, exc_info=exc)
+    print(f'REGISTER retry in {delay}s: {reason}', flush=True)
     time.sleep(delay)
 
 
 class _RegistrationExpired(Exception):
     pass
+
+
+def _registration_account(args, ident):
+    account = _chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)
+    if account is None:
+        raise ValueError('Account not found on chain. Claim from the faucet first.')
+    return account
 
 
 def _ensure_stake(args, key_path, ident, account, target):
@@ -548,7 +579,7 @@ def _ensure_stake(args, key_path, ident, account, target):
                          f'{amount - int(account["balance"])} more subunits.')
     _registration_tx(args, key_path, ident, int(account['nonce']),
                      {'type': 'stake', 'amount': amount, '_target_stake': target})
-    return int(_chain_json_with_retry(args.chain_cli, args.chain_rpc, '/account/' + ident)['nonce'])
+    return int(_registration_account(args, ident)['nonce'])
 
 
 def _registration_tx(args, key_path, ident, nonce, action):
@@ -564,7 +595,7 @@ def _registration_tx(args, key_path, ident, nonce, action):
         try:
             if pending:
                 if action['type'] == 'stake':
-                    account = _chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)
+                    account = _registration_account(args, ident)
                     if int(account['stake']) >= action['_target_stake']:
                         return
                     action = dict(action, amount=action['_target_stake'] - int(account['stake']))
@@ -574,7 +605,7 @@ def _registration_tx(args, key_path, ident, nonce, action):
                             int(registration.get('expires_height', 0)) == action['expires_height']):
                         print('REGISTER confirmed on chain after uncertain broadcast', flush=True)
                         return
-                    account = _chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)
+                    account = _registration_account(args, ident)
                 nonce = int(account['nonce'])
                 if action['type'] == 'register_node' and _chain_height(args.chain_rpc) >= action['expires_height']:
                     raise _RegistrationExpired('registration action expired before confirmation')
@@ -605,7 +636,7 @@ def _register_on_chain(args, state, ident, profile):
     if not args.chain_cli or not args.ledger_chain_id:
         raise ValueError('chain registration requires --chain-cli and --ledger-chain-id')
     key_path = state / 'identity.key'
-    account = _chain_json(args.chain_cli, args.chain_rpc, '/account/' + ident)
+    account = _registration_account(args, ident)
     model = _chain_json(args.chain_cli, args.chain_rpc, '/model/' + profile.chain_id)
     if (getattr(args, 'genesis_sha256', None) and
             model['genesis_hash'].lower() != args.genesis_sha256.lower()):

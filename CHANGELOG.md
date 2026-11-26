@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 0.10.4 — 2026-11-26
+
+- Newly published profiles default to 80% executor, 15% auditor, and 5% consumer rebate pricing and include the v2 replay audit-compensation table. Sampled orders on these profiles split fees and escrow audit compensation.
+- `ember-node join --stake-target <n>` or `EMBER_STAKE_TARGET` tops up stake through the chain stake action. The website and packaged Quickstart explain how to join a profile published by another operator and document the trust-policy file format.
+- `ember-node configure` exits with status 2 without writing a configuration when the local weights do not belong to the selected profile.
+- Every registration retry explains the failure in plain language. For example, operators with a missing account are prompted to claim from the faucet first.
+- Publication failures show the chain's rejection reason on the headline line. The pending marker is kept only while the outcome is unknown.
+- Trust checks treat null endorsement entries as empty.
+- The packaged Quickstart uses the release's own version in the signature-verification example.
+- Running `ember-node` with no arguments prints top-level help and exits with status 0. Unknown subcommands print help and a diagnostic and exit with status 2.
+
 ## 0.10.3 — 2026-11-25
 
 - The gateway supervisor passes pre-bound HTTP and tunnel listeners to workers, eliminating the port allocation race during startup.

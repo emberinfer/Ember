@@ -1,12 +1,35 @@
 import argparse
 import os
+import sys
 from pathlib import Path
 from . import Agent
 from engine import load_engine
 
 
 def main():
-    import sys
+    commands = {
+        'id': 'Show or create the node identity',
+        'configure': 'Write a node configuration',
+        'join': 'Register and join a profile',
+        'profile': 'Prepare, verify or publish profile artifacts',
+        'exit': 'Inspect registration and unbond stake',
+        'request-exec-exit': 'Request executor exit on the chain',
+        'conformance': 'Check model execution conformance',
+        'image-conformance': 'Check image execution conformance',
+        'shard': 'Run a shard service',
+        'serve': 'Run the standalone engine service',
+        'version': 'Print the release version',
+    }
+    parser = argparse.ArgumentParser(prog='ember-node')
+    subcommands = parser.add_subparsers(dest='command', metavar='COMMAND')
+    for name, description in commands.items():
+        subcommands.add_parser(name, help=description)
+    if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help'):
+        parser.print_help()
+        return
+    if sys.argv[1] not in commands:
+        parser.print_help(sys.stderr)
+        parser.exit(2, f'ember-node: error: unknown command {sys.argv[1]!r}\n')
     if len(sys.argv) > 1 and sys.argv[1] == 'image-conformance':
         from image_conformance import main as image_main
         image_main(sys.argv[2:])
@@ -100,7 +123,7 @@ def main():
             except ValueError as exc:
                 cli.error(str(exc))
         return
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog='ember-node serve')
     parser.add_argument('--address', default='127.0.0.1:19091')
     parser.add_argument('--id', required=True)
     parser.add_argument('--engine', choices=('mock', 'transformers'), default='mock')
@@ -109,7 +132,7 @@ def main():
     parser.add_argument('--cheat', action='store_true')
     parser.add_argument('--tamper', action='store_true')
     parser.add_argument('--delay', type=float, default=0)
-    args = parser.parse_args()
+    args = parser.parse_args(sys.argv[2:])
     engine = load_engine(args.engine, model_path=args.model_path,
                          device=args.device, tamper=args.tamper)
     print(f'NODE {args.id} DEVICE {engine.device}', flush=True)

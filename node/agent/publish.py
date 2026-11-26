@@ -208,6 +208,25 @@ def readback(opts, record, ident):
                 profile_hash=record['profile_hash'], manifest_root=publication['manifest_root'])
 
 
+def submit_publication(opts, key_path, nonce, action, pending):
+    pending.write_text('Submission attempted; retain until committed readback succeeds.\n')
+    try:
+        _chain_tx(opts, key_path, nonce, action)
+    except subprocess.CalledProcessError as exc:
+        detail = exc.stderr or ''
+        rejection = re.search(r'\b(?:CheckTx|DeliverTx) code=[1-9]\d* log=([^\r\n]*)', detail)
+        if rejection is None:
+            rejection = re.search(r"broadcast error on transaction validation: .*? is invalid: "
+                                  r"code=[1-9]\d*, .*?log='(.*?)', codespace=", detail)
+        if rejection is not None:
+            pending.unlink()
+            reason = rejection.group(1).strip() or 'the chain returned a nonzero transaction code'
+            raise ValueError('chain rejected the publication: ' + reason) from exc
+        raise ValueError('submission outcome is uncertain; rerun with the same output to read back before any retry') from exc
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        raise ValueError('submission outcome is uncertain; rerun with the same output to read back before any retry') from exc
+
+
 def publish(opts):
     """Build atomically, verify before spending, and resolve repeats read-only."""
     from auditor.policy import validate_policy
@@ -281,11 +300,7 @@ def publish(opts):
     if account['balance'] < bond:
         raise ValueError('publisher balance is below the required publication bond')
     action = json.loads((output / 'registration.json').read_text())
-    pending.write_text('Submission attempted; retain until committed readback succeeds.\n')
-    try:
-        _chain_tx(opts, Path(opts.state_dir) / 'identity.key', account['nonce'] + 1, action)
-    except (subprocess.SubprocessError, OSError) as exc:
-        raise ValueError('submission failed or outcome is uncertain; rerun with the same output to read back before any retry: ' + str(exc)) from exc
+    submit_publication(opts, Path(opts.state_dir) / 'identity.key', account['nonce'] + 1, action, pending)
     record = _published_record(opts)
     result = readback(opts, record, ident)
     pending.unlink()
